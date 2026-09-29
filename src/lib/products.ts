@@ -10,7 +10,7 @@ export const resolveImage = (s: string) => local[s] ?? s;
 
 export type Product = {
   id: string; title: string; category: string; description: string; image: string; imageRaw: string;
-  oldPrice: number; price: number; badge?: string; stock: number; active: boolean;
+  oldPrice: number; price: number; badge?: string | undefined; stock: number; active: boolean;
   dims: { w: number; h: number; d: number };
 };
 
