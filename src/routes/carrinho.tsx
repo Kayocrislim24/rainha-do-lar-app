@@ -77,15 +77,16 @@ function CartPage() {
     ].filter(Boolean).join(" | ");
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
-    if (u.user) {
-      await supabase.from("orders").insert({
-        user_id: u.user.id, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
-        itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
-        subtotal, frete: ship.cost, total: subtotal + ship.cost,
-      });
-    }
+    setMsg("Enviando pedido...");
+    const { error } = await supabase.from("orders").insert({
+      user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
+      itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
+      subtotal, frete: ship.cost, total: subtotal + ship.cost,
+    });
+    if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
+    setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
-    setDone(r.data.nome.split(" ")[0]);
+    setDone(r.data.nome.split(" ")[0] ?? r.data.nome);
     clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

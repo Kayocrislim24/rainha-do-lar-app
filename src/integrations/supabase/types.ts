@@ -27,7 +27,7 @@ export type Database = {
           subtotal: number
           telefone: string
           total: number
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           condicao?: string | null
@@ -41,7 +41,7 @@ export type Database = {
           subtotal: number
           telefone: string
           total: number
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           condicao?: string | null
@@ -55,7 +55,7 @@ export type Database = {
           subtotal?: number
           telefone?: string
           total?: number
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
