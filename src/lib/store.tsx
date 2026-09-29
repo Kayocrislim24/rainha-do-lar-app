@@ -69,5 +69,5 @@ export async function quoteShipping(cep: string) {
   const dLat = toR(lat - ORIGIN.lat), dLon = toR(lon - ORIGIN.lon);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(toR(ORIGIN.lat)) * Math.cos(toR(lat)) * Math.sin(dLon / 2) ** 2;
   const km = Math.max(1, Math.round(2 * R * Math.asin(Math.sqrt(h)) * 1.3));
-  return { km, cost: km * PRICE_PER_KM, address: a as { logradouro: string; bairro: string; localidade: string; uf: string } };
+  return { km, cost: km * PRICE_PER_KM, lat, lon, address: a as { logradouro: string; bairro: string; localidade: string; uf: string } };
 }
