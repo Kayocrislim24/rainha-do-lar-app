@@ -163,8 +163,8 @@ function CartPage() {
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + (ship?.cost ?? 0))}</span></div>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
-        <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Confirmar pedido no WhatsApp</button>
-        <p className="mt-2 text-center text-xs text-muted-foreground">Abre o WhatsApp da loja com o resumo completo.</p>
+        <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
+        <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>
       </aside>
     </main>
   );
