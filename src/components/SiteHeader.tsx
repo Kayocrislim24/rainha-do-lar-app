@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Crown, CreditCard, Percent, ShoppingBag, Truck, User } from "lucide-react";
 import { useCart } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 
 export function SiteHeader() {
   const { count } = useCart();
+  const { user, isAdmin } = useAuth();
   return (
     <header>
       <div className="bg-navy-deep text-primary-foreground text-xs sm:text-sm">
@@ -21,7 +23,12 @@ export function SiteHeader() {
           </Link>
           <input placeholder="O que você procura?" className="hidden md:block flex-1 rounded-md bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none" />
           <div className="ml-auto flex items-center gap-5">
-            <span className="hidden sm:flex items-center gap-2 text-sm leading-tight"><User className="size-5" /><span>Entre ou cadastre-se<br /><span className="opacity-70">para ver seus pedidos</span></span></span>
+            {isAdmin && <Link to="/admin" className="hidden sm:block rounded-md bg-gold px-3 py-1.5 text-sm font-bold text-accent-foreground">Painel</Link>}
+            {user ? (
+              <Link to="/conta" className="flex items-center gap-2 text-sm leading-tight"><User className="size-5" /><span className="hidden sm:inline">Minha conta<br /><span className="opacity-70">meus pedidos</span></span></Link>
+            ) : (
+              <Link to="/auth" className="flex items-center gap-2 text-sm leading-tight"><User className="size-5" /><span className="hidden sm:inline">Entre ou cadastre-se<br /><span className="opacity-70">para ver seus pedidos</span></span></Link>
+            )}
             <Link to="/carrinho" className="relative" aria-label="Carrinho">
               <ShoppingBag className="size-6" />
               {count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-accent-foreground">{count}</span>}

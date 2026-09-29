@@ -3,12 +3,13 @@ import { useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
       { title: "Carrinho e checkout — Rainha do Lar" },
-      { name: "description", content: "Revise seus itens, calcule o frete por km e envie seu pedido pelo WhatsApp." },
+      { name: "description", content: "Revise seus itens, calcule o frete e envie seu pedido pelo WhatsApp." },
       { property: "og:title", content: "Carrinho — Rainha do Lar" },
       { property: "og:description", content: "Finalize seu pedido na Rainha do Lar." },
     ],
@@ -62,7 +63,7 @@ function CartPage() {
     try { setShip(await quoteShipping(f.cep)); setMsg(""); } catch (e) { setShip(null); setMsg((e as Error).message); }
   };
 
-  const finish = () => {
+  const finish = async () => {
     const r = schema.safeParse(f);
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
@@ -71,14 +72,23 @@ function CartPage() {
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean).join(" | ");
+    const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
+    const { data: u } = await supabase.auth.getUser();
+    if (u.user) {
+      await supabase.from("orders").insert({
+        user_id: u.user.id, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
+        itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
+        subtotal, frete: ship.cost, total: subtotal + ship.cost,
+      });
+    }
     enviarParaWhatsApp({
       nome: r.data.nome,
       telefone: r.data.telefone,
-      endereco: `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`,
+      endereco,
       condicaoEntrega: condicoes,
       itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
       subtotal: num(subtotal),
-      frete: `${num(ship.cost)} (~${ship.km} km × R$ 3,00)${condicoes ? " + a combinar" : ""}`,
+      frete: `${num(ship.cost)}${condicoes ? " + a combinar" : ""}`,
       total: num(subtotal + ship.cost),
       statusPagamento: "Aguardando confirmação",
     });
@@ -131,7 +141,7 @@ function CartPage() {
         <h2 className="text-lg font-bold text-navy">Resumo</h2>
         <div className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-          <div className="flex justify-between"><span>Frete {ship && `(~${ship.km} km × R$ 3,00)`}</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
+          <div className="flex justify-between"><span>Frete</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
         </div>
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + (ship?.cost ?? 0))}</span></div>

@@ -1,32 +1,32 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
-import { brl, products, quoteShipping, useCart } from "@/lib/store";
+import { brl, quoteShipping, useCart } from "@/lib/store";
+import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/produto/$id")({
-  loader: ({ params }) => {
-    const product = products.find((p) => p.id === params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.product.title} — Rainha do Lar` },
-          { name: "description", content: loaderData.product.description },
-          { property: "og:title", content: loaderData.product.title },
-          { property: "og:description", content: loaderData.product.description },
-        ]
-      : [{ title: "Produto não encontrado" }, { name: "robots", content: "noindex" }],
+  head: () => ({
+    meta: [
+      { title: "Produto — Rainha do Lar" },
+      { name: "description", content: "Detalhes, medidas e preço do móvel na Rainha do Lar." },
+      { property: "og:title", content: "Produto — Rainha do Lar" },
+      { property: "og:description", content: "Confira detalhes e ofertas deste móvel." },
+    ],
   }),
-  notFoundComponent: () => <div className="p-10 text-center">Produto não encontrado. <Link to="/" className="text-link underline">Voltar</Link></div>,
-  errorComponent: () => <div className="p-10 text-center">Erro ao carregar o produto.</div>,
-  component: ProductPage,
+  component: ProductRoute,
 });
 
-function ProductPage() {
-  const { product: p } = Route.useLoaderData();
+function ProductRoute() {
+  const { id } = Route.useParams();
+  const { data, isLoading } = useProducts();
+  if (isLoading) return <main className="p-10 text-center">Carregando...</main>;
+  const p = data?.find((x) => x.id === id);
+  if (!p) return <div className="p-10 text-center">Produto não encontrado. <Link to="/" className="text-link underline">Voltar</Link></div>;
+  return <ProductPage p={p} />;
+}
+
+function ProductPage({ p }: { p: Product }) {
   const { add } = useCart();
   const nav = useNavigate();
   const [qty, setQty] = useState(1);
@@ -38,7 +38,7 @@ function ProductPage() {
 
   const calc = async () => {
     setShip("Calculando...");
-    try { const r = await quoteShipping(cep); setShip(`${r.address.localidade}/${r.address.uf} · ~${r.km} km · ${brl(r.cost)}`); }
+    try { const r = await quoteShipping(cep); setShip(`${r.address.localidade}/${r.address.uf} · ${brl(r.cost)}`); }
     catch (e) { setShip((e as Error).message); }
   };
 
@@ -65,7 +65,7 @@ function ProductPage() {
           <button onClick={() => add(p.id, qty)} className="mt-3 w-full rounded-md border-2 border-buy py-3 font-bold text-buy hover:bg-buy/5">Adicionar ao carrinho</button>
 
           <div className="mt-6">
-            <p className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Simular frete (R$ 3,00/km)</p>
+            <p className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Simular frete</p>
             <div className="mt-2 flex gap-2">
               <input value={cep} onChange={(e) => setCep(e.target.value)} placeholder="CEP" maxLength={9} className="flex-1 rounded-md bg-muted px-4 py-2.5" />
               <button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button>
