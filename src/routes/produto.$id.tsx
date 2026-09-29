@@ -1,32 +1,32 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
-import { brl, products, quoteShipping, useCart } from "@/lib/store";
+import { brl, quoteShipping, useCart } from "@/lib/store";
+import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/produto/$id")({
-  loader: ({ params }) => {
-    const product = products.find((p) => p.id === params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.product.title} — Rainha do Lar` },
-          { name: "description", content: loaderData.product.description },
-          { property: "og:title", content: loaderData.product.title },
-          { property: "og:description", content: loaderData.product.description },
-        ]
-      : [{ title: "Produto não encontrado" }, { name: "robots", content: "noindex" }],
+  head: () => ({
+    meta: [
+      { title: "Produto — Rainha do Lar" },
+      { name: "description", content: "Detalhes, medidas e preço do móvel na Rainha do Lar." },
+      { property: "og:title", content: "Produto — Rainha do Lar" },
+      { property: "og:description", content: "Confira detalhes e ofertas deste móvel." },
+    ],
   }),
-  notFoundComponent: () => <div className="p-10 text-center">Produto não encontrado. <Link to="/" className="text-link underline">Voltar</Link></div>,
-  errorComponent: () => <div className="p-10 text-center">Erro ao carregar o produto.</div>,
-  component: ProductPage,
+  component: ProductRoute,
 });
 
-function ProductPage() {
-  const { product: p } = Route.useLoaderData();
+function ProductRoute() {
+  const { id } = Route.useParams();
+  const { data, isLoading } = useProducts();
+  if (isLoading) return <main className="p-10 text-center">Carregando...</main>;
+  const p = data?.find((x) => x.id === id);
+  if (!p) return <div className="p-10 text-center">Produto não encontrado. <Link to="/" className="text-link underline">Voltar</Link></div>;
+  return <ProductPage p={p} />;
+}
+
+function ProductPage({ p }: { p: Product }) {
   const { add } = useCart();
   const nav = useNavigate();
   const [qty, setQty] = useState(1);

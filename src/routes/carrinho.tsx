@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -62,7 +63,7 @@ function CartPage() {
     try { setShip(await quoteShipping(f.cep)); setMsg(""); } catch (e) { setShip(null); setMsg((e as Error).message); }
   };
 
-  const finish = () => {
+  const finish = async () => {
     const r = schema.safeParse(f);
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
@@ -71,10 +72,19 @@ function CartPage() {
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean).join(" | ");
+    const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
+    const { data: u } = await supabase.auth.getUser();
+    if (u.user) {
+      await supabase.from("orders").insert({
+        user_id: u.user.id, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
+        itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
+        subtotal, frete: ship.cost, total: subtotal + ship.cost,
+      });
+    }
     enviarParaWhatsApp({
       nome: r.data.nome,
       telefone: r.data.telefone,
-      endereco: `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`,
+      endereco,
       condicaoEntrega: condicoes,
       itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
       subtotal: num(subtotal),
