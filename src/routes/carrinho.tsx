@@ -24,6 +24,30 @@ const schema = z.object({
   complemento: z.string().trim().max(100),
 });
 
+const num = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+type DadosPedido = {
+  nome: string; telefone: string; endereco: string; condicaoEntrega?: string;
+  itens: string; subtotal: string; frete: string; total: string; statusPagamento?: string;
+};
+
+const enviarParaWhatsApp = (dadosPedido: DadosPedido) => {
+  const numero = WHATSAPP;
+  const texto =
+    `🛍️ *NOVO PEDIDO - RAINHA DO LAR*\n\n` +
+    `👤 *Cliente:* ${dadosPedido.nome}\n` +
+    `📞 *Telefone:* ${dadosPedido.telefone}\n` +
+    `📍 *Endereço:* ${dadosPedido.endereco}\n` +
+    `🚚 *Condição de Entrega:* ${dadosPedido.condicaoEntrega || "Padrão"}\n\n` +
+    `📦 *Itens do Pedido:*\n${dadosPedido.itens}\n\n` +
+    `💰 *Subtotal:* R$ ${dadosPedido.subtotal}\n` +
+    `🚚 *Frete:* R$ ${dadosPedido.frete}\n` +
+    `💳 *Total:* R$ ${dadosPedido.total}\n\n` +
+    `Status do Pagamento: ${dadosPedido.statusPagamento || "Aguardando confirmação"}`;
+  const link = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+  window.open(link, "_blank");
+};
+
 function CartPage() {
   const { items, setQty, subtotal, clear } = useCart();
   const [f, setF] = useState({ nome: "", telefone: "", cep: "", numero: "", complemento: "" });
@@ -43,24 +67,21 @@ function CartPage() {
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
     const a = ship.address;
-    const lines = [
-      "*Novo pedido - Rainha do Lar* 👑",
-      "",
-      `*Cliente:* ${r.data.nome}`,
-      `*Telefone:* ${r.data.telefone}`,
-      `*Endereço:* ${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`,
-      "",
-      "*Itens:*",
-      ...items.map((i) => `• ${i.qty}x ${i.product.title} — ${brl(i.product.price * i.qty)}`),
-      "",
-      `*Subtotal:* ${brl(subtotal)}`,
-      `*Frete:* ${brl(ship.cost)} (~${ship.km} km)`,
-      ...(apto ? ["⚠️ Entrega em apartamento — taxa extra a combinar"] : []),
-      ...(chao ? ["⚠️ Estrada de chão / difícil acesso — combinar previamente"] : []),
-      `*Total:* ${brl(subtotal + ship.cost)}`,
-      "*Pagamento:* Pendente (a combinar)",
-    ];
-    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+    const condicoes = [
+      apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
+      chao && "Estrada de chão / difícil acesso — combinar previamente",
+    ].filter(Boolean).join(" | ");
+    enviarParaWhatsApp({
+      nome: r.data.nome,
+      telefone: r.data.telefone,
+      endereco: `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`,
+      condicaoEntrega: condicoes,
+      itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
+      subtotal: num(subtotal),
+      frete: `${num(ship.cost)} (~${ship.km} km × R$ 3,00)${condicoes ? " + a combinar" : ""}`,
+      total: num(subtotal + ship.cost),
+      statusPagamento: "Aguardando confirmação",
+    });
     clear();
   };
 
