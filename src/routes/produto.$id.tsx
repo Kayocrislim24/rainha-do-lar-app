@@ -38,7 +38,7 @@ function ProductPage() {
 
   const calc = async () => {
     setShip("Calculando...");
-    try { const r = await quoteShipping(cep); setShip(`${r.address.localidade}/${r.address.uf} · ~${r.km} km · ${brl(r.cost)}`); }
+    try { const r = await quoteShipping(cep); setShip(`${r.address.localidade}/${r.address.uf} · ${brl(r.cost)}`); }
     catch (e) { setShip((e as Error).message); }
   };
 
@@ -65,7 +65,7 @@ function ProductPage() {
           <button onClick={() => add(p.id, qty)} className="mt-3 w-full rounded-md border-2 border-buy py-3 font-bold text-buy hover:bg-buy/5">Adicionar ao carrinho</button>
 
           <div className="mt-6">
-            <p className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Simular frete (R$ 3,00/km)</p>
+            <p className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Simular frete</p>
             <div className="mt-2 flex gap-2">
               <input value={cep} onChange={(e) => setCep(e.target.value)} placeholder="CEP" maxLength={9} className="flex-1 rounded-md bg-muted px-4 py-2.5" />
               <button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button>

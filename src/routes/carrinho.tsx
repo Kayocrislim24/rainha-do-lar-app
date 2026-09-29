@@ -8,7 +8,7 @@ export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
       { title: "Carrinho e checkout — Rainha do Lar" },
-      { name: "description", content: "Revise seus itens, calcule o frete por km e envie seu pedido pelo WhatsApp." },
+      { name: "description", content: "Revise seus itens, calcule o frete e envie seu pedido pelo WhatsApp." },
       { property: "og:title", content: "Carrinho — Rainha do Lar" },
       { property: "og:description", content: "Finalize seu pedido na Rainha do Lar." },
     ],
@@ -78,7 +78,7 @@ function CartPage() {
       condicaoEntrega: condicoes,
       itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
       subtotal: num(subtotal),
-      frete: `${num(ship.cost)} (~${ship.km} km × R$ 3,00)${condicoes ? " + a combinar" : ""}`,
+      frete: `${num(ship.cost)}${condicoes ? " + a combinar" : ""}`,
       total: num(subtotal + ship.cost),
       statusPagamento: "Aguardando confirmação",
     });
@@ -131,7 +131,7 @@ function CartPage() {
         <h2 className="text-lg font-bold text-navy">Resumo</h2>
         <div className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-          <div className="flex justify-between"><span>Frete {ship && `(~${ship.km} km × R$ 3,00)`}</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
+          <div className="flex justify-between"><span>Frete</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
         </div>
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + (ship?.cost ?? 0))}</span></div>
