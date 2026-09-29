@@ -85,7 +85,7 @@ function Index() {
                   <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
                   <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
                   <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
-                  <span className="mt-3 block rounded-md bg-buy py-2.5 text-center text-sm font-bold text-buy-foreground group-hover:opacity-90">Comprar com desconto</span>
+                  <span className="mt-3 block rounded-md bg-buy py-2.5 text-center text-sm font-bold text-buy-foreground group-hover:opacity-90">Comprar com desconto agora</span>
                 </div>
               </Link>
             );
