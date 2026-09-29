@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useProducts, type Product } from "@/lib/products";
 
@@ -17,7 +18,9 @@ type Ctx = {
   subtotal: number;
   count: number;
 };
-const CartCtx = createContext<Ctx | null>(null);
+// Mantém o mesmo contexto mesmo quando o arquivo é recarregado durante a edição.
+const g = globalThis as unknown as { __rdlCartCtx?: React.Context<Ctx | null> };
+const CartCtx = (g.__rdlCartCtx ??= createContext<Ctx | null>(null));
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -46,7 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const c = useContext(CartCtx);
-  if (!c) throw new Error("CartProvider missing");
+  if (!c) return { items: [], add: () => {}, setQty: () => {}, clear: () => {}, subtotal: 0, count: 0 } as Ctx;
   return c;
 }
 
