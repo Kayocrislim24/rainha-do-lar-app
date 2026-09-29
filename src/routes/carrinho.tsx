@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { AlertTriangle, Minus, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -58,6 +58,7 @@ function CartPage() {
   const [chao, setChao] = useState(false);
   const [ship, setShip] = useState<Awaited<ReturnType<typeof quoteShipping>> | null>(null);
   const [msg, setMsg] = useState("");
+  const [done, setDone] = useState<string | null>(null);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const calc = async () => {
@@ -83,20 +84,33 @@ function CartPage() {
         subtotal, frete: ship.cost, total: subtotal + ship.cost,
       });
     }
-    enviarParaWhatsApp({
-      nome: r.data.nome,
-      telefone: r.data.telefone,
-      endereco,
-      localizacao: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`,
-      condicaoEntrega: condicoes,
-      itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
-      subtotal: num(subtotal),
-      frete: `${num(ship.cost)}${condicoes ? " + a combinar" : ""}`,
-      total: num(subtotal + ship.cost),
-      statusPagamento: "Aguardando confirmação",
-    });
+    void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
+    setDone(r.data.nome.split(" ")[0]);
     clear();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  if (done)
+    return (
+      <main className="grid min-h-[70vh] place-items-center bg-secondary px-4 py-16">
+        <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-500 rounded-2xl border-2 border-gold bg-background p-8 text-center shadow-2xl sm:p-12">
+          <div className="mx-auto grid size-24 place-items-center rounded-full bg-navy">
+            <Crown className="size-12 text-gold" />
+          </div>
+          <p className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-gold">Pedido recebido</p>
+          <h1 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Parabéns pela sua compra, {done}!</h1>
+          <div className="mx-auto my-6 h-px w-24 bg-gold" />
+          <p className="text-lg leading-relaxed text-foreground">
+            Um de nossos vendedores vai entrar em contato com você pelo WhatsApp para finalizar sua compra.
+          </p>
+          <p className="mt-3 text-sm text-muted-foreground">Fique de olho no seu celular. Obrigado por escolher a Rainha do Lar.</p>
+          <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
+            <CheckCircle2 className="size-5 text-gold" /> Seus dados foram enviados com segurança
+          </div>
+          <Link to="/" className="mt-8 inline-block rounded-md bg-buy px-8 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
+        </div>
+      </main>
+    );
 
   if (!items.length)
     return <main className="mx-auto max-w-6xl px-4 py-16 text-center"><p className="text-lg">Seu carrinho está vazio.</p><Link to="/" className="mt-4 inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground">Ver produtos</Link></main>;
