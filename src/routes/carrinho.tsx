@@ -28,7 +28,7 @@ const schema = z.object({
 const num = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 type DadosPedido = {
-  nome: string; telefone: string; endereco: string; condicaoEntrega?: string;
+  nome: string; telefone: string; endereco: string; localizacao?: string; condicaoEntrega?: string;
   itens: string; subtotal: string; frete: string; total: string; statusPagamento?: string;
 };
 
@@ -39,6 +39,8 @@ const enviarParaWhatsApp = (dadosPedido: DadosPedido) => {
     `👤 *Cliente:* ${dadosPedido.nome}\n` +
     `📞 *Telefone:* ${dadosPedido.telefone}\n` +
     `📍 *Endereço:* ${dadosPedido.endereco}\n` +
+    (dadosPedido.localizacao ? `🗺️ *Localização:* ${dadosPedido.localizacao}\n` : "") +
+    `💬 *Falar com o cliente:* https://wa.me/55${dadosPedido.telefone.replace(/\D/g, "").replace(/^55/, "")}\n` +
     `🚚 *Condição de Entrega:* ${dadosPedido.condicaoEntrega || "Padrão"}\n\n` +
     `📦 *Itens do Pedido:*\n${dadosPedido.itens}\n\n` +
     `💰 *Subtotal:* R$ ${dadosPedido.subtotal}\n` +
@@ -85,6 +87,7 @@ function CartPage() {
       nome: r.data.nome,
       telefone: r.data.telefone,
       endereco,
+      localizacao: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`,
       condicaoEntrega: condicoes,
       itens: items.map((i) => `• ${i.qty}x ${i.product.title} — R$ ${num(i.product.price * i.qty)}`).join("\n"),
       subtotal: num(subtotal),
