@@ -5,6 +5,7 @@
 - [x] Carrinho + checkout com frete R$3/km (origem Taguatinga DF) e checkboxes apartamento/estrada de chão
 - [x] Envio do pedido para WhatsApp 5561981804734
 - [x] Diferencial: "Cabe no meu espaço?" (medida da parede)
-- [ ] Lovable Cloud: login cliente, histórico de pedidos, endereço — aguardando OK do usuário
-- [ ] Painel /admin: CRUD produtos, pedidos com status — depende do Cloud
+- [x] Login cliente (e-mail + Google), área /conta com histórico de pedidos
+- [x] Painel /admin: CRUD produtos, pedidos com status
+- [ ] Envio de fotos direto no painel — bloqueado pela configuração do workspace (pastas públicas)
 - [ ] Pagamento PIX/cartão + webhook — aguardando escolha do usuário
