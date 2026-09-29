@@ -51,7 +51,7 @@
   --popover-foreground: oklch(0.25 0.04 260);
   --primary: oklch(0.3 0.09 262);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.015 250);
+  --secondary: oklch(0.96 0.03 90);
   --secondary-foreground: oklch(0.3 0.09 262);
   --muted: oklch(0.96 0.005 250);
   --muted-foreground: oklch(0.5 0.02 260);
@@ -65,11 +65,11 @@
   --navy: oklch(0.3 0.09 262);
   --navy-deep: oklch(0.18 0.06 265);
   --gold: oklch(0.86 0.17 90);
-  --buy: oklch(0.62 0.17 148);
-  --buy-foreground: oklch(0.99 0 0);
+  --buy: oklch(0.82 0.15 85);
+  --buy-foreground: oklch(0.18 0.06 265);
   --price-old: oklch(0.55 0.22 25);
   --price-new: oklch(0.52 0.16 148);
-  --link: oklch(0.52 0.17 255);
+  --link: oklch(0.3 0.09 262);
   --warn: oklch(0.96 0.06 90);
   --warn-foreground: oklch(0.4 0.09 70);
 }
