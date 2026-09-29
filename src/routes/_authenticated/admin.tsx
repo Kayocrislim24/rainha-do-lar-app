@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -132,13 +132,35 @@ function Pedidos() {
       return data;
     },
   });
+  const [novo, setNovo] = useState<string | null>(null);
+  useEffect(() => {
+    const ch = supabase.channel("orders-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, (p) => {
+        setNovo((p.new as { nome: string }).nome);
+        qc.invalidateQueries({ queryKey: ["all-orders"] });
+        try { new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=").play(); } catch { /* sem som */ }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
   const setStatus = async (id: string, status: string) => {
     await supabase.from("orders").update({ status }).eq("id", id);
     qc.invalidateQueries({ queryKey: ["all-orders"] });
   };
+  const zap = (tel: string, nome: string) => {
+    const d = tel.replace(/\D/g, "").replace(/^55/, "");
+    const t = `Olá ${nome.split(" ")[0]}! Aqui é da Rainha do Lar 👑 Recebemos seu pedido e vamos finalizar sua compra.`;
+    return `https://wa.me/55${d}?text=${encodeURIComponent(t)}`;
+  };
   if (isLoading) return <p className="mt-6">Carregando...</p>;
   return (
     <section className="mt-6 space-y-3">
+      {novo && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border-2 border-gold bg-navy p-4 text-primary-foreground shadow-lg animate-in fade-in slide-in-from-top-2">
+          <p className="font-bold">🔔 Novo pedido de <span className="text-gold">{novo}</span>!</p>
+          <button onClick={() => setNovo(null)} className="text-sm underline">Fechar</button>
+        </div>
+      )}
       <h2 className="text-lg font-bold text-navy">Pedidos ({orders.length})</h2>
       {!orders.length && <p className="text-sm text-muted-foreground">Nenhum pedido ainda.</p>}
       {orders.map((o) => (
@@ -153,6 +175,10 @@ function Pedidos() {
           {o.condicao && <p className="text-warn-foreground">{o.condicao}</p>}
           <ul className="mt-1">{(o.itens as Item[]).map((i, k) => <li key={k}>{i.qty}x {i.title} — {brl(i.price * i.qty)}</li>)}</ul>
           <p className="mt-1">Frete {brl(Number(o.frete))} · <b className="text-price-new">Total {brl(Number(o.total))}</b></p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href={zap(o.telefone, o.nome)} target="_blank" rel="noreferrer" className="rounded-md bg-buy px-4 py-2 font-bold text-buy-foreground">Chamar no WhatsApp</a>
+            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.endereco)}`} target="_blank" rel="noreferrer" className="rounded-md border px-4 py-2 font-semibold text-navy">Ver no mapa</a>
+          </div>
         </div>
       ))}
     </section>
