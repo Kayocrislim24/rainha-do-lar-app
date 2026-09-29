@@ -1,0 +1,123 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { z } from "zod";
+import { AlertTriangle, Minus, Plus, Trash2 } from "lucide-react";
+import { brl, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+
+export const Route = createFileRoute("/carrinho")({
+  head: () => ({
+    meta: [
+      { title: "Carrinho e checkout — Rainha do Lar" },
+      { name: "description", content: "Revise seus itens, calcule o frete por km e envie seu pedido pelo WhatsApp." },
+      { property: "og:title", content: "Carrinho — Rainha do Lar" },
+      { property: "og:description", content: "Finalize seu pedido na Rainha do Lar." },
+    ],
+  }),
+  component: CartPage,
+});
+
+const schema = z.object({
+  nome: z.string().trim().min(2, "Informe seu nome").max(100),
+  telefone: z.string().trim().min(10, "Telefone inválido").max(20),
+  cep: z.string().trim().min(8, "CEP inválido").max(9),
+  numero: z.string().trim().min(1, "Informe o número").max(20),
+  complemento: z.string().trim().max(100),
+});
+
+function CartPage() {
+  const { items, setQty, subtotal, clear } = useCart();
+  const [f, setF] = useState({ nome: "", telefone: "", cep: "", numero: "", complemento: "" });
+  const [apto, setApto] = useState(false);
+  const [chao, setChao] = useState(false);
+  const [ship, setShip] = useState<Awaited<ReturnType<typeof quoteShipping>> | null>(null);
+  const [msg, setMsg] = useState("");
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
+
+  const calc = async () => {
+    setMsg("Calculando frete...");
+    try { setShip(await quoteShipping(f.cep)); setMsg(""); } catch (e) { setShip(null); setMsg((e as Error).message); }
+  };
+
+  const finish = () => {
+    const r = schema.safeParse(f);
+    if (!r.success) return setMsg(r.error.issues[0].message);
+    if (!ship) return setMsg("Calcule o frete antes de finalizar.");
+    const a = ship.address;
+    const lines = [
+      "*Novo pedido - Rainha do Lar* 👑",
+      "",
+      `*Cliente:* ${r.data.nome}`,
+      `*Telefone:* ${r.data.telefone}`,
+      `*Endereço:* ${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`,
+      "",
+      "*Itens:*",
+      ...items.map((i) => `• ${i.qty}x ${i.product.title} — ${brl(i.product.price * i.qty)}`),
+      "",
+      `*Subtotal:* ${brl(subtotal)}`,
+      `*Frete:* ${brl(ship.cost)} (~${ship.km} km)`,
+      ...(apto ? ["⚠️ Entrega em apartamento — taxa extra a combinar"] : []),
+      ...(chao ? ["⚠️ Estrada de chão / difícil acesso — combinar previamente"] : []),
+      `*Total:* ${brl(subtotal + ship.cost)}`,
+      "*Pagamento:* Pendente (a combinar)",
+    ];
+    window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(lines.join("\n"))}`, "_blank");
+    clear();
+  };
+
+  if (!items.length)
+    return <main className="mx-auto max-w-6xl px-4 py-16 text-center"><p className="text-lg">Seu carrinho está vazio.</p><Link to="/" className="mt-4 inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground">Ver produtos</Link></main>;
+
+  const input = "w-full rounded-md border px-3 py-2.5";
+  return (
+    <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+        <section className="rounded-lg border p-4">
+          <h1 className="text-xl font-bold text-navy">Seu carrinho</h1>
+          {items.map((i) => (
+            <div key={i.id} className="flex items-center gap-3 border-b py-3 last:border-0">
+              <img src={i.product.image} alt="" className="size-16 object-contain" />
+              <div className="flex-1"><p className="text-sm font-semibold">{i.product.title}</p><p className="text-sm font-bold text-price-new">{brl(i.product.price)}</p></div>
+              <div className="flex items-center rounded border">
+                <button className="p-2" onClick={() => setQty(i.id, i.qty - 1)} aria-label="Menos"><Minus className="size-3" /></button>
+                <span className="w-6 text-center text-sm">{i.qty}</span>
+                <button className="p-2" onClick={() => setQty(i.id, i.qty + 1)} aria-label="Mais"><Plus className="size-3" /></button>
+              </div>
+              <button onClick={() => setQty(i.id, 0)} aria-label="Remover"><Trash2 className="size-4 text-muted-foreground" /></button>
+            </div>
+          ))}
+        </section>
+
+        <section className="rounded-lg border p-4">
+          <h2 className="text-lg font-bold text-navy">Dados de entrega</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <input className={input} placeholder="Nome completo" value={f.nome} onChange={set("nome")} />
+            <input className={input} placeholder="Telefone / WhatsApp" value={f.telefone} onChange={set("telefone")} />
+            <div className="flex gap-2"><input className={input} placeholder="CEP" value={f.cep} onChange={set("cep")} maxLength={9} /><button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button></div>
+            <input className={input} placeholder="Número" value={f.numero} onChange={set("numero")} />
+            <input className={`${input} sm:col-span-2`} placeholder="Complemento (apto, bloco...)" value={f.complemento} onChange={set("complemento")} />
+          </div>
+          {ship && <p className="mt-2 text-sm text-muted-foreground">{ship.address.logradouro}, {ship.address.bairro} — {ship.address.localidade}/{ship.address.uf}</p>}
+
+          <h3 className="mt-5 font-semibold">Condições especiais de entrega</h3>
+          <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={apto} onChange={(e) => setApto(e.target.checked)} className="mt-1 size-4" />Entrega em Apartamento (subida de escada/elevador)</label>
+          {apto && <p className="ml-6 mt-1 flex gap-1 rounded bg-warn p-2 text-sm text-warn-foreground"><AlertTriangle className="size-4 shrink-0" />Taxas extras de subida serão combinadas com você.</p>}
+          <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={chao} onChange={(e) => setChao(e.target.checked)} className="mt-1 size-4" />Estrada de chão ou local de difícil acesso</label>
+          {chao && <p className="ml-6 mt-1 flex gap-1 rounded bg-warn p-2 text-sm text-warn-foreground"><AlertTriangle className="size-4 shrink-0" />Vamos combinar a entrega previamente pelo WhatsApp.</p>}
+        </section>
+      </div>
+
+      <aside className="h-fit rounded-lg border bg-secondary p-4 lg:sticky lg:top-4">
+        <h2 className="text-lg font-bold text-navy">Resumo</h2>
+        <div className="mt-3 space-y-1 text-sm">
+          <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
+          <div className="flex justify-between"><span>Frete {ship && `(~${ship.km} km × R$ 3,00)`}</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
+        </div>
+        <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
+        <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + (ship?.cost ?? 0))}</span></div>
+        {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
+        <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Confirmar pedido no WhatsApp</button>
+        <p className="mt-2 text-center text-xs text-muted-foreground">Abre o WhatsApp da loja com o resumo completo.</p>
+      </aside>
+    </main>
+  );
+}
