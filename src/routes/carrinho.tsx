@@ -40,7 +40,7 @@ function CartPage() {
 
   const finish = () => {
     const r = schema.safeParse(f);
-    if (!r.success) return setMsg(r.error.issues[0].message);
+    if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
     const a = ship.address;
     const lines = [
