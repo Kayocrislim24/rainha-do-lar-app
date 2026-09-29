@@ -1,0 +1,38 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import guardaRoupa from "@/assets/guarda-roupa.jpg";
+import sofa from "@/assets/sofa.jpg";
+import cama from "@/assets/cama.jpg";
+import mesa from "@/assets/mesa.jpg";
+
+const local: Record<string, string> = { "local:guarda-roupa": guardaRoupa, "local:sofa": sofa, "local:cama": cama, "local:mesa": mesa };
+export const resolveImage = (s: string) => local[s] ?? s;
+
+export type Product = {
+  id: string; title: string; category: string; description: string; image: string; imageRaw: string;
+  oldPrice: number; price: number; badge?: string; stock: number; active: boolean;
+  dims: { w: number; h: number; d: number };
+};
+
+type Row = {
+  id: string; title: string; category: string; description: string; image: string; old_price: number; price: number;
+  badge: string | null; stock: number; dim_w: number; dim_h: number; dim_d: number; active: boolean;
+};
+
+const map = (r: Row): Product => ({
+  id: r.id, title: r.title, category: r.category, description: r.description, image: resolveImage(r.image), imageRaw: r.image,
+  oldPrice: Number(r.old_price), price: Number(r.price), badge: r.badge ?? undefined, stock: r.stock, active: r.active,
+  dims: { w: r.dim_w, h: r.dim_h, d: r.dim_d },
+});
+
+export const productsKey = ["products"];
+export function useProducts() {
+  return useQuery({
+    queryKey: productsKey,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("products").select("*").order("created_at");
+      if (error) throw error;
+      return (data as Row[]).map(map);
+    },
+  });
+}
