@@ -9,18 +9,18 @@ const local: Record<string, string> = { "local:guarda-roupa": guardaRoupa, "loca
 export const resolveImage = (s: string) => local[s] ?? s;
 
 export type Product = {
-  id: string; title: string; category: string; description: string; image: string; imageRaw: string;
+  id: string; title: string; category: string; description: string; image: string; imageRaw: string; image2: string; image2Raw: string;
   oldPrice: number; price: number; badge?: string | undefined; stock: number; active: boolean;
   dims: { w: number; h: number; d: number };
 };
 
 type Row = {
-  id: string; title: string; category: string; description: string; image: string; old_price: number; price: number;
+  id: string; title: string; category: string; description: string; image: string; image2: string; old_price: number; price: number;
   badge: string | null; stock: number; dim_w: number; dim_h: number; dim_d: number; active: boolean;
 };
 
 const map = (r: Row): Product => ({
-  id: r.id, title: r.title, category: r.category, description: r.description, image: resolveImage(r.image), imageRaw: r.image,
+  id: r.id, title: r.title, category: r.category, description: r.description, image: resolveImage(r.image), imageRaw: r.image, image2: resolveImage(r.image2 ?? ""), image2Raw: r.image2 ?? "",
   oldPrice: Number(r.old_price), price: Number(r.price), badge: r.badge ?? undefined, stock: r.stock, active: r.active,
   dims: { w: r.dim_w, h: r.dim_h, d: r.dim_d },
 });

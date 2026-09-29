@@ -33,6 +33,7 @@ function ProductPage({ p }: { p: Product }) {
   const [cep, setCep] = useState("");
   const [ship, setShip] = useState<string | null>(null);
   const [wall, setWall] = useState("");
+  const [foto, setFoto] = useState(p.image);
   const off = Math.round((1 - p.price / p.oldPrice) * 100);
   const wallCm = parseFloat(wall.replace(",", ".")) * 100;
 
@@ -46,7 +47,16 @@ function ProductPage({ p }: { p: Product }) {
     <main className="mx-auto max-w-6xl px-4 py-6">
       <p className="text-sm text-muted-foreground"><Link to="/" className="text-link underline">Início</Link> › {p.category}</p>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
-        <div className="rounded-lg border p-4"><img src={p.image} alt={p.title} width={1024} height={1024} className="w-full object-contain" /></div>
+        <div>
+          <div className="rounded-lg border p-4"><img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
+          {p.image2 && (
+            <div className="mt-3 flex gap-3">
+              {[p.image, p.image2].map((s, i) => (
+                <button key={i} onClick={() => setFoto(s)} aria-label={`Foto ${i + 1}`} className={`size-20 rounded-md border-2 p-1 ${foto === s ? "border-gold" : "border-border"}`}><img src={s} alt="" className="size-full object-contain" /></button>
+              ))}
+            </div>
+          )}
+        </div>
         <div>
           <h1 className="text-2xl font-semibold leading-snug sm:text-3xl">{p.title}</h1>
           <span className="mt-3 inline-block rounded-full bg-destructive px-2.5 py-0.5 text-xs font-bold text-destructive-foreground">{off}% OFF</span>

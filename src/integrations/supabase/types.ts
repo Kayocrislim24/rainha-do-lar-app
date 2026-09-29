@@ -71,6 +71,7 @@ export type Database = {
           dim_w: number
           id: string
           image: string
+          image2: string
           old_price: number
           price: number
           stock: number
@@ -87,6 +88,7 @@ export type Database = {
           dim_w?: number
           id: string
           image?: string
+          image2?: string
           old_price?: number
           price: number
           stock?: number
@@ -103,6 +105,7 @@ export type Database = {
           dim_w?: number
           id?: string
           image?: string
+          image2?: string
           old_price?: number
           price?: number
           stock?: number
