@@ -86,7 +86,7 @@ function CartPage() {
     if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
-    setDone(r.data.nome.split(" ")[0]);
+    setDone(r.data.nome.split(" ")[0] ?? r.data.nome);
     clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
