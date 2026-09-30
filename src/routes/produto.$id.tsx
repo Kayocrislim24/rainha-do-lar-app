@@ -1,3 +1,4 @@
+import { Swatches } from "@/components/Swatches";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
@@ -49,6 +50,7 @@ function ProductPage({ p }: { p: Product }) {
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <div>
           <div className="rounded-lg border p-4"><img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
+          {p.colors.length > 0 && <div className="mt-3"><p className="text-sm font-semibold">Cor: {p.colors.find((c) => c.image === foto)?.name ?? "Escolha"}</p><Swatches colors={p.colors} current={foto} onPick={setFoto} big /></div>}
           {p.image2 && (
             <div className="mt-3 flex gap-3">
               {[p.image, p.image2].map((s, i) => (
