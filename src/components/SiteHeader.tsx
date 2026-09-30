@@ -4,6 +4,7 @@ import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
+import { LiveSearch } from "@/components/LiveSearch";
 
 export function SiteHeader() {
   const { count } = useCart();
@@ -33,10 +34,7 @@ export function SiteHeader() {
         <Link to="/" className="flex shrink-0 items-center gap-1.5">
           <img src={logo.url} alt="Rainha do Lar" className="h-12 w-auto" />
         </Link>
-        <form className="relative hidden flex-1 md:block" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
-          <input name="q" placeholder="Busque por produtos, ambientes, marcas..." className="w-full rounded-full border-2 border-border bg-muted px-5 py-3 pr-12 text-sm outline-none focus:border-navy" />
-          <button aria-label="Buscar" className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-navy text-primary-foreground"><Search className="size-4" /></button>
-        </form>
+        <LiveSearch big className="hidden flex-1 md:block" placeholder="Busque por produtos, ambientes, marcas..." />
         <div className="ml-auto flex items-center gap-5 text-navy">
           <span className="hidden items-center gap-1.5 text-xs leading-tight lg:flex"><MapPin className="size-5" />Entregamos<br />no DF</span>
           {isAdmin && <Link to="/admin" className="hidden rounded-full bg-gold px-3 py-1.5 text-sm font-bold text-navy sm:block">Painel</Link>}
@@ -48,10 +46,7 @@ export function SiteHeader() {
           </Link>
         </div>
       </div>
-      <form className="relative mx-4 mb-3 md:hidden" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
-        <input name="q" placeholder="O que você procura?" className="w-full rounded-full border-2 border-border bg-muted px-4 py-2.5 pr-12 text-sm outline-none focus:border-navy" />
-        <button aria-label="Buscar" className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-navy text-primary-foreground"><Search className="size-4" /></button>
-      </form>
+      <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <nav className="border-t">
         <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap text-navy">
           <Link to="/busca" search={{}} className="hover:text-gold">Todos os departamentos</Link>
