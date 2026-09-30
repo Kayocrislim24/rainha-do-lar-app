@@ -124,7 +124,15 @@ function RootComponent() {
       <CartProvider>
         <SiteHeader />
         <Outlet />
-        <footer className="mt-12 bg-navy-deep py-6 text-center text-sm text-primary-foreground/70">© Rainha do Lar · Taguatinga - DF · WhatsApp (61) 98180-4734</footer>
+        <footer className="mt-12 bg-navy-deep text-sm text-primary-foreground/80">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-4">
+            <div><p className="text-lg font-bold text-primary-foreground">Rainha<span className="text-gold"> do Lar</span></p><p className="mt-2">Móveis para sua casa com entrega própria no Distrito Federal.</p></div>
+            <div><p className="font-bold text-gold">Ambientes</p><ul className="mt-2 space-y-1"><li>Sala de estar</li><li>Quarto</li><li>Sala de jantar</li><li>Guarda-roupas</li></ul></div>
+            <div><p className="font-bold text-gold">Atendimento</p><ul className="mt-2 space-y-1"><li>WhatsApp (61) 98180-4734</li><li>Taguatinga - DF</li><li><Link to="/conta" className="hover:text-gold">Meus pedidos</Link></li></ul></div>
+            <div><p className="font-bold text-gold">Pagamento</p><ul className="mt-2 space-y-1"><li>PIX com desconto</li><li>Cartão em até 12x</li><li>Compra segura</li></ul></div>
+          </div>
+          <p className="border-t border-primary-foreground/10 py-4 text-center text-xs">© Rainha do Lar · Todos os direitos reservados</p>
+        </footer>
         <WhatsFab />
       </CartProvider>
     </QueryClientProvider>
