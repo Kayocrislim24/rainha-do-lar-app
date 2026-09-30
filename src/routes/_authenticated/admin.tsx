@@ -156,7 +156,8 @@ function Pedidos() {
   };
   const rastreio = (o: { id: string; telefone: string; nome: string; status: string }) => {
     const d = o.telefone.replace(/\D/g, "").replace(/^55/, "");
-    const link = `${window.location.origin}/rastreio?codigo=${o.id.slice(0, 8).toUpperCase()}&tel=${d}`;
+    const base = /id-preview--|localhost/.test(window.location.host) ? "https://project--80944a74-596c-45cb-a545-970748b7ee05.lovable.app" : window.location.origin;
+    const link = `${base}/rastreio?codigo=${o.id.slice(0, 8).toUpperCase()}&tel=${d}`;
     const t = `Olá ${o.nome.split(" ")[0]}! 👑 Aqui é da Rainha do Lar.\n🚚 Seu pedido está: *${o.status}*\n\nAcompanhe a entrega por este link:\n${link}`;
     return `https://wa.me/55${d}?text=${encodeURIComponent(t)}`;
   };
