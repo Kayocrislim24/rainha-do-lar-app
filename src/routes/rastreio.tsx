@@ -68,6 +68,7 @@ function Rastreio() {
   useEffect(() => {
     if (codigo && telQ) void buscar();
     if (codigo && telQ) { const t = setInterval(() => void buscar(true), 30000); return () => clearInterval(t); }
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
