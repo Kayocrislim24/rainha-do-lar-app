@@ -140,6 +140,47 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comentario: string
+          created_at: string
+          fotos: Json
+          id: string
+          nome: string
+          nota: number
+          product_id: string
+          user_id: string | null
+        }
+        Insert: {
+          comentario: string
+          created_at?: string
+          fotos?: Json
+          id?: string
+          nome: string
+          nota: number
+          product_id: string
+          user_id?: string | null
+        }
+        Update: {
+          comentario?: string
+          created_at?: string
+          fotos?: Json
+          id?: string
+          nome?: string
+          nota?: number
+          product_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
