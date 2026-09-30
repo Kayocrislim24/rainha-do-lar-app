@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { productsKey, resolveImage, useProducts, type Product } from "@/lib/products";
+import { productsKey, resolveImage, useProducts, type Product, type ProductColor } from "@/lib/products";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
