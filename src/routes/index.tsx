@@ -100,12 +100,12 @@ function Index() {
         <h2 className="mt-8 text-xl font-bold text-navy">Navegue por ambientes</h2>
         <div className="mt-4 flex gap-5 overflow-x-auto pb-2">
           {cats.map((c) => (
-            <a key={c.n} href="#produtos" className="group flex w-24 shrink-0 flex-col items-center text-center">
+            <Link key={c.n} to="/busca" search={{ q: c.n.split(" ")[0] === "Sala" ? c.n.split(" ").pop()!.slice(0,4) : c.n.slice(0,4) }} className="group flex w-24 shrink-0 flex-col items-center text-center">
               <span className="grid size-24 place-items-center overflow-hidden rounded-full border-2 border-border bg-secondary transition group-hover:border-gold">
                 <img src={c.img} alt={c.n} loading="lazy" className="size-20 object-contain transition group-hover:scale-110" />
               </span>
               <span className="mt-2 text-sm font-semibold">{c.n}</span>
-            </a>
+            </Link>
           ))}
         </div>
 
