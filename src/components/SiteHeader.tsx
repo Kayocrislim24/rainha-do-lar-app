@@ -44,6 +44,10 @@ export function SiteHeader() {
           </Link>
         </div>
       </div>
+      <form className="relative mx-4 mb-3 md:hidden" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
+        <input name="q" placeholder="O que você procura?" className="w-full rounded-full border-2 border-border bg-muted px-4 py-2.5 pr-12 text-sm outline-none focus:border-navy" />
+        <button aria-label="Buscar" className="absolute right-1.5 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-navy text-primary-foreground"><Search className="size-4" /></button>
+      </form>
       <nav className="border-t">
         <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap text-navy">
           <Link to="/busca" search={{}} className="hover:text-gold">Todos os departamentos</Link>
