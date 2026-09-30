@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const STATUS = ["Aguardando pagamento", "Pago", "Em separação", "Saiu para entrega", "Entregue", "Cancelado"];
 type Item = { title: string; qty: number; price: number };
 
-const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true };
+const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, colors: [] as ProductColor[] };
 type Form = typeof empty;
 
 function Admin() {
@@ -52,7 +52,7 @@ function Produtos() {
 
   const edit = (p: Product) => {
     setEditing(true);
-    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active });
+    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })) });
   };
 
   const save = async () => {
@@ -60,7 +60,7 @@ function Produtos() {
     if (!f.title || !f.price) return setMsg("Preencha nome e preço.");
     const n = (s: string) => Number(s.replace(",", ".")) || 0;
     const id = f.id || f.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active };
+    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, colors: f.colors.filter((c) => c.name || c.image) };
     const { error } = editing ? await supabase.from("products").update(row).eq("id", f.id) : await supabase.from("products").insert(row);
     if (error) return setMsg(error.message);
     setMsg("Salvo!"); setF(null); qc.invalidateQueries({ queryKey: productsKey });
@@ -95,6 +95,7 @@ function Produtos() {
           {fld("stock", "Estoque", "number")}
           <Foto label="Foto 1 (principal)" value={f.image} onChange={(v) => setF({ ...f, image: v })} />
           <Foto label="Foto 2" value={f.image2} onChange={(v) => setF({ ...f, image2: v })} />
+          <Cores value={f.colors} onChange={(colors) => setF({ ...f, colors })} />
           <div className="grid grid-cols-3 gap-2">{fld("dim_w", "Largura cm")}{fld("dim_h", "Altura cm")}{fld("dim_d", "Prof. cm")}</div>
           <label className="text-sm sm:col-span-2">Descrição<textarea className={input} rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />Visível na loja</label>
@@ -217,6 +218,28 @@ function Foto({ label, value, onChange }: { label: string; value: string; onChan
         </label>
         {value && <button type="button" onClick={() => onChange("")} className="text-destructive">Remover</button>}
       </div>
+    </div>
+  );
+}
+
+function Cores({ value, onChange }: { value: ProductColor[]; onChange: (v: ProductColor[]) => void }) {
+  const set = (i: number, c: Partial<ProductColor>) => onChange(value.map((x, j) => (j === i ? { ...x, ...c } : x)));
+  return (
+    <div className="text-sm sm:col-span-2">
+      <p className="font-semibold">Cores disponíveis (bolinhas embaixo do produto)</p>
+      {value.map((c, i) => (
+        <div key={i} className="mt-2 flex flex-wrap items-center gap-2 rounded-md border bg-background p-2">
+          <input type="color" value={c.hex || "#8b5a2b"} onChange={(e) => set(i, { hex: e.target.value })} className="size-9 cursor-pointer rounded-full border" aria-label="Cor" />
+          <input placeholder="Nome da cor (ex: Naturalle)" value={c.name} onChange={(e) => set(i, { name: e.target.value })} className="h-9 flex-1 rounded-md border px-2" />
+          {c.image && <img src={resolveImage(c.image)} alt="" className="size-10 rounded object-contain" />}
+          <label className="cursor-pointer rounded-md bg-navy px-3 py-2 font-semibold text-primary-foreground">
+            Foto nesta cor
+            <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (file) set(i, { image: await toImage(file) }); e.target.value = ""; }} />
+          </label>
+          <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-destructive">Remover</button>
+        </div>
+      ))}
+      <button type="button" onClick={() => onChange([...value, { name: "", hex: "#8b5a2b", image: "" }])} className="mt-2 rounded-md border border-navy px-3 py-1.5 font-semibold text-navy">+ Adicionar cor</button>
     </div>
   );
 }

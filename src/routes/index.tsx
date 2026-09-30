@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Swatches } from "@/components/Swatches";
+import type { Product } from "@/lib/products";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldCheck, Truck, CreditCard, MessageCircle } from "lucide-react";
 import { useProducts } from "@/lib/products";
@@ -72,14 +75,23 @@ function Index() {
         <h2 id="produtos" className="mt-10 text-lg font-bold text-foreground">Mais vendidos</h2>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
         <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {products.map((p) => {
+          {products.map((p) => <Card key={p.id} p={p} />)}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function Card({ p }: { p: Product }) {
+            const [img, setImg] = useState(p.image);
             const off = Math.round((1 - p.price / p.oldPrice) * 100);
             return (
-              <Link key={p.id} to="/produto/$id" params={{ id: p.id }} className="group flex flex-col rounded-md border bg-card p-3 hover:border-navy">
+              <Link to="/produto/$id" params={{ id: p.id }} className="group flex flex-col rounded-md border bg-card p-3 hover:border-navy">
                 <div className="relative">
-                  <img src={p.image} alt={p.title} width={1024} height={1024} loading="lazy" className="aspect-square w-full object-contain" />
+                  <img src={img} alt={p.title} width={1024} height={1024} loading="lazy" className="aspect-square w-full object-contain" />
                   {off > 0 && <span className="absolute left-0 top-0 rounded-sm bg-destructive px-1.5 py-0.5 text-[11px] font-bold text-destructive-foreground">-{off}%</span>}
                 </div>
+                <Swatches colors={p.colors} current={img} onPick={setImg} />
                 <p className="mt-2 line-clamp-2 min-h-10 text-sm group-hover:text-link">{p.title}</p>
                 <div className="mt-auto pt-2">
                   <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
@@ -89,9 +101,4 @@ function Index() {
                 </div>
               </Link>
             );
-          })}
-        </div>
-      </div>
-    </main>
-  );
 }
