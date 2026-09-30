@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Crown, CreditCard, Percent, ShoppingBag, Truck, User } from "lucide-react";
 import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 export function SiteHeader() {
   const { count } = useCart();
   const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   return (
     <header>
       <div className="bg-navy-deep text-primary-foreground text-xs sm:text-sm">
@@ -21,7 +22,9 @@ export function SiteHeader() {
             <Crown className="size-8 text-gold" />
             <span className="text-2xl font-bold leading-none">Rainha<span className="text-gold"> do Lar</span></span>
           </Link>
-          <input placeholder="O que você procura?" className="hidden md:block flex-1 rounded-md bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none" />
+          <form className="hidden md:block flex-1" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
+            <input name="q" placeholder="O que você procura?" className="w-full rounded-md bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none" />
+          </form>
           <div className="ml-auto flex items-center gap-5">
             {isAdmin && <Link to="/admin" className="hidden sm:block rounded-md bg-gold px-3 py-1.5 text-sm font-bold text-accent-foreground">Painel</Link>}
             {user ? (
@@ -38,9 +41,11 @@ export function SiteHeader() {
       </div>
       <nav className="bg-navy text-primary-foreground border-t border-primary-foreground/10">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap">
-          {["Guarda-roupa", "Sala de estar", "Quarto", "Sala de jantar", "Ofertas da semana"].map((c) => (
-            <Link key={c} to="/" className="hover:text-gold">{c}</Link>
+          <Link to="/busca" search={{}} className="hover:text-gold">Todos os produtos</Link>
+          {[["Guarda-roupas", "Guarda"], ["Sofás", "Sof"], ["Camas", "Cama"], ["Mesas", "Mesa"]].map(([l, c]) => (
+            <Link key={l} to="/busca" search={{ q: c }} className="hover:text-gold">{l}</Link>
           ))}
+          <Link to="/busca" search={{}} className="text-gold">Ofertas da semana</Link>
         </div>
       </nav>
     </header>
