@@ -66,21 +66,51 @@ function Hero() {
 
 function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
+  const pos = useRef(0);
+  const pausedUntil = useRef(0);
+  const hover = useRef(false);
+  // Repete a lista para sempre haver produtos suficientes e duplica para o loop infinito
+  const reps = Math.max(1, Math.ceil(10 / Math.max(1, items.length)));
+  const set = Array.from({ length: reps }, () => items).flat();
+  const track = [...set, ...set];
+
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    let raf = 0; let last = performance.now();
+    const speed = 40; // px por segundo
+    const tick = (t: number) => {
+      const dt = Math.min(64, t - last); last = t;
+      const half = el.scrollWidth / 2;
+      if (hover.current || t < pausedUntil.current) {
+        pos.current = el.scrollLeft;
+      } else {
+        pos.current += (speed * dt) / 1000;
+      }
+      if (half > 0) {
+        if (pos.current >= half) pos.current -= half;
+        if (pos.current < 0) pos.current += half;
+      }
+      if (Math.abs(el.scrollLeft - pos.current) > 0.5 || !(hover.current || t < pausedUntil.current)) el.scrollLeft = pos.current;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [items.length]);
+
   const go = (dir: 1 | -1) => {
     const el = ref.current; if (!el) return;
     const card = el.firstElementChild as HTMLElement | null;
     const step = (card?.offsetWidth ?? 260) + 12;
-    if (dir === 1 && el.scrollLeft + el.clientWidth >= el.scrollWidth - 5) el.scrollTo({ left: 0, behavior: "smooth" });
-    else el.scrollBy({ left: dir * step, behavior: "smooth" });
+    const half = el.scrollWidth / 2;
+    let target = el.scrollLeft + dir * step;
+    if (target < 0) { el.scrollLeft += half; target += half; }
+    if (target >= half) { el.scrollLeft -= half; target -= half; }
+    pausedUntil.current = performance.now() + 2500;
+    el.scrollTo({ left: target, behavior: "smooth" });
   };
-  useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => go(1), 3500);
-    return () => clearInterval(id);
-  }, [paused]);
+
   return (
-    <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={() => setPaused(true)}>
+    <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6" onMouseEnter={() => { hover.current = true; }} onMouseLeave={() => { hover.current = false; }} onTouchStart={() => { pausedUntil.current = performance.now() + 4000; }} onTouchMove={() => { pausedUntil.current = performance.now() + 4000; }}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2>
         <div className="flex gap-2">
@@ -88,9 +118,9 @@ function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
           <button aria-label="Próximo" onClick={() => go(1)} className="grid size-9 place-items-center rounded-full bg-gold text-navy transition hover:scale-110"><ChevronRight className="size-5" /></button>
         </div>
       </div>
-      <div ref={ref} className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 text-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {items.map((p) => (
-          <div key={p.id} className="w-[72%] min-w-0 shrink-0 snap-start min-[420px]:w-[46%] sm:w-[31%] lg:w-[23.5%]"><Card p={p} /></div>
+      <div ref={ref} className="mt-4 flex gap-3 overflow-x-auto pb-2 text-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {track.map((p, n) => (
+          <div key={`${p.id}-${n}`} aria-hidden={n >= set.length || undefined} className="w-[72%] min-w-0 shrink-0 min-[420px]:w-[46%] sm:w-[31%] lg:w-[23.5%]"><Card p={p} /></div>
         ))}
       </div>
     </section>
