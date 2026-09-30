@@ -65,10 +65,10 @@
   --navy: oklch(0.3 0.09 262);
   --navy-deep: oklch(0.18 0.06 265);
   --gold: oklch(0.86 0.17 90);
-  --buy: oklch(0.82 0.15 85);
-  --buy-foreground: oklch(0.18 0.06 265);
-  --price-old: oklch(0.55 0.22 25);
-  --price-new: oklch(0.52 0.16 148);
+  --buy: oklch(0.3 0.09 262);
+  --buy-foreground: oklch(0.99 0 0);
+  --price-old: oklch(0.55 0.03 260);
+  --price-new: oklch(0.3 0.09 262);
   --link: oklch(0.3 0.09 262);
   --warn: oklch(0.96 0.06 90);
   --warn-foreground: oklch(0.4 0.09 70);

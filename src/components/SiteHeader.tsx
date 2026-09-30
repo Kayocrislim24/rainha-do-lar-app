@@ -2,10 +2,12 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
+import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
 
 export function SiteHeader() {
   const { count } = useCart();
+  const favs = useFavs();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   return (
@@ -25,7 +27,7 @@ export function SiteHeader() {
           <span className="hidden items-center gap-1.5 text-xs leading-tight lg:flex"><MapPin className="size-5" />Entregamos<br />no DF</span>
           {isAdmin && <Link to="/admin" className="hidden rounded-full bg-gold px-3 py-1.5 text-sm font-bold text-navy sm:block">Painel</Link>}
           <Link to={user ? "/conta" : "/auth"} className="flex items-center gap-1.5 text-xs leading-tight"><User className="size-6" /><span className="hidden sm:inline">{user ? <>Olá!<br /><b>Minha conta</b></> : <>Olá, visitante<br /><b>Entre ou cadastre-se</b></>}</span></Link>
-          <Heart className="hidden size-6 sm:block" />
+          <Link to="/favoritos" aria-label="Favoritos" className="relative hidden sm:block"><Heart className={`size-6 ${favs.length ? "fill-gold text-gold" : ""}`} />{favs.length > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-navy text-[11px] font-bold text-primary-foreground">{favs.length}</span>}</Link>
           <Link to="/carrinho" className="relative" aria-label="Carrinho">
             <ShoppingCart className="size-7" />
             {count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-navy">{count}</span>}
@@ -38,7 +40,7 @@ export function SiteHeader() {
           {[["Sala de estar", "Sof"], ["Quarto", "Cama"], ["Guarda-roupas", "Guarda"], ["Sala de jantar", "Mesa"], ["Sofás", "Sof"], ["Camas", "Cama"], ["Mesas", "Mesa"]].map(([l, c]) => (
             <Link key={l} to="/busca" search={{ q: c }} className="hover:text-gold">{l}</Link>
           ))}
-          <Link to="/busca" search={{}} className="font-bold text-destructive">Ofertas</Link>
+          <Link to="/busca" search={{}} className="font-bold text-gold">Ofertas</Link>
         </div>
       </nav>
     </header>
