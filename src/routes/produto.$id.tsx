@@ -6,6 +6,7 @@ import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
 import { brl, quoteShipping, useCart } from "@/lib/store";
 import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
+import { Reviews } from "@/components/Reviews";
 
 export const Route = createFileRoute("/produto/$id")({
   head: () => ({
@@ -104,6 +105,7 @@ function ProductPage({ p }: { p: Product }) {
         <h2 className="text-xl font-bold text-navy">Informações do produto</h2>
         <p className="mt-2 text-muted-foreground">{p.description}</p>
       </section>
+      <Reviews productId={p.id} />
     </main>
   );
 }
