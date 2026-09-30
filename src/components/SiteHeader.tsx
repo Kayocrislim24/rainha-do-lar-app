@@ -69,7 +69,18 @@ export function Price({ old, price, big }: { old: number; price: number; big?: b
 
 export function WhatsFab() {
   return (
-    <a href="https://wa.me/5561981804734" target="_blank" rel="noreferrer" aria-label="WhatsApp" className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-buy text-buy-foreground shadow-lg">
+    <a
+      href={`https://wa.me/5561981804734?text=${encodeURIComponent("Olá, Rainha do Lar! Vim pelo site e gostaria de atendimento.")}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Falar no WhatsApp"
+      onClick={(e) => {
+        const w = window.open(e.currentTarget.href, "_blank", "noopener,noreferrer");
+        if (w) e.preventDefault();
+        else { e.preventDefault(); window.top ? (window.top.location.href = e.currentTarget.href) : (window.location.href = e.currentTarget.href); }
+      }}
+      className="fixed bottom-5 right-5 z-[9999] grid size-14 cursor-pointer place-items-center rounded-full bg-buy text-buy-foreground shadow-lg transition hover:scale-110"
+    >
       <svg viewBox="0 0 24 24" className="size-7 fill-current"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.4.1.1.1.6-.1 1.2Z" /></svg>
     </a>
   );
