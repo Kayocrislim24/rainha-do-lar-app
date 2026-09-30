@@ -52,7 +52,7 @@ function useCountdown() {
 function Hero() {
   const [i, setI] = useState(0);
   useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, []);
-  const s = slides[i];
+  const s = slides[i] ?? slides[0]!;
   return (
     <section className="relative bg-navy text-primary-foreground">
       <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-8 md:grid-cols-2 md:py-12">
