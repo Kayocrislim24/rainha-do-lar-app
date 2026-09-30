@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Crown, Heart, MapPin, Search, ShoppingCart, User } from "lucide-react";
+import { Heart, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
+import logo from "@/assets/logo-r.png.asset.json";
 
 export function SiteHeader() {
   const { count } = useCart();
@@ -14,8 +15,7 @@ export function SiteHeader() {
       </div>
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4">
         <Link to="/" className="flex shrink-0 items-center gap-1.5">
-          <Crown className="size-8 text-gold" />
-          <span className="text-2xl font-bold leading-none text-navy">Rainha<span className="text-gold"> do Lar</span></span>
+          <img src={logo.url} alt="Rainha do Lar" className="h-12 w-auto" />
         </Link>
         <form className="relative hidden flex-1 md:block" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
           <input name="q" placeholder="Busque por produtos, ambientes, marcas..." className="w-full rounded-full border-2 border-border bg-muted px-5 py-3 pr-12 text-sm outline-none focus:border-navy" />
