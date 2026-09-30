@@ -16,8 +16,8 @@ export function SiteHeader() {
         <div className="topbar-track flex w-max gap-10 py-2.5">
           {[0, 1].map((k) => (
             <div key={k} className="flex shrink-0 items-center gap-10" aria-hidden={k === 1}>
-              <span>👑 Fornecedora de <span className="text-gold">móveis e eletrodomésticos</span></span>
-              <span className="rounded-full bg-gold px-3 py-0.5 text-navy">🏷️ Preço de atacado</span>
+              <span>👑 Sua casa digna de <span className="text-gold">uma rainha</span></span>
+              <span className="rounded-full bg-gold px-3 py-0.5 text-navy">🔥 Ofertas imperdíveis todo dia</span>
               <span>💳 Parcele em até <span className="text-gold">12x</span></span>
               <span>🚚 Entrega própria em todo o DF</span>
               <span>Desconto especial no <span className="text-gold">PIX</span></span>
