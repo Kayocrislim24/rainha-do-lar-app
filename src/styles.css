@@ -108,4 +108,4 @@
 .topbar-marquee:hover .topbar-track { animation-play-state: paused; }
 
 html, body { max-width: 100%; overflow-x: hidden; }
-img { max-width: 100%; height: auto; }
+img { max-width: 100%; }
