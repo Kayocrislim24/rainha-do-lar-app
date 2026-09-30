@@ -118,7 +118,7 @@ function CartPage() {
             <p className="text-xs text-muted-foreground">Guarde para rastrear sua entrega</p>
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/rastreio" search={{ codigo }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
+            <Link to="/rastreio" search={{ codigo, tel: f.telefone.replace(/\D/g, "") }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
           </div>
         </div>

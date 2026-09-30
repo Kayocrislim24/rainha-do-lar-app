@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2, Circle, Package, Truck, Home, CreditCard, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 
 export const Route = createFileRoute("/rastreio")({
-  validateSearch: (s) => z.object({ codigo: z.string().optional() }).parse(s),
+  validateSearch: (s) => z.object({ codigo: z.string().optional(), tel: z.string().optional() }).parse(s),
   head: () => ({
     meta: [
       { title: "Rastrear pedido — Rainha do Lar" },
@@ -59,14 +59,23 @@ export function Timeline({ status }: { status: string }) {
 }
 
 function Rastreio() {
-  const { codigo = "" } = Route.useSearch();
+  const { codigo = "", tel: telQ = "" } = Route.useSearch();
   const [code, setCode] = useState(codigo);
-  const [tel, setTel] = useState("");
+  const [tel, setTel] = useState(telQ);
   const [msg, setMsg] = useState("");
   const [p, setP] = useState<Pedido | null>(null);
 
-  const buscar = async (ev: React.FormEvent) => {
-    ev.preventDefault();
+  useEffect(() => {
+    if (codigo && telQ) void buscar();
+    if (codigo && telQ) { const t = setInterval(() => void buscar(true), 30000); return () => clearInterval(t); }
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const buscar = async (ev?: React.FormEvent | boolean) => {
+    const silent = ev === true;
+    if (ev && typeof ev !== "boolean") ev.preventDefault();
+    if (silent) { const { data } = await (supabase.rpc as unknown as (f: string, a: object) => Promise<{ data: Pedido[] | null }>)("track_order", { _code: code.trim(), _phone: tel }); if (data?.[0]) setP(data[0]); return; }
     setMsg("Buscando..."); setP(null);
     const { data, error } = await (supabase.rpc as unknown as (f: string, a: object) => Promise<{ data: Pedido[] | null; error: unknown }>)("track_order", { _code: code.trim(), _phone: tel });
     if (error || !data?.length) return setMsg("Pedido não encontrado. Confira o código e o telefone usado na compra.");

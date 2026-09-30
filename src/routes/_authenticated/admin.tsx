@@ -154,6 +154,12 @@ function Pedidos() {
     const t = `Olá ${nome.split(" ")[0]}! Aqui é da Rainha do Lar 👑 Recebemos seu pedido e vamos finalizar sua compra.`;
     return `https://wa.me/55${d}?text=${encodeURIComponent(t)}`;
   };
+  const rastreio = (o: { id: string; telefone: string; nome: string; status: string }) => {
+    const d = o.telefone.replace(/\D/g, "").replace(/^55/, "");
+    const link = `${window.location.origin}/rastreio?codigo=${o.id.slice(0, 8).toUpperCase()}&tel=${d}`;
+    const t = `Olá ${o.nome.split(" ")[0]}! 👑 Aqui é da Rainha do Lar.\n🚚 Seu pedido está: *${o.status}*\n\nAcompanhe a entrega por este link:\n${link}`;
+    return `https://wa.me/55${d}?text=${encodeURIComponent(t)}`;
+  };
   if (isLoading) return <p className="mt-6">Carregando...</p>;
   return (
     <section className="mt-6 space-y-3">
@@ -179,6 +185,7 @@ function Pedidos() {
           <p className="mt-1">Frete {brl(Number(o.frete))} · <b className="text-price-new">Total {brl(Number(o.total))}</b></p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href={zap(o.telefone, o.nome)} target="_blank" rel="noreferrer" className="rounded-md bg-buy px-4 py-2 font-bold text-buy-foreground">Chamar no WhatsApp</a>
+            <a href={rastreio(o)} target="_blank" rel="noreferrer" className="rounded-md bg-navy px-4 py-2 font-bold text-primary-foreground">Enviar link de rastreio</a>
             <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.endereco)}`} target="_blank" rel="noreferrer" className="rounded-md border px-4 py-2 font-semibold text-navy">Ver no mapa</a>
           </div>
         </div>
