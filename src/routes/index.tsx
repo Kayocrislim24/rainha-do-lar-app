@@ -158,7 +158,7 @@ function Card({ p }: { p: Product }) {
         <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
         <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
         <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
-        <span className="btn-comprar mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm"><ShoppingBag className="size-4" />Comprar</span>
+        <div className="mt-3 flex items-center gap-2"><span className="btn-comprar flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm"><ShoppingBag className="size-4" />Comprar</span>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-price-new bg-price-new/10 px-2 py-1 text-center text-[11px] font-bold leading-tight text-price-new">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
       </div>
     </Link>
   );
