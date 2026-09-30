@@ -82,46 +82,68 @@ export function Reviews({ productId }: { productId: string }) {
 
   const media = list.length ? list.reduce((s, r) => s + r.nota, 0) / list.length : 0;
 
+  const dist = [5, 4, 3, 2, 1].map((s) => ({ s, c: list.filter((r) => r.nota === s).length }));
+
   return (
-    <section className="mt-10 max-w-3xl">
-      <h2 className="text-xl font-bold text-navy">Avaliações dos clientes</h2>
-      {list.length > 0 && (
-        <div className="mt-2 flex items-center gap-2"><Stars n={Math.round(media)} /><span className="text-sm text-muted-foreground">{media.toFixed(1)} de 5 · {list.length} avaliação(ões)</span></div>
-      )}
+    <section className="mt-12 border-t pt-8">
+      <h2 className="text-2xl font-bold text-navy sm:text-3xl">Opiniões sobre o produto</h2>
 
-      <form onSubmit={send} className="mt-4 space-y-3 rounded-lg border bg-secondary p-4">
-        <p className="font-semibold text-navy">Conte o que achou do produto</p>
-        <Stars n={nota} onPick={setNota} size="size-7" />
-        <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Seu nome" className="w-full rounded-md border bg-background px-3 py-2 text-sm" />
-        <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} maxLength={1000} rows={3} placeholder="Sua opinião sobre o produto" className="w-full rounded-md border bg-background px-3 py-2 text-sm" />
-        <div className="flex flex-wrap items-center gap-2">
-          {fotos.map((f, i) => (
-            <div key={i} className="relative size-16"><img src={f} alt="" className="size-full rounded-md object-cover" />
-              <button type="button" onClick={() => setFotos(fotos.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 rounded-full bg-navy p-0.5 text-primary-foreground" aria-label="Remover foto"><X className="size-3" /></button>
+      <div className="mt-6 grid gap-8 lg:grid-cols-[340px_1fr]">
+        <div className="space-y-6">
+          <div className="rounded-xl border p-5">
+            <div className="flex items-end gap-3">
+              <span className="text-6xl font-bold leading-none text-navy">{media.toFixed(1)}</span>
+              <div><Stars n={Math.round(media)} size="size-6" /><p className="mt-1 text-sm text-muted-foreground">{list.length} avaliação(ões)</p></div>
             </div>
-          ))}
-          {fotos.length < 3 && (
-            <label className="flex size-16 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gold text-[10px] text-navy">
-              <Camera className="size-5" />Foto
-              <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFotos(e.target.files)} />
-            </label>
-          )}
-          <span className="text-xs text-muted-foreground">Até 3 fotos</span>
-        </div>
-        <button disabled={busy} className="btn-comprar rounded-full px-6 py-2.5 text-sm">{busy ? "Enviando..." : "Enviar avaliação"}</button>
-        {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
-      </form>
-
-      <div className="mt-6 space-y-4">
-        {list.length === 0 && <p className="text-sm text-muted-foreground">Seja o primeiro a avaliar este produto.</p>}
-        {list.map((r) => (
-          <div key={r.id} className="border-b pb-4">
-            <div className="flex items-center justify-between"><p className="font-semibold">{r.nome}</p><span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</span></div>
-            <Stars n={r.nota} size="size-4" />
-            <p className="mt-1 text-sm">{r.comentario}</p>
-            {r.fotos?.length > 0 && <div className="mt-2 flex gap-2">{r.fotos.map((f, i) => <button key={i} onClick={() => setZoom(f)}><img src={f} alt="Foto do cliente" className="size-20 rounded-md object-cover" /></button>)}</div>}
+            <div className="mt-5 space-y-2">
+              {dist.map(({ s, c }) => (
+                <div key={s} className="flex items-center gap-2 text-sm">
+                  <span className="w-12 shrink-0">{s} estrela{s > 1 ? "s" : ""}</span>
+                  <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-gold" style={{ width: `${list.length ? (c / list.length) * 100 : 0}%` }} /></div>
+                  <span className="w-6 text-right text-muted-foreground">{c}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
+
+          <form onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
+            <p className="text-lg font-semibold text-navy">Avalie este produto</p>
+            <Stars n={nota} onPick={setNota} size="size-9" />
+            <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Seu nome" className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} maxLength={1000} rows={5} placeholder="Conte o que achou: qualidade, entrega, montagem..." className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            <div className="flex flex-wrap items-center gap-2">
+              {fotos.map((f, i) => (
+                <div key={i} className="relative size-20"><img src={f} alt="" className="size-full rounded-md object-cover" />
+                  <button type="button" onClick={() => setFotos(fotos.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 rounded-full bg-navy p-0.5 text-primary-foreground" aria-label="Remover foto"><X className="size-3" /></button>
+                </div>
+              ))}
+              {fotos.length < 3 && (
+                <label className="flex size-20 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gold text-xs text-navy">
+                  <Camera className="size-6" />Foto
+                  <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addFotos(e.target.files)} />
+                </label>
+              )}
+              <span className="text-xs text-muted-foreground">Até 3 fotos</span>
+            </div>
+            <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : "Enviar avaliação"}</button>
+            {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
+          </form>
+        </div>
+
+        <div className="space-y-6">
+          {list.length === 0 && <p className="text-lg text-muted-foreground">Seja o primeiro a avaliar este produto.</p>}
+          {list.map((r) => (
+            <article key={r.id} className="border-b pb-6">
+              <div className="flex items-center gap-3">
+                <div className="grid size-11 place-items-center rounded-full bg-navy text-lg font-bold text-gold">{r.nome.charAt(0).toUpperCase()}</div>
+                <div><p className="text-base font-semibold">{r.nome}</p><p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p></div>
+              </div>
+              <div className="mt-3"><Stars n={r.nota} size="size-5" /></div>
+              <p className="mt-2 text-base leading-relaxed sm:text-lg">{r.comentario}</p>
+              {r.fotos?.length > 0 && <div className="mt-3 flex flex-wrap gap-3">{r.fotos.map((f, i) => <button key={i} onClick={() => setZoom(f)}><img src={f} alt="Foto do cliente" className="size-28 rounded-lg border object-cover transition hover:opacity-90 sm:size-36" /></button>)}</div>}
+            </article>
+          ))}
+        </div>
       </div>
 
       {zoom && <div onClick={() => setZoom(null)} className="fixed inset-0 z-[100] grid place-items-center bg-navy/80 p-4"><img src={zoom} alt="" className="max-h-full max-w-full rounded-lg" /></div>}
