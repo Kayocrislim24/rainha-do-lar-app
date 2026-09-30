@@ -75,7 +75,7 @@ export function WhatsFab() {
       rel="noopener noreferrer"
       aria-label="Falar no WhatsApp"
       onClick={(e) => {
-        const w = window.open(e.currentTarget.href, "_blank", "noopener,noreferrer");
+        const w = window.open(e.currentTarget.href, "_blank"); if (w) w.opener = null;
         if (w) e.preventDefault();
         else { e.preventDefault(); window.top ? (window.top.location.href = e.currentTarget.href) : (window.location.href = e.currentTarget.href); }
       }}
