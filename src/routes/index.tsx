@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -115,7 +115,7 @@ function Index() {
           ))}
         </div>
 
-        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Mais vendidos</h2>
+        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Todos os produtos</h2>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {products.map((p) => <Card key={p.id} p={p} />)}
