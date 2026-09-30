@@ -63,6 +63,7 @@ export type Database = {
         Row: {
           active: boolean
           badge: string | null
+          best_seller: boolean
           category: string
           colors: Json
           created_at: string
@@ -81,6 +82,7 @@ export type Database = {
         Insert: {
           active?: boolean
           badge?: string | null
+          best_seller?: boolean
           category?: string
           colors?: Json
           created_at?: string
@@ -99,6 +101,7 @@ export type Database = {
         Update: {
           active?: boolean
           badge?: string | null
+          best_seller?: boolean
           category?: string
           colors?: Json
           created_at?: string
