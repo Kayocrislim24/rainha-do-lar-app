@@ -12,8 +12,18 @@ export function SiteHeader() {
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 bg-background shadow-sm">
-      <div className="bg-navy text-center text-xs font-semibold text-primary-foreground sm:text-sm">
-        <p className="px-4 py-2">🚚 Entrega própria em todo o DF · <span className="text-gold">Até 12x sem juros</span> · Desconto no PIX</p>
+      <div className="topbar-marquee overflow-hidden border-b-2 border-gold bg-navy text-xs font-bold uppercase tracking-wide text-primary-foreground sm:text-sm">
+        <div className="topbar-track flex w-max gap-10 py-2.5">
+          {[0, 1].map((k) => (
+            <div key={k} className="flex shrink-0 items-center gap-10" aria-hidden={k === 1}>
+              <span>👑 Fornecedora de <span className="text-gold">móveis e eletrodomésticos</span></span>
+              <span className="rounded-full bg-gold px-3 py-0.5 text-navy">🏷️ Preço de atacado</span>
+              <span>💳 Parcele em até <span className="text-gold">12x</span></span>
+              <span>🚚 Entrega própria em todo o DF</span>
+              <span>⚡ Desconto especial no <span className="text-gold">PIX</span></span>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4">
         <Link to="/" className="flex shrink-0 items-center gap-1.5">

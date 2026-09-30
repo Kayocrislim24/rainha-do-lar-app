@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 });
 
 const slides = [
-  { k: "Semana do Sofá", t: "Sofás com até 30% OFF", d: "Conforto para a sala inteira, em até 12x sem juros.", img: sofa },
+  { k: "Semana do Sofá", t: "Sofás com até 30% OFF", d: "Conforto para a sala inteira, em até 12x.", img: sofa },
   { k: "Quarto dos sonhos", t: "Guarda-roupas a partir de 12x", d: "Mais espaço e organização com entrega própria no DF.", img: guarda },
   { k: "Noites melhores", t: "Camas e cabeceiras em oferta", d: "Modelos casal e queen com preço especial.", img: cama },
 ];
@@ -84,7 +84,7 @@ function Index() {
         <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
           {[
             { i: Truck, t: "Entrega própria", d: "Em todo o DF" },
-            { i: CreditCard, t: "Até 12x sem juros", d: "No cartão de crédito" },
+            { i: CreditCard, t: "Até 12x", d: "No cartão de crédito" },
             { i: ShieldCheck, t: "Compra segura", d: "Seus dados protegidos" },
             { i: MessageCircle, t: "Atendimento", d: "Pelo WhatsApp" },
           ].map(({ i: I, t, d }) => (

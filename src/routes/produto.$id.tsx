@@ -64,7 +64,7 @@ function ProductPage({ p }: { p: Product }) {
           <h1 className="text-2xl font-semibold leading-snug sm:text-3xl">{p.title}</h1>
           <span className="mt-3 inline-block rounded-full bg-gold px-2.5 py-0.5 text-xs font-bold text-navy">{off}% OFF</span>
           <div className="mt-4"><Price old={p.oldPrice} price={p.price} big /></div>
-          <p className="text-sm text-muted-foreground">ou em até 12x de {brl(p.price / 12)} sem juros</p>
+          <p className="text-sm text-muted-foreground">ou em até 12x de {brl(p.price / 12)}</p>
           <div className="mt-4 flex items-center gap-3"><button onClick={() => { add(p.id, qty); nav({ to: "/carrinho" }); }} className="btn-comprar flex flex-1 items-center justify-center gap-3 rounded-full py-4 text-xl"><ShoppingBag className="size-6" />Comprar</button>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-price-new bg-price-new/10 px-4 py-2 text-center text-sm font-bold leading-tight text-price-new">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
           <p className="mt-3 flex items-center gap-1 text-sm font-semibold text-price-new"><CheckCircle2 className="size-4" />Estoque disponível <span className="font-normal text-muted-foreground">({p.stock} unidades)</span></p>
 
