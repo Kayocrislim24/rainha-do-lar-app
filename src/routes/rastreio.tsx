@@ -70,7 +70,7 @@ function Rastreio() {
     setMsg("Buscando..."); setP(null);
     const { data, error } = await (supabase.rpc as unknown as (f: string, a: object) => Promise<{ data: Pedido[] | null; error: unknown }>)("track_order", { _code: code.trim(), _phone: tel });
     if (error || !data?.length) return setMsg("Pedido não encontrado. Confira o código e o telefone usado na compra.");
-    setMsg(""); setP(data[0]);
+    setMsg(""); setP(data[0] ?? null);
   };
 
   return (
