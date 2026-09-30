@@ -64,6 +64,7 @@ export type Database = {
           active: boolean
           badge: string | null
           category: string
+          colors: Json
           created_at: string
           description: string
           dim_d: number
@@ -81,6 +82,7 @@ export type Database = {
           active?: boolean
           badge?: string | null
           category?: string
+          colors?: Json
           created_at?: string
           description?: string
           dim_d?: number
@@ -98,6 +100,7 @@ export type Database = {
           active?: boolean
           badge?: string | null
           category?: string
+          colors?: Json
           created_at?: string
           description?: string
           dim_d?: number
