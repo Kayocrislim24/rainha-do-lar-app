@@ -4,8 +4,12 @@ import guardaRoupa from "@/assets/guarda-roupa.jpg";
 import sofa from "@/assets/sofa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
+import guardaRoupaBranco from "@/assets/guarda-roupa-branco.jpg";
+import sofaAzul from "@/assets/sofa-azul.jpg";
+import camaEscura from "@/assets/cama-escura.jpg";
+import mesaPreta from "@/assets/mesa-preta.jpg";
 
-const local: Record<string, string> = { "local:guarda-roupa": guardaRoupa, "local:sofa": sofa, "local:cama": cama, "local:mesa": mesa };
+const local: Record<string, string> = { "local:guarda-roupa": guardaRoupa, "local:sofa": sofa, "local:cama": cama, "local:mesa": mesa, "local:guarda-roupa-branco": guardaRoupaBranco, "local:sofa-azul": sofaAzul, "local:cama-escura": camaEscura, "local:mesa-preta": mesaPreta };
 export const resolveImage = (s: string) => local[s] ?? s;
 
 export type Product = {
