@@ -106,3 +106,6 @@
 @keyframes topbar-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 .topbar-track { animation: topbar-scroll 28s linear infinite; }
 .topbar-marquee:hover .topbar-track { animation-play-state: paused; }
+
+html, body { max-width: 100%; overflow-x: hidden; }
+img { max-width: 100%; height: auto; }
