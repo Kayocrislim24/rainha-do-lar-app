@@ -1,10 +1,8 @@
 import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import type { Product } from "@/lib/products";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useProducts } from "@/lib/products";
-import { brl } from "@/lib/store";
 import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
