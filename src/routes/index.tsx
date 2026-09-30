@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useProducts } from "@/lib/products";
@@ -64,9 +64,42 @@ function Hero() {
   );
 }
 
+function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const go = (dir: 1 | -1) => {
+    const el = ref.current; if (!el) return;
+    const card = el.firstElementChild as HTMLElement | null;
+    const step = (card?.offsetWidth ?? 260) + 12;
+    if (dir === 1 && el.scrollLeft + el.clientWidth >= el.scrollWidth - 5) el.scrollTo({ left: 0, behavior: "smooth" });
+    else el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => go(1), 3500);
+    return () => clearInterval(id);
+  }, [paused]);
+  return (
+    <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={() => setPaused(true)}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2>
+        <div className="flex gap-2">
+          <button aria-label="Anterior" onClick={() => go(-1)} className="grid size-9 place-items-center rounded-full bg-gold text-navy transition hover:scale-110"><ChevronLeft className="size-5" /></button>
+          <button aria-label="Próximo" onClick={() => go(1)} className="grid size-9 place-items-center rounded-full bg-gold text-navy transition hover:scale-110"><ChevronRight className="size-5" /></button>
+        </div>
+      </div>
+      <div ref={ref} className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 text-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {items.map((p) => (
+          <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23.5%]"><Card p={p} /></div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Index() {
   const { data: products = [], isLoading } = useProducts();
-  const ofertas = [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price)).slice(0, 4);
+  const ofertas = [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price)).slice(0, 10);
   return (
     <main>
       <Hero />
@@ -97,14 +130,7 @@ function Index() {
           ))}
         </div>
 
-        {ofertas.length > 0 && (
-          <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6">
-            <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-foreground lg:grid-cols-4">
-              {ofertas.map((p) => <Card key={p.id} p={p} />)}
-            </div>
-          </section>
-        )}
+        {ofertas.length > 0 && <MaisVendidos items={ofertas} />}
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           {[{ t: "Quarto completo", d: "Camas, guarda-roupas e mais", img: cama }, { t: "Sala de jantar", d: "Mesas para receber bem", img: mesa }].map((b) => (
