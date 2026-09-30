@@ -20,7 +20,7 @@ export function SiteHeader() {
               <span className="rounded-full bg-gold px-3 py-0.5 text-navy">🏷️ Preço de atacado</span>
               <span>💳 Parcele em até <span className="text-gold">12x</span></span>
               <span>🚚 Entrega própria em todo o DF</span>
-              <span>⚡ Desconto especial no <span className="text-gold">PIX</span></span>
+              <span>Desconto especial no <span className="text-gold">PIX</span></span>
             </div>
           ))}
         </div>
@@ -79,7 +79,7 @@ export function WhatsFab() {
         if (w) e.preventDefault();
         else { e.preventDefault(); window.top ? (window.top.location.href = e.currentTarget.href) : (window.location.href = e.currentTarget.href); }
       }}
-      className="fixed bottom-5 right-5 z-[9999] grid size-14 cursor-pointer place-items-center rounded-full bg-buy text-buy-foreground shadow-lg transition hover:scale-110"
+      className="fixed bottom-5 right-5 z-[9999] grid size-14 cursor-pointer place-items-center rounded-full bg-[#25D366] text-[#ffffff] shadow-lg transition hover:scale-110 hover:bg-[#1ebe5b]"
     >
       <svg viewBox="0 0 24 24" className="size-7 fill-current"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.4.1.1.1.6-.1 1.2Z" /></svg>
     </a>

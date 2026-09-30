@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle, Zap } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -37,15 +37,6 @@ const cats = [
   { n: "Mesas", img: mesa },
 ];
 
-function useCountdown() {
-  const [s, setS] = useState(0);
-  useEffect(() => {
-    const tick = () => { const n = new Date(); const end = new Date(n); end.setHours(23, 59, 59, 999); setS(Math.max(0, Math.floor((+end - +n) / 1000))); };
-    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
-  }, []);
-  const p = (x: number) => String(x).padStart(2, "0");
-  return [p(Math.floor(s / 3600)), p(Math.floor((s % 3600) / 60)), p(s % 60)];
-}
 
 function Hero() {
   const [i, setI] = useState(0);
@@ -75,7 +66,6 @@ function Hero() {
 
 function Index() {
   const { data: products = [], isLoading } = useProducts();
-  const [h, m, s] = useCountdown();
   const ofertas = [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price)).slice(0, 4);
   return (
     <main>
@@ -109,13 +99,7 @@ function Index() {
 
         {ofertas.length > 0 && (
           <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="flex items-center gap-2 text-xl font-bold"><Zap className="size-6 fill-gold text-gold" />Ofertas relâmpago</h2>
-              <div className="flex items-center gap-1 text-sm">
-                <span className="mr-1 opacity-80">Termina em</span>
-                {[h, m, s].map((v, n) => <span key={n} className="rounded bg-gold px-2 py-1 font-bold tabular-nums text-accent-foreground">{v}</span>)}
-              </div>
-            </div>
+            <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2>
             <div className="mt-4 grid grid-cols-2 gap-3 text-foreground lg:grid-cols-4">
               {ofertas.map((p) => <Card key={p.id} p={p} />)}
             </div>
@@ -131,7 +115,7 @@ function Index() {
           ))}
         </div>
 
-        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Mais vendidos</h2>
+        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Todos os produtos</h2>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {products.map((p) => <Card key={p.id} p={p} />)}
