@@ -59,6 +59,7 @@ function CartPage() {
   const [ship, setShip] = useState<Awaited<ReturnType<typeof quoteShipping>> | null>(null);
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState<string | null>(null);
+  const [codigo, setCodigo] = useState("");
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const calc = async () => {
@@ -78,7 +79,9 @@ function CartPage() {
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
     setMsg("Enviando pedido...");
+    const orderId = crypto.randomUUID();
     const { error } = await supabase.from("orders").insert({
+      id: orderId,
       user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
       itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
       subtotal, frete: ship.cost, total: subtotal + ship.cost,
@@ -86,6 +89,7 @@ function CartPage() {
     if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
+    setCodigo(orderId.slice(0, 8).toUpperCase());
     setDone(r.data.nome.split(" ")[0] ?? r.data.nome);
     clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -108,7 +112,15 @@ function CartPage() {
           <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
             <CheckCircle2 className="size-5 text-gold" /> Seus dados foram enviados com segurança
           </div>
-          <Link to="/" className="mt-8 inline-block rounded-md bg-buy px-8 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
+          <div className="mt-6 rounded-lg border-2 border-dashed border-gold bg-secondary p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Código do pedido</p>
+            <p className="text-2xl font-bold tracking-widest text-navy">{codigo}</p>
+            <p className="text-xs text-muted-foreground">Guarde para rastrear sua entrega</p>
+          </div>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link to="/rastreio" search={{ codigo }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
+            <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
+          </div>
         </div>
       </main>
     );

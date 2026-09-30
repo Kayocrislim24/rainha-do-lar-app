@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
+import { Timeline } from "@/routes/rastreio";
 
 export const Route = createFileRoute("/_authenticated/conta")({
   head: () => ({
@@ -54,9 +55,10 @@ function Conta() {
         <div className="mt-3 space-y-3">
           {orders.map((o) => (
             <div key={o.id} className="rounded-lg border p-4">
-              <div className="flex justify-between text-sm"><span>{new Date(o.created_at).toLocaleString("pt-BR")}</span><span className="rounded-full bg-secondary px-2 py-0.5 font-semibold text-navy">{o.status}</span></div>
+              <div className="flex justify-between text-sm"><span>#{o.id.slice(0, 8).toUpperCase()} · {new Date(o.created_at).toLocaleString("pt-BR")}</span><span className="rounded-full bg-secondary px-2 py-0.5 font-semibold text-navy">{o.status}</span></div>
               <ul className="mt-2 text-sm">{(o.itens as Item[]).map((i, k) => <li key={k}>{i.qty}x {i.title}</li>)}</ul>
               <p className="mt-2 font-bold text-price-new">Total: {brl(Number(o.total))}</p>
+              <Timeline status={o.status} />
             </div>
           ))}
         </div>
