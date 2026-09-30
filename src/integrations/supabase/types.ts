@@ -170,6 +170,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      track_order: {
+        Args: { _code: string; _phone: string }
+        Returns: {
+          created_at: string
+          id: string
+          itens: Json
+          nome: string
+          status: string
+          total: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
