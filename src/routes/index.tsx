@@ -1,3 +1,4 @@
+import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Swatches } from "@/components/Swatches";
 import type { Product } from "@/lib/products";
@@ -97,7 +98,7 @@ function Card({ p }: { p: Product }) {
                   <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
                   <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
                   <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
-                  <span className="mt-3 block rounded-md bg-buy py-2.5 text-center text-sm font-bold text-buy-foreground group-hover:opacity-90">Comprar com desconto agora</span>
+                  <span className="btn-comprar mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm"><ShoppingBag className="size-4" />Comprar</span>
                 </div>
               </Link>
             );
