@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; created_at: string };
+type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; avatar?: string; created_at: string };
 
 const schema = z.object({
   nome: z.string().trim().min(1, "Digite seu nome").max(80),
@@ -12,13 +12,13 @@ const schema = z.object({
   nota: z.number().min(1, "Escolha as estrelas").max(5),
 });
 
-function toImage(file: File): Promise<string> {
+function toImage(file: File, max = 800): Promise<string> {
   return new Promise((res, rej) => {
     const r = new FileReader();
     r.onload = () => {
       const img = new Image();
       img.onload = () => {
-        const s = Math.min(1, 800 / Math.max(img.width, img.height));
+        const s = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement("canvas");
         c.width = img.width * s; c.height = img.height * s;
         c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
@@ -51,6 +51,7 @@ export function Reviews({ productId }: { productId: string }) {
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState("");
   const [fotos, setFotos] = useState<string[]>([]);
+  const [avatar, setAvatar] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState<string | null>(null);
@@ -72,10 +73,10 @@ export function Reviews({ productId }: { productId: string }) {
     const v = schema.safeParse({ nome, comentario, nota });
     if (!v.success) { setMsg(v.error.issues[0]!.message); return; }
     setBusy(true);
-    const { error } = await supabase.from("reviews").insert({ product_id: productId, user_id: user?.id ?? null, ...v.data, fotos });
+    const { error } = await supabase.from("reviews").insert({ product_id: productId, user_id: user?.id ?? null, ...v.data, fotos, avatar } as never);
     setBusy(false);
     if (error) { setMsg("Não foi possível enviar. Tente novamente."); return; }
-    setNome(""); setNota(0); setComentario(""); setFotos([]);
+    setNome(""); setNota(0); setComentario(""); setFotos([]); setAvatar("");
     setMsg("Obrigado pela sua avaliação! 💛");
     load();
   };
@@ -109,7 +110,14 @@ export function Reviews({ productId }: { productId: string }) {
           <form onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
             <p className="text-lg font-semibold text-navy">Avalie este produto</p>
             <Stars n={nota} onPick={setNota} size="size-9" />
-            <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Seu nome" className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            <div className="flex items-center gap-3">
+              <label className="relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-gold bg-background text-navy" aria-label="Sua foto de perfil">
+                {avatar ? <img src={avatar} alt="" className="size-full object-cover" /> : <Camera className="size-6" />}
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) setAvatar(await toImage(f, 200)); }} />
+              </label>
+              <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Seu nome" className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            </div>
+            <p className="-mt-2 text-xs text-muted-foreground">Toque no círculo para colocar sua foto de perfil (opcional)</p>
             <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} maxLength={1000} rows={5} placeholder="Conte o que achou: qualidade, entrega, montagem..." className="w-full rounded-md border bg-background px-4 py-3 text-base" />
             <div className="flex flex-wrap items-center gap-2">
               {fotos.map((f, i) => (
@@ -135,7 +143,7 @@ export function Reviews({ productId }: { productId: string }) {
           {list.map((r) => (
             <article key={r.id} className="border-b pb-6">
               <div className="flex items-center gap-3">
-                <div className="grid size-11 place-items-center rounded-full bg-navy text-lg font-bold text-gold">{r.nome.charAt(0).toUpperCase()}</div>
+                {r.avatar ? <img src={r.avatar} alt={r.nome} className="size-12 rounded-full border-2 border-gold object-cover" /> : <div className="grid size-12 place-items-center rounded-full bg-navy text-lg font-bold text-gold">{r.nome.charAt(0).toUpperCase()}</div>}
                 <div><p className="text-base font-semibold">{r.nome}</p><p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p></div>
               </div>
               <div className="mt-3"><Stars n={r.nota} size="size-5" /></div>

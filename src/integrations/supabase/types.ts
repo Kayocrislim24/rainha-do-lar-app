@@ -142,6 +142,7 @@ export type Database = {
       }
       reviews: {
         Row: {
+          avatar: string
           comentario: string
           created_at: string
           fotos: Json
@@ -152,6 +153,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          avatar?: string
           comentario: string
           created_at?: string
           fotos?: Json
@@ -162,6 +164,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          avatar?: string
           comentario?: string
           created_at?: string
           fotos?: Json
