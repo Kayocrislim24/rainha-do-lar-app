@@ -141,6 +141,6 @@ function Index() {
   );
 }
 
-function Card({ p }: { p: Product }) {
+function Card({ p }: { p: Parameters<typeof ProductCard>[0]["p"] }) {
   return <ProductCard p={p} />;
 }
