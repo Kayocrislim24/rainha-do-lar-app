@@ -54,22 +54,22 @@ function Hero() {
   useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, []);
   const s = slides[i] ?? slides[0]!;
   return (
-    <section className="relative bg-navy text-primary-foreground">
-      <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-8 md:grid-cols-2 md:py-12">
+    <section className="relative mx-auto mt-4 max-w-7xl px-4">
+      <div className="grid items-center gap-6 overflow-hidden rounded-2xl bg-navy px-6 py-8 text-primary-foreground md:grid-cols-2 md:px-12 md:py-14">
         <div key={i} className="animate-in fade-in slide-in-from-left-4 duration-500">
           <p className="text-sm font-bold uppercase tracking-widest text-gold">{s.k}</p>
           <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">{s.t}</h1>
           <p className="mt-3 text-primary-foreground/80">{s.d}</p>
           <a href="#produtos" className="btn-comprar mt-6 inline-flex rounded-full px-8 py-3 text-sm">Aproveitar</a>
         </div>
-        <div className="rounded-lg bg-background p-4">
+        <div className="rounded-xl bg-background p-4 shadow-2xl">
           <img key={s.img + i} src={s.img} alt={s.t} width={1024} height={1024} className="mx-auto max-h-72 w-auto object-contain animate-in fade-in zoom-in-95 duration-500" />
         </div>
       </div>
-      <button aria-label="Anterior" onClick={() => setI((i + slides.length - 1) % slides.length)} className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronLeft /></button>
-      <button aria-label="Próximo" onClick={() => setI((i + 1) % slides.length)} className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronRight /></button>
-      <div className="flex justify-center gap-2 pb-4">
-        {slides.map((_, n) => <button key={n} aria-label={`Banner ${n + 1}`} onClick={() => setI(n)} className={`h-2 rounded-full transition-all ${n === i ? "w-8 bg-gold" : "w-2 bg-primary-foreground/40"}`} />)}
+      <button aria-label="Anterior" onClick={() => setI((i + slides.length - 1) % slides.length)} className="absolute left-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronLeft /></button>
+      <button aria-label="Próximo" onClick={() => setI((i + 1) % slides.length)} className="absolute right-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronRight /></button>
+      <div className="flex justify-center gap-2 py-3">
+        {slides.map((_, n) => <button key={n} aria-label={`Banner ${n + 1}`} onClick={() => setI(n)} className={`h-2 rounded-full transition-all ${n === i ? "w-8 bg-gold" : "w-2 bg-navy/30"}`} />)}
       </div>
     </section>
   );
@@ -82,7 +82,7 @@ function Index() {
   return (
     <main>
       <Hero />
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-7xl px-4">
         <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
           {[
             { i: Truck, t: "Entrega própria", d: "Em todo o DF" },
@@ -100,7 +100,7 @@ function Index() {
         <h2 className="mt-8 text-xl font-bold text-navy">Navegue por ambientes</h2>
         <div className="mt-4 flex gap-5 overflow-x-auto pb-2">
           {cats.map((c) => (
-            <Link key={c.n} to="/busca" search={{ q: c.n.split(" ")[0] === "Sala" ? c.n.split(" ").pop()!.slice(0,4) : c.n.slice(0,4) }} className="group flex w-24 shrink-0 flex-col items-center text-center">
+            <Link key={c.n} to="/busca" search={{ q: ({"Sala de estar":"Sof","Quarto":"Cama","Guarda-roupas":"Guarda","Sala de jantar":"Mesa","Sofás":"Sof","Mesas":"Mesa"} as Record<string,string>)[c.n] }} className="group flex w-24 shrink-0 flex-col items-center text-center">
               <span className="grid size-24 place-items-center overflow-hidden rounded-full border-2 border-border bg-secondary transition group-hover:border-gold">
                 <img src={c.img} alt={c.n} loading="lazy" className="size-20 object-contain transition group-hover:scale-110" />
               </span>
