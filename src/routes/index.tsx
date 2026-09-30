@@ -90,7 +90,7 @@ function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
       </div>
       <div ref={ref} className="mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 text-foreground [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {items.map((p) => (
-          <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23.5%]"><Card p={p} /></div>
+          <div key={p.id} className="w-[72%] min-w-0 shrink-0 snap-start xs:w-[46%] min-[420px]:w-[46%] sm:w-[31%] lg:w-[23.5%]"><Card p={p} /></div>
         ))}
       </div>
     </section>
@@ -99,7 +99,8 @@ function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
 
 function Index() {
   const { data: products = [], isLoading } = useProducts();
-  const ofertas = [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price)).slice(0, 10);
+  const marcados = products.filter((p) => p.bestSeller);
+  const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
   return (
     <main>
       <Hero />
