@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Crown, CreditCard, Percent, ShoppingBag, Truck, User } from "lucide-react";
+import { Crown, Heart, MapPin, Search, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 
@@ -8,44 +8,37 @@ export function SiteHeader() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   return (
-    <header>
-      <div className="bg-navy-deep text-primary-foreground text-xs sm:text-sm">
-        <div className="mx-auto flex max-w-6xl justify-around gap-4 px-4 py-2">
-          <span className="flex items-center gap-2"><CreditCard className="size-4 text-gold" />Até 12x no cartão</span>
-          <span className="hidden sm:flex items-center gap-2"><Percent className="size-4 text-gold" />Desconto no PIX</span>
-          <span className="flex items-center gap-2"><Truck className="size-4 text-gold" />Entrega própria no DF</span>
-        </div>
+    <header className="sticky top-0 z-40 bg-background shadow-sm">
+      <div className="bg-navy text-center text-xs font-semibold text-primary-foreground sm:text-sm">
+        <p className="px-4 py-2">🚚 Entrega própria em todo o DF · <span className="text-gold">Até 12x sem juros</span> · Desconto no PIX</p>
       </div>
-      <div className="bg-navy text-primary-foreground">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <Crown className="size-8 text-gold" />
-            <span className="text-2xl font-bold leading-none">Rainha<span className="text-gold"> do Lar</span></span>
+      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4">
+        <Link to="/" className="flex shrink-0 items-center gap-1.5">
+          <Crown className="size-8 text-gold" />
+          <span className="text-2xl font-bold leading-none text-navy">Rainha<span className="text-gold"> do Lar</span></span>
+        </Link>
+        <form className="relative hidden flex-1 md:block" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
+          <input name="q" placeholder="Busque por produtos, ambientes, marcas..." className="w-full rounded-full border-2 border-border bg-muted px-5 py-3 pr-12 text-sm outline-none focus:border-navy" />
+          <button aria-label="Buscar" className="absolute right-2 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full bg-navy text-primary-foreground"><Search className="size-4" /></button>
+        </form>
+        <div className="ml-auto flex items-center gap-5 text-navy">
+          <span className="hidden items-center gap-1.5 text-xs leading-tight lg:flex"><MapPin className="size-5" />Entregamos<br />no DF</span>
+          {isAdmin && <Link to="/admin" className="hidden rounded-full bg-gold px-3 py-1.5 text-sm font-bold text-navy sm:block">Painel</Link>}
+          <Link to={user ? "/conta" : "/auth"} className="flex items-center gap-1.5 text-xs leading-tight"><User className="size-6" /><span className="hidden sm:inline">{user ? <>Olá!<br /><b>Minha conta</b></> : <>Olá, visitante<br /><b>Entre ou cadastre-se</b></>}</span></Link>
+          <Heart className="hidden size-6 sm:block" />
+          <Link to="/carrinho" className="relative" aria-label="Carrinho">
+            <ShoppingCart className="size-7" />
+            {count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-navy">{count}</span>}
           </Link>
-          <form className="hidden md:block flex-1" onSubmit={(e) => { e.preventDefault(); const q = String(new FormData(e.currentTarget).get("q") ?? "").trim(); navigate({ to: "/busca", search: q ? { q } : {} }); }}>
-            <input name="q" placeholder="O que você procura?" className="w-full rounded-md bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none" />
-          </form>
-          <div className="ml-auto flex items-center gap-5">
-            {isAdmin && <Link to="/admin" className="hidden sm:block rounded-md bg-gold px-3 py-1.5 text-sm font-bold text-accent-foreground">Painel</Link>}
-            {user ? (
-              <Link to="/conta" className="flex items-center gap-2 text-sm leading-tight"><User className="size-5" /><span className="hidden sm:inline">Minha conta<br /><span className="opacity-70">meus pedidos</span></span></Link>
-            ) : (
-              <Link to="/auth" className="flex items-center gap-2 text-sm leading-tight"><User className="size-5" /><span className="hidden sm:inline">Entre ou cadastre-se<br /><span className="opacity-70">para ver seus pedidos</span></span></Link>
-            )}
-            <Link to="/carrinho" className="relative" aria-label="Carrinho">
-              <ShoppingBag className="size-6" />
-              {count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-accent-foreground">{count}</span>}
-            </Link>
-          </div>
         </div>
       </div>
-      <nav className="bg-navy text-primary-foreground border-t border-primary-foreground/10">
-        <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap">
-          <Link to="/busca" search={{}} className="hover:text-gold">Todos os produtos</Link>
-          {[["Guarda-roupas", "Guarda"], ["Sofás", "Sof"], ["Camas", "Cama"], ["Mesas", "Mesa"]].map(([l, c]) => (
+      <nav className="border-t">
+        <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap text-navy">
+          <Link to="/busca" search={{}} className="hover:text-gold">Todos os departamentos</Link>
+          {[["Sala de estar", "Sof"], ["Quarto", "Cama"], ["Guarda-roupas", "Guarda"], ["Sala de jantar", "Mesa"], ["Sofás", "Sof"], ["Camas", "Cama"], ["Mesas", "Mesa"]].map(([l, c]) => (
             <Link key={l} to="/busca" search={{ q: c }} className="hover:text-gold">{l}</Link>
           ))}
-          <Link to="/busca" search={{}} className="text-gold">Ofertas da semana</Link>
+          <Link to="/busca" search={{}} className="font-bold text-destructive">Ofertas</Link>
         </div>
       </nav>
     </header>
