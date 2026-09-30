@@ -102,3 +102,7 @@
 @keyframes comprar-shine { 0%,55% { transform: translateX(-120%) skewX(-20deg); } 100% { transform: translateX(220%) skewX(-20deg); } }
 @keyframes comprar-pulse { 0%,100% { box-shadow: 0 6px 18px -6px rgba(184,134,42,.7), 0 0 0 0 rgba(212,169,60,.45); } 50% { box-shadow: 0 6px 18px -6px rgba(184,134,42,.7), 0 0 0 8px rgba(212,169,60,0); } }
 @media (prefers-reduced-motion: reduce) { .btn-comprar, .btn-comprar::after { animation: none; } }
+
+@keyframes topbar-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.topbar-track { animation: topbar-scroll 28s linear infinite; }
+.topbar-marquee:hover .topbar-track { animation-play-state: paused; }
