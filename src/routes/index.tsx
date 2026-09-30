@@ -1,9 +1,8 @@
-import { ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { ShoppingBag, ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Swatches } from "@/components/Swatches";
 import type { Product } from "@/lib/products";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldCheck, Truck, CreditCard, MessageCircle } from "lucide-react";
 import { useProducts } from "@/lib/products";
 import { brl } from "@/lib/store";
 import sofa from "@/assets/sofa.jpg";
@@ -14,9 +13,9 @@ import mesa from "@/assets/mesa.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Rainha do Lar — Móveis para sua casa no DF" },
-      { name: "description", content: "Guarda-roupas, sofás, camas e mesas com ofertas, entrega própria no DF e atendimento pelo WhatsApp." },
-      { property: "og:title", content: "Rainha do Lar — Móveis para sua casa no DF" },
+      { title: "Rainha do Lar — Móveis e decoração para sua casa no DF" },
+      { name: "description", content: "Sofás, guarda-roupas, camas e mesas com ofertas, parcelamento em 12x e entrega própria no DF." },
+      { property: "og:title", content: "Rainha do Lar — Móveis e decoração para sua casa" },
       { property: "og:description", content: "Ofertas em móveis com entrega própria no DF e atendimento pelo WhatsApp." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -25,57 +24,118 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const slides = [
+  { k: "Semana do Sofá", t: "Sofás com até 30% OFF", d: "Conforto para a sala inteira, em até 12x sem juros.", img: sofa },
+  { k: "Quarto dos sonhos", t: "Guarda-roupas a partir de 12x", d: "Mais espaço e organização com entrega própria no DF.", img: guarda },
+  { k: "Noites melhores", t: "Camas e cabeceiras em oferta", d: "Modelos casal e queen com preço especial.", img: cama },
+];
+
 const cats = [
+  { n: "Sala de estar", img: sofa },
+  { n: "Quarto", img: cama },
   { n: "Guarda-roupas", img: guarda },
+  { n: "Sala de jantar", img: mesa },
   { n: "Sofás", img: sofa },
-  { n: "Camas", img: cama },
   { n: "Mesas", img: mesa },
 ];
 
+function useCountdown() {
+  const [s, setS] = useState(0);
+  useEffect(() => {
+    const tick = () => { const n = new Date(); const end = new Date(n); end.setHours(23, 59, 59, 999); setS(Math.max(0, Math.floor((+end - +n) / 1000))); };
+    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id);
+  }, []);
+  const p = (x: number) => String(x).padStart(2, "0");
+  return [p(Math.floor(s / 3600)), p(Math.floor((s % 3600) / 60)), p(s % 60)];
+}
+
+function Hero() {
+  const [i, setI] = useState(0);
+  useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, []);
+  const s = slides[i];
+  return (
+    <section className="relative bg-navy text-primary-foreground">
+      <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-8 md:grid-cols-2 md:py-12">
+        <div key={i} className="animate-in fade-in slide-in-from-left-4 duration-500">
+          <p className="text-sm font-bold uppercase tracking-widest text-gold">{s.k}</p>
+          <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">{s.t}</h1>
+          <p className="mt-3 text-primary-foreground/80">{s.d}</p>
+          <a href="#produtos" className="btn-comprar mt-6 inline-flex rounded-full px-8 py-3 text-sm">Aproveitar</a>
+        </div>
+        <div className="rounded-lg bg-background p-4">
+          <img key={s.img + i} src={s.img} alt={s.t} width={1024} height={1024} className="mx-auto max-h-72 w-auto object-contain animate-in fade-in zoom-in-95 duration-500" />
+        </div>
+      </div>
+      <button aria-label="Anterior" onClick={() => setI((i + slides.length - 1) % slides.length)} className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronLeft /></button>
+      <button aria-label="Próximo" onClick={() => setI((i + 1) % slides.length)} className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronRight /></button>
+      <div className="flex justify-center gap-2 pb-4">
+        {slides.map((_, n) => <button key={n} aria-label={`Banner ${n + 1}`} onClick={() => setI(n)} className={`h-2 rounded-full transition-all ${n === i ? "w-8 bg-gold" : "w-2 bg-primary-foreground/40"}`} />)}
+      </div>
+    </section>
+  );
+}
+
 function Index() {
   const { data: products = [], isLoading } = useProducts();
+  const [h, m, s] = useCountdown();
+  const ofertas = [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price)).slice(0, 4);
   return (
     <main>
-      <section className="bg-secondary">
-        <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-8 md:grid-cols-2 md:py-10">
-          <div>
-            <p className="text-sm font-semibold text-link">Ofertas da semana</p>
-            <h1 className="mt-1 text-3xl font-bold leading-tight text-navy sm:text-4xl">Sofás e estofados com até 30% de desconto</h1>
-            <p className="mt-3 text-muted-foreground">Parcele em até 12x sem juros ou pague no PIX. Entrega própria em todo o Distrito Federal.</p>
-            <a href="#produtos" className="mt-5 inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Ver ofertas</a>
-          </div>
-          <img src={sofa} alt="Sofá em oferta" width={1024} height={1024} className="mx-auto max-h-72 w-auto object-contain mix-blend-multiply" />
-        </div>
-      </section>
-
+      <Hero />
       <div className="mx-auto max-w-6xl px-4">
-        <section className="grid grid-cols-2 gap-px overflow-hidden border-b py-5 text-sm sm:grid-cols-4">
+        <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
           {[
             { i: Truck, t: "Entrega própria", d: "Em todo o DF" },
             { i: CreditCard, t: "Até 12x sem juros", d: "No cartão de crédito" },
             { i: ShieldCheck, t: "Compra segura", d: "Seus dados protegidos" },
             { i: MessageCircle, t: "Atendimento", d: "Pelo WhatsApp" },
           ].map(({ i: I, t, d }) => (
-            <div key={t} className="flex items-center gap-3 py-2">
-              <I className="size-6 shrink-0 text-navy" />
-              <div><p className="font-semibold text-foreground">{t}</p><p className="text-xs text-muted-foreground">{d}</p></div>
+            <div key={t} className="flex items-center gap-3">
+              <I className="size-6 shrink-0 text-gold" />
+              <div><p className="font-semibold">{t}</p><p className="text-xs text-muted-foreground">{d}</p></div>
             </div>
           ))}
         </section>
 
-        <h2 className="mt-8 text-lg font-bold text-foreground">Compre por categoria</h2>
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <h2 className="mt-8 text-xl font-bold text-navy">Navegue por ambientes</h2>
+        <div className="mt-4 flex gap-5 overflow-x-auto pb-2">
           {cats.map((c) => (
-            <a key={c.n} href="#produtos" className="flex flex-col items-center rounded-md border bg-card p-3 hover:border-navy">
-              <img src={c.img} alt={c.n} width={1024} height={1024} loading="lazy" className="aspect-square w-24 object-contain" />
+            <a key={c.n} href="#produtos" className="group flex w-24 shrink-0 flex-col items-center text-center">
+              <span className="grid size-24 place-items-center overflow-hidden rounded-full border-2 border-border bg-secondary transition group-hover:border-gold">
+                <img src={c.img} alt={c.n} loading="lazy" className="size-20 object-contain transition group-hover:scale-110" />
+              </span>
               <span className="mt-2 text-sm font-semibold">{c.n}</span>
             </a>
           ))}
         </div>
 
-        <h2 id="produtos" className="mt-10 text-lg font-bold text-foreground">Mais vendidos</h2>
+        {ofertas.length > 0 && (
+          <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-xl font-bold"><Zap className="size-6 fill-gold text-gold" />Ofertas relâmpago</h2>
+              <div className="flex items-center gap-1 text-sm">
+                <span className="mr-1 opacity-80">Termina em</span>
+                {[h, m, s].map((v, n) => <span key={n} className="rounded bg-gold px-2 py-1 font-bold tabular-nums text-accent-foreground">{v}</span>)}
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-foreground lg:grid-cols-4">
+              {ofertas.map((p) => <Card key={p.id} p={p} />)}
+            </div>
+          </section>
+        )}
+
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          {[{ t: "Quarto completo", d: "Camas, guarda-roupas e mais", img: cama }, { t: "Sala de jantar", d: "Mesas para receber bem", img: mesa }].map((b) => (
+            <a key={b.t} href="#produtos" className="flex items-center justify-between gap-4 overflow-hidden rounded-lg bg-secondary p-6 hover:ring-2 hover:ring-gold">
+              <div><p className="text-2xl font-bold text-navy">{b.t}</p><p className="text-sm text-muted-foreground">{b.d}</p><span className="mt-3 inline-block text-sm font-bold text-navy underline">Ver produtos</span></div>
+              <img src={b.img} alt={b.t} loading="lazy" className="size-32 object-contain mix-blend-multiply" />
+            </a>
+          ))}
+        </div>
+
+        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Mais vendidos</h2>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
-        <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {products.map((p) => <Card key={p.id} p={p} />)}
         </div>
       </div>
@@ -84,22 +144,22 @@ function Index() {
 }
 
 function Card({ p }: { p: Product }) {
-            const [img, setImg] = useState(p.image);
-            const off = Math.round((1 - p.price / p.oldPrice) * 100);
-            return (
-              <Link to="/produto/$id" params={{ id: p.id }} className="group flex flex-col rounded-md border bg-card p-3 hover:border-navy">
-                <div className="relative">
-                  <img src={img} alt={p.title} width={1024} height={1024} loading="lazy" className="aspect-square w-full object-contain" />
-                  {off > 0 && <span className="absolute left-0 top-0 rounded-sm bg-destructive px-1.5 py-0.5 text-[11px] font-bold text-destructive-foreground">-{off}%</span>}
-                </div>
-                <Swatches colors={p.colors} current={img} onPick={setImg} />
-                <p className="mt-2 line-clamp-2 min-h-10 text-sm group-hover:text-link">{p.title}</p>
-                <div className="mt-auto pt-2">
-                  <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
-                  <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
-                  <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
-                  <span className="btn-comprar mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm"><ShoppingBag className="size-4" />Comprar</span>
-                </div>
-              </Link>
-            );
+  const [img, setImg] = useState(p.image);
+  const off = Math.round((1 - p.price / p.oldPrice) * 100);
+  return (
+    <Link to="/produto/$id" params={{ id: p.id }} className="group flex flex-col rounded-lg border bg-card p-3 transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="relative overflow-hidden">
+        <img src={img} alt={p.title} width={1024} height={1024} loading="lazy" className="aspect-square w-full object-contain transition group-hover:scale-105" />
+        {off > 0 && <span className="absolute left-0 top-0 rounded-sm bg-destructive px-1.5 py-0.5 text-[11px] font-bold text-destructive-foreground">-{off}%</span>}
+      </div>
+      <Swatches colors={p.colors} current={img} onPick={setImg} />
+      <p className="mt-2 line-clamp-2 min-h-10 text-sm group-hover:text-link">{p.title}</p>
+      <div className="mt-auto pt-2">
+        <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
+        <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
+        <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
+        <span className="btn-comprar mt-3 flex items-center justify-center gap-2 rounded-full py-2.5 text-sm"><ShoppingBag className="size-4" />Comprar</span>
+      </div>
+    </Link>
+  );
 }
