@@ -29,6 +29,16 @@ const schema = z.object({
 
 const num = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const CUPOM = "PRIMEIRACOMPRARAINHA";
+const CUPOM_PCT = 0.1;
+function cpfValido(v: string) {
+  const c = v.replace(/\D/g, "");
+  if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+  const dig = (n: number) => { let s = 0; for (let i = 0; i < n; i++) s += Number(c[i]) * (n + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; };
+  return dig(9) === Number(c[9]) && dig(10) === Number(c[10]);
+}
+const fmtCpf = (v: string) => v.replace(/\D/g, "").slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
 type DadosPedido = {
   nome: string; telefone: string; endereco: string; localizacao?: string; condicaoEntrega?: string;
   itens: string; subtotal: string; frete: string; total: string; statusPagamento?: string;
