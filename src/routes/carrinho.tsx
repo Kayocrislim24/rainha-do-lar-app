@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
+import { Roleta, ROLETA_MIN, sortearPremio } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
@@ -61,6 +62,7 @@ function CartPage() {
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
+  const [premio, setPremio] = useState<string | null>(null);
   const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
@@ -77,20 +79,23 @@ function CartPage() {
     const condicoes = [
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
-    ].filter(Boolean).join(" | ");
+    ].filter(Boolean);
+    const sorteado = subtotal >= ROLETA_MIN ? sortearPremio() : null;
+    if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
     setMsg("Enviando pedido...");
     const orderId = crypto.randomUUID();
     const { error } = await supabase.from("orders").insert({
       id: orderId,
-      user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
+      user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes.join(" | ") || null,
       itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
       subtotal, frete, total: subtotal + frete,
     });
     if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
+    setPremio(sorteado);
     setCodigo(orderId.slice(0, 8).toUpperCase());
     setDone(r.data.nome.split(" ")[0] ?? r.data.nome);
     clear();
@@ -119,6 +124,7 @@ function CartPage() {
             <p className="text-2xl font-bold tracking-widest text-navy">{codigo}</p>
             <p className="text-xs text-muted-foreground">Guarde para rastrear sua entrega</p>
           </div>
+          {premio && <Roleta premio={premio} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/rastreio" search={{ codigo, tel: f.telefone.replace(/\D/g, "") }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
@@ -178,6 +184,7 @@ function CartPage() {
         </div>
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + frete)}</span></div>
+        <p className="mt-3 rounded-md bg-background p-2 text-center text-sm font-semibold text-navy">🎁 {subtotal >= ROLETA_MIN ? "Você vai girar a Roleta da Sorte ao finalizar!" : `Faltam ${brl(ROLETA_MIN - subtotal)} para girar a Roleta da Sorte`}</p>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
         <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>
