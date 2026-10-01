@@ -42,7 +42,7 @@ function Banners() {
   const [anim, setAnim] = useState(true);
   const n = list.length;
   useEffect(() => { if (n < 2) return; const id = setInterval(() => { setAnim(true); setI((x) => x + 1); }, 5000); return () => clearInterval(id); }, [n]);
-  useEffect(() => { if (i >= n && n > 0) { const t = setTimeout(() => { setAnim(false); setI(0); }, 700); return () => clearTimeout(t); } }, [i, n]);
+  useEffect(() => { if (i >= n && n > 0) { const t = setTimeout(() => { setAnim(false); setI(0); }, 700); return () => clearTimeout(t); } return undefined; }, [i, n]);
   if (!n) return null;
   const track = n > 1 ? [...list, list[0]!] : list;
   return (
