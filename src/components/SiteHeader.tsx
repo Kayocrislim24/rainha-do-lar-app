@@ -50,12 +50,12 @@ export function SiteHeader() {
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <FreeShippingBar />
       <nav className="border-t">
-        <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap text-navy">
-          <Link to="/busca" search={{}} className="hover:text-gold">Todos os departamentos</Link>
-          {[["Sala de estar", "Sof"], ["Quarto", "Cama"], ["Guarda-roupas", "Guarda"], ["Sala de jantar", "Mesa"], ["Sofás", "Sof"], ["Camas", "Cama"], ["Mesas", "Mesa"]].map(([l, c]) => (
-            <Link key={l} to="/busca" search={{ q: c }} className="hover:text-gold">{l}</Link>
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap">
+          <Link to="/busca" search={{}} className="rounded-full bg-navy px-4 py-2 text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
+          {[["🛋️ Sala de estar", "Sof"], ["🛏️ Quarto", "Cama"], ["🚪 Guarda-roupas", "Guarda"], ["🍽️ Sala de jantar", "Mesa"], ["🛋️ Sofás", "Sof"], ["🛏️ Camas", "Cama"], ["🪑 Mesas", "Mesa"]].map(([l, c]) => (
+            <Link key={l} to="/busca" search={{ q: c }} className="rounded-full border-2 border-gold bg-background px-4 py-1.5 text-navy shadow-sm transition hover:-translate-y-0.5 hover:bg-gold hover:shadow-md">{l}</Link>
           ))}
-          <Link to="/busca" search={{}} className="font-bold text-gold">Ofertas</Link>
+          <Link to="/busca" search={{}} className="btn-comprar rounded-full px-5 py-2 font-bold">🔥 Ofertas</Link>
         </div>
       </nav>
     </header>
