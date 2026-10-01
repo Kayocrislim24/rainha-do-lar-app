@@ -6,6 +6,10 @@ import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
 import { LiveSearch } from "@/components/LiveSearch";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
+import imgSofa from "@/assets/sofa.jpg";
+import imgCama from "@/assets/cama.jpg";
+import imgGuarda from "@/assets/guarda-roupa.jpg";
+import imgMesa from "@/assets/mesa.jpg";
 
 export function SiteHeader() {
   const { count } = useCart();
@@ -51,11 +55,15 @@ export function SiteHeader() {
       <FreeShippingBar />
       <nav className="border-t">
         <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap">
-          <Link to="/busca" search={{}} className="rounded-full bg-navy px-4 py-2 text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
-          {[["🛋️ Sala de estar", "Sof"], ["🛏️ Quarto", "Cama"], ["🚪 Guarda-roupas", "Guarda"], ["🍽️ Sala de jantar", "Mesa"], ["🛋️ Sofás", "Sof"], ["🛏️ Camas", "Cama"], ["🪑 Mesas", "Mesa"]].map(([l, c]) => (
-            <Link key={l} to="/busca" search={{ q: c }} className="rounded-full border-2 border-gold bg-background px-4 py-1.5 text-navy shadow-sm transition hover:-translate-y-0.5 hover:bg-gold hover:shadow-md">{l}</Link>
+          <Link to="/busca" search={{}} className="flex items-center rounded-full bg-navy px-4 py-2 uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
+          {([["Sala de estar", "Sof", imgSofa], ["Quarto", "Cama", imgCama], ["Guarda-roupas", "Guarda", imgGuarda], ["Sala de jantar", "Mesa", imgMesa], ["Sofás", "Sof", imgSofa], ["Camas", "Cama", imgCama], ["Mesas", "Mesa", imgMesa]] as const).map(([l, c, img]) => (
+            <Link key={l} to="/busca" search={{ q: c }} className="flex items-center gap-2 rounded-full border-2 border-gold bg-background py-1 pl-1 pr-4 uppercase text-navy shadow-sm transition hover:-translate-y-0.5 hover:bg-gold hover:shadow-md">
+              <img src={img} alt="" className="size-8 rounded-full object-cover" />{l}
+            </Link>
           ))}
-          <Link to="/busca" search={{}} className="btn-comprar rounded-full px-5 py-2 font-bold">🔥 Ofertas</Link>
+          <Link to="/busca" search={{}} className="btn-comprar flex items-center gap-2 rounded-full py-1 pl-1 pr-5 font-bold uppercase">
+            <img src={imgSofa} alt="" className="size-8 rounded-full object-cover" />Ofertas
+          </Link>
         </div>
       </nav>
     </header>
