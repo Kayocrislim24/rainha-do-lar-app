@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
+import { premiosKey, usePremios } from "@/components/Roleta";
 import { useAuth } from "@/lib/auth";
 import { productsKey, resolveImage, useProducts, type Product, type ProductColor } from "@/lib/products";
 
@@ -27,7 +28,7 @@ type Form = typeof empty;
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"produtos" | "pedidos">("produtos");
+  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta">("produtos");
   if (loading) return <main className="p-10 text-center">Carregando...</main>;
   if (!isAdmin) return <main className="p-10 text-center">Acesso restrito ao administrador. <Link to="/conta" className="text-link underline">Minha conta</Link></main>;
   return (
@@ -38,7 +39,7 @@ function Admin() {
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 font-semibold capitalize ${tab === t ? "bg-navy text-primary-foreground" : "border"}`}>{t}</button>
         ))}
       </div>
-      {tab === "produtos" ? <Produtos /> : <Pedidos />}
+      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : <RoletaAdmin />}
     </main>
   );
 }
@@ -250,5 +251,39 @@ function Cores({ value, onChange }: { value: ProductColor[]; onChange: (v: Produ
       ))}
       <button type="button" onClick={() => onChange([...value, { name: "", hex: "#8b5a2b", image: "" }])} className="mt-2 rounded-md border border-navy px-3 py-1.5 font-semibold text-navy">+ Adicionar cor</button>
     </div>
+  );
+}
+
+function RoletaAdmin() {
+  const atuais = usePremios();
+  const qc = useQueryClient();
+  const [lista, setLista] = useState<string[] | null>(null);
+  const [msg, setMsg] = useState("");
+  const l = lista ?? atuais;
+  const salvar = async () => {
+    const limpa = l.map((x) => x.trim()).filter(Boolean).slice(0, 12);
+    if (limpa.length < 2) return setMsg("Coloque pelo menos 2 prêmios.");
+    const { error } = await supabase.from("settings" as never).upsert({ key: "roleta_premios", value: limpa, updated_at: new Date().toISOString() } as never);
+    if (error) return setMsg("Não foi possível salvar.");
+    setLista(limpa); setMsg("Prêmios salvos!"); qc.invalidateQueries({ queryKey: premiosKey });
+  };
+  return (
+    <section className="max-w-xl rounded-lg border p-4">
+      <h2 className="text-lg font-bold text-navy">Prêmios da Roleta da Sorte</h2>
+      <p className="text-sm text-muted-foreground">Compras acima de R$ 2.000 giram a roleta. De 2 a 12 prêmios.</p>
+      <div className="mt-3 space-y-2">
+        {l.map((p, i) => (
+          <div key={i} className="flex gap-2">
+            <input value={p} maxLength={40} onChange={(e) => setLista(l.map((x, j) => (j === i ? e.target.value : x)))} className="w-full rounded-md border px-3 py-2" />
+            <button onClick={() => setLista(l.filter((_, j) => j !== i))} className="rounded-md border px-3 text-sm text-destructive">Apagar</button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex gap-2">
+        {l.length < 12 && <button onClick={() => setLista([...l, ""])} className="rounded-md border px-4 py-2 font-semibold">+ Adicionar prêmio</button>}
+        <button onClick={salvar} className="rounded-md bg-navy px-4 py-2 font-bold text-primary-foreground">Salvar prêmios</button>
+      </div>
+      {msg && <p className="mt-2 text-sm font-semibold text-navy">{msg}</p>}
+    </section>
   );
 }
