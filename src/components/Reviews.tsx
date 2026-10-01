@@ -87,28 +87,9 @@ export function Reviews({ productId }: { productId: string }) {
 
   return (
     <section className="mt-12 border-t pt-8">
-      <h2 className="text-2xl font-bold text-navy sm:text-3xl">Opiniões sobre o produto</h2>
-
-      <div className="mt-6 grid gap-8 lg:grid-cols-[340px_1fr]">
-        <div className="space-y-6">
-          <div className="rounded-xl border p-5">
-            <div className="flex items-end gap-3">
-              <span className="text-6xl font-bold leading-none text-navy">{media.toFixed(1)}</span>
-              <div><Stars n={Math.round(media)} size="size-6" /><p className="mt-1 text-sm text-muted-foreground">{list.length} avaliação(ões)</p></div>
-            </div>
-            <div className="mt-5 space-y-2">
-              {dist.map(({ s, c }) => (
-                <div key={s} className="flex items-center gap-2 text-sm">
-                  <span className="w-12 shrink-0">{s} estrela{s > 1 ? "s" : ""}</span>
-                  <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-gold" style={{ width: `${list.length ? (c / list.length) * 100 : 0}%` }} /></div>
-                  <span className="w-6 text-right text-muted-foreground">{c}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+      <div className="mx-auto max-w-xl">
           <form onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
-            <p className="text-lg font-semibold text-navy">Avalie este produto</p>
+            <p className="text-2xl font-bold text-navy">Avalie este produto</p>
             <Stars n={nota} onPick={setNota} size="size-9" />
             <div className="flex items-center gap-3">
               <label className="relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-gold bg-background text-navy" aria-label="Sua foto de perfil">
@@ -136,25 +117,8 @@ export function Reviews({ productId }: { productId: string }) {
             <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : "Enviar avaliação"}</button>
             {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
           </form>
-        </div>
-
-        <div className="space-y-6">
-          {list.length === 0 && <p className="text-lg text-muted-foreground">Seja o primeiro a avaliar este produto.</p>}
-          {list.map((r) => (
-            <article key={r.id} className="border-b pb-6">
-              <div className="flex items-center gap-3">
-                {r.avatar ? <img src={r.avatar} alt={r.nome} className="size-12 rounded-full border-2 border-gold object-cover" /> : <div className="grid size-12 place-items-center rounded-full bg-navy text-lg font-bold text-gold">{r.nome.charAt(0).toUpperCase()}</div>}
-                <div><p className="text-base font-semibold">{r.nome}</p><p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p></div>
-              </div>
-              <div className="mt-3"><Stars n={r.nota} size="size-5" /></div>
-              <p className="mt-2 text-base leading-relaxed sm:text-lg">{r.comentario}</p>
-              {r.fotos?.length > 0 && <div className="mt-3 flex flex-wrap gap-3">{r.fotos.map((f, i) => <button key={i} onClick={() => setZoom(f)}><img src={f} alt="Foto do cliente" className="size-28 rounded-lg border object-cover transition hover:opacity-90 sm:size-36" /></button>)}</div>}
-            </article>
-          ))}
-        </div>
       </div>
-
-      {zoom && <div onClick={() => setZoom(null)} className="fixed inset-0 z-[100] grid place-items-center bg-navy/80 p-4"><img src={zoom} alt="" className="max-h-full max-w-full rounded-lg" /></div>}
+      {void dist}{void media}{void zoom}{void setZoom}
     </section>
   );
 }

@@ -7,6 +7,7 @@ import { brl, quoteShipping, useCart } from "@/lib/store";
 import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
 import { Reviews } from "@/components/Reviews";
+import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/produto/$id")({
   head: () => ({
@@ -26,7 +27,18 @@ function ProductRoute() {
   if (isLoading) return <main className="p-10 text-center">Carregando...</main>;
   const p = data?.find((x) => x.id === id);
   if (!p) return <div className="p-10 text-center">Produto não encontrado. <Link to="/" className="text-link underline">Voltar</Link></div>;
-  return <ProductPage p={p} />;
+  const rel = (data ?? []).filter((x) => x.id !== p.id).sort((a, b) => Number(b.category === p.category) - Number(a.category === p.category)).slice(0, 8);
+  return (
+    <>
+      <ProductPage key={p.id} p={p} />
+      {rel.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <h2 className="mb-4 text-2xl font-bold uppercase text-navy">Produtos relacionados</h2>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">{rel.map((r) => <ProductCard key={r.id} p={r} />)}</div>
+        </section>
+      )}
+    </>
+  );
 }
 
 function ProductPage({ p }: { p: Product }) {
