@@ -47,12 +47,12 @@ export function Roleta({ premio, premios = PREMIOS }: { premio: string; premios?
     <div className="mt-8 rounded-xl border-2 border-gold bg-secondary p-5">
       <p className="flex items-center justify-center gap-2 text-lg font-bold text-navy"><Gift className="size-5 text-gold" />Roleta da Sorte</p>
       <p className="text-sm text-muted-foreground">Sua compra passou de R$ 2.000! Gire e ganhe um prêmio.</p>
-      <div className="relative mx-auto mt-4 aspect-square w-full max-w-[360px]">
+      <div className="relative mx-auto mt-4 aspect-square w-full max-w-[460px]">
         <div className="absolute left-1/2 top-[-6px] z-10 -translate-x-1/2 border-x-[14px] border-t-[26px] border-x-transparent border-t-destructive" />
         <div className="relative size-full rounded-full border-4 border-gold shadow-lg" style={{ background: bg, transform: `rotate(${rot}deg)`, transition: "transform 4s cubic-bezier(.17,.67,.2,1)" }}>
           {PREMIOS_.map((p, i) => (
-            <div key={p + i} className="absolute left-1/2 top-1/2 flex w-1/2 origin-left items-center pl-[30%] pr-[6%]" style={{ transform: `rotate(${i * seg + seg / 2 - 90}deg)` }}>
-              <span className={`min-w-0 w-full -translate-y-1/2 text-[9px] font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:text-[10px] ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
+            <div key={p + i} className="absolute left-1/2 top-1/2 flex h-0 w-1/2 origin-left items-center pl-[29%] pr-[5%]" style={{ transform: `rotate(${i * seg + seg / 2 - 90}deg)` }}>
+              <span className={`w-full break-words text-center font-bold uppercase leading-[1.05] ${p.length > 20 ? "text-[7px] sm:text-[9px]" : p.length > 12 ? "text-[8px] sm:text-[10px]" : "text-[9px] sm:text-xs"} ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
             </div>
           ))}
         </div>
