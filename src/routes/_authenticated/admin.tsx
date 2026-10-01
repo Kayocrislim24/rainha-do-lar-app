@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const STATUS = ["Aguardando pagamento", "Pago", "Em separação", "Saiu para entrega", "Entregue", "Cancelado"];
 type Item = { title: string; qty: number; price: number };
 
-const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, colors: [] as ProductColor[] };
+const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, colors: [] as ProductColor[] };
 type Form = typeof empty;
 
 function Admin() {
@@ -53,7 +53,7 @@ function Produtos() {
 
   const edit = (p: Product) => {
     setEditing(true);
-    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })) });
+    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })) });
   };
 
   const save = async () => {
@@ -61,7 +61,7 @@ function Produtos() {
     if (!f.title || !f.price) return setMsg("Preencha nome e preço.");
     const n = (s: string) => Number(s.replace(",", ".")) || 0;
     const id = f.id || f.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, colors: f.colors.filter((c) => c.name || c.image) };
+    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, colors: f.colors.filter((c) => c.name || c.image) };
     const { error } = editing ? await supabase.from("products").update(row).eq("id", f.id) : await supabase.from("products").insert(row);
     if (error) return setMsg(error.message);
     setMsg("Salvo!"); setF(null); qc.invalidateQueries({ queryKey: productsKey });
@@ -96,6 +96,9 @@ function Produtos() {
           {fld("stock", "Estoque", "number")}
           <Foto label="Foto 1 (principal)" value={f.image} onChange={(v) => setF({ ...f, image: v })} />
           <Foto label="Foto 2" value={f.image2} onChange={(v) => setF({ ...f, image2: v })} />
+          <Foto label="Foto 3" value={f.image3} onChange={(v) => setF({ ...f, image3: v })} />
+          <Foto label="Foto 4" value={f.image4} onChange={(v) => setF({ ...f, image4: v })} />
+          <Foto label="Foto 5" value={f.image5} onChange={(v) => setF({ ...f, image5: v })} />
           <Cores value={f.colors} onChange={(colors) => setF({ ...f, colors })} />
           <div className="grid grid-cols-3 gap-2">{fld("dim_w", "Largura cm")}{fld("dim_h", "Altura cm")}{fld("dim_d", "Prof. cm")}</div>
           <label className="text-sm sm:col-span-2">Descrição<textarea className={input} rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></label>

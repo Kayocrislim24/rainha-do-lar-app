@@ -82,9 +82,9 @@ function ProductPage({ p }: { p: Product }) {
         <div>
           <div className="rounded-lg border p-4"><img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
           {p.colors.length > 0 && <div className="mt-3"><p className="text-sm font-semibold">Cor: {p.colors.find((c) => c.image === foto)?.name ?? "Escolha"}</p><Swatches colors={p.colors} current={foto} onPick={setFoto} big /></div>}
-          {p.image2 && (
-            <div className="mt-3 flex gap-3">
-              {[p.image, p.image2].map((s, i) => (
+          {p.gallery.length > 1 && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {p.gallery.map((s, i) => (
                 <button key={i} onClick={() => setFoto(s)} aria-label={`Foto ${i + 1}`} className={`size-20 rounded-md border-2 p-1 ${foto === s ? "border-gold" : "border-border"}`}><img src={s} alt="" className="size-full object-contain" /></button>
               ))}
             </div>
