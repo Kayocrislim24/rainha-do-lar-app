@@ -167,7 +167,6 @@ function CartPage() {
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
-        <FreeShippingBar boxed />
         <section className="rounded-lg border p-4">
           <h1 className="text-xl font-bold text-navy">Seu carrinho</h1>
           {items.map((i) => (
