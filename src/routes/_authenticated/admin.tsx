@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 import { fotosKey, premiosKey, usePremioFotos, usePremios } from "@/components/Roleta";
 import { useAuth } from "@/lib/auth";
+import { HomeAdmin } from "@/components/HomeAdmin";
 import { productsKey, resolveImage, useProducts, type Product, type ProductColor } from "@/lib/products";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -28,18 +29,18 @@ type Form = typeof empty;
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta">("produtos");
+  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta" | "banners">("produtos");
   if (loading) return <main className="p-10 text-center">Carregando...</main>;
   if (!isAdmin) return <main className="p-10 text-center">Acesso restrito ao administrador. <Link to="/conta" className="text-link underline">Minha conta</Link></main>;
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-navy">Painel do administrador</h1>
-      <div className="mt-4 flex gap-2">
-        {(["produtos", "pedidos", "roleta"] as const).map((t) => (
+      <div className="mt-4 flex flex-wrap gap-2">
+        {(["produtos", "pedidos", "roleta", "banners"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 font-semibold capitalize ${tab === t ? "bg-navy text-primary-foreground" : "border"}`}>{t}</button>
         ))}
       </div>
-      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : <RoletaAdmin />}
+      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "roleta" ? <RoletaAdmin /> : <HomeAdmin />}
     </main>
   );
 }
