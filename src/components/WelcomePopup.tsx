@@ -7,11 +7,11 @@ const CUPOM = "PRIMEIRACOMPRARAINHA";
 export function WelcomePopup() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (sessionStorage.getItem("rdl-welcome")) return;
+    if (sessionStorage.getItem("rdl-welcome-v2")) return;
     const t = setTimeout(() => setOpen(true), 800);
     return () => clearTimeout(t);
   }, []);
-  const close = () => { sessionStorage.setItem("rdl-welcome", "1"); setOpen(false); };
+  const close = () => { sessionStorage.setItem("rdl-welcome-v2", "1"); setOpen(false); };
   const copy = async () => {
     try { await navigator.clipboard.writeText(CUPOM); } catch { /* ignore */ }
     close();
