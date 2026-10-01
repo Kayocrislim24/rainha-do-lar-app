@@ -67,6 +67,10 @@ function ProductPage({ p }: { p: Product }) {
           <div className="mt-4"><Price old={p.oldPrice} price={p.price} big /></div>
           <p className="text-sm text-muted-foreground">ou em até 12x de {brl(p.price / 12)}</p>
           <div className="mt-4 flex items-center gap-3"><button onClick={() => { add(p.id, qty); nav({ to: "/carrinho" }); }} className="btn-comprar flex flex-1 items-center justify-center gap-3 rounded-full py-4 text-xl"><ShoppingBag className="size-6" />Comprar</button>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-price-new bg-price-new/10 px-4 py-2 text-center text-sm font-bold leading-tight text-price-new">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
+          <button onClick={() => { localStorage.setItem("rdl-cupom", "PRIMEIRACOMPRARAINHA"); add(p.id, qty); nav({ to: "/carrinho" }); }} className="mt-3 w-full rounded-full border-2 border-dashed border-gold bg-navy px-4 py-3 text-center text-primary-foreground transition hover:brightness-110">
+            <span className="block text-base font-bold uppercase tracking-wide">Comprar com cupom <span className="text-gold">10% OFF</span> · {brl(p.price * 0.9)}</span>
+            <span className="block text-xs text-primary-foreground/80">Cupom <b className="text-gold">PRIMEIRACOMPRARAINHA</b> · válido 1 vez por CPF, na primeira compra</span>
+          </button>
           <p className="mt-3 flex items-center gap-1 text-sm font-semibold text-price-new"><CheckCircle2 className="size-4" />Estoque disponível <span className="font-normal text-muted-foreground">({p.stock} unidades)</span></p>
 
           <div className="mt-5 flex gap-3">

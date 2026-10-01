@@ -17,7 +17,10 @@ export type Database = {
       orders: {
         Row: {
           condicao: string | null
+          cpf: string | null
           created_at: string
+          cupom: string | null
+          desconto: number
           endereco: string
           frete: number
           id: string
@@ -31,7 +34,10 @@ export type Database = {
         }
         Insert: {
           condicao?: string | null
+          cpf?: string | null
           created_at?: string
+          cupom?: string | null
+          desconto?: number
           endereco: string
           frete: number
           id?: string
@@ -45,7 +51,10 @@ export type Database = {
         }
         Update: {
           condicao?: string | null
+          cpf?: string | null
           created_at?: string
+          cupom?: string | null
+          desconto?: number
           endereco?: string
           frete?: number
           id?: string
@@ -207,6 +216,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cupom_disponivel: {
+        Args: { _cpf: string; _cupom: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

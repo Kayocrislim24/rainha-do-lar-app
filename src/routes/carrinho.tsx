@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
@@ -28,6 +28,16 @@ const schema = z.object({
 });
 
 const num = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const CUPOM = "PRIMEIRACOMPRARAINHA";
+const CUPOM_PCT = 0.1;
+function cpfValido(v: string) {
+  const c = v.replace(/\D/g, "");
+  if (c.length !== 11 || /^(\d)\1+$/.test(c)) return false;
+  const dig = (n: number) => { let s = 0; for (let i = 0; i < n; i++) s += Number(c[i]) * (n + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; };
+  return dig(9) === Number(c[9]) && dig(10) === Number(c[10]);
+}
+const fmtCpf = (v: string) => v.replace(/\D/g, "").slice(0, 11).replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
 
 type DadosPedido = {
   nome: string; telefone: string; endereco: string; localizacao?: string; condicaoEntrega?: string;
@@ -63,7 +73,14 @@ function CartPage() {
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
   const [premio, setPremio] = useState<string | null>(null);
+  const [cupomOn, setCupomOn] = useState(false);
+  const [cupomTxt, setCupomTxt] = useState("");
+  const [cpf, setCpf] = useState("");
+  useEffect(() => { const c = localStorage.getItem("rdl-cupom"); if (c) { setCupomTxt(c); setCupomOn(c.toUpperCase() === CUPOM); } }, []);
+  const desconto = cupomOn ? Math.round(subtotal * CUPOM_PCT * 100) / 100 : 0;
   const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
+  const aplicarCupom = () => { const ok = cupomTxt.trim().toUpperCase() === CUPOM; setCupomOn(ok); if (ok) localStorage.setItem("rdl-cupom", CUPOM); setMsg(ok ? "" : "Cupom inválido."); };
+  const tirarCupom = () => { setCupomOn(false); setCupomTxt(""); localStorage.removeItem("rdl-cupom"); };
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const calc = async () => {
@@ -75,12 +92,19 @@ function CartPage() {
     const r = schema.safeParse(f);
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
+    const cpfLimpo = cpf.replace(/\D/g, "");
+    if (cupomOn) {
+      if (!cpfValido(cpfLimpo)) return setMsg("Informe um CPF válido para usar o cupom.");
+      const { data: livre } = await supabase.rpc("cupom_disponivel" as never, { _cpf: cpfLimpo, _cupom: CUPOM } as never);
+      if (livre === false) return setMsg("Este CPF já usou o cupom PRIMEIRACOMPRARAINHA. Remova o cupom para continuar.");
+    }
     const a = ship.address;
     const condicoes = [
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean);
     const sorteado = subtotal >= ROLETA_MIN ? sortearPremio() : null;
+    if (cupomOn) condicoes.push(`🏷️ Cupom ${CUPOM} (-10%): -R$ ${num(desconto)} · CPF ${fmtCpf(cpfLimpo)}`);
     if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
@@ -90,9 +114,11 @@ function CartPage() {
       id: orderId,
       user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes.join(" | ") || null,
       itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
-      subtotal, frete, total: subtotal + frete,
-    });
-    if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
+      subtotal, frete, total: subtotal - desconto + frete,
+      ...(cupomOn ? { cpf: cpfLimpo, cupom: CUPOM, desconto } : {}),
+    } as never);
+    if (error) return setMsg(error.code === "23505" ? "Este CPF já usou o cupom PRIMEIRACOMPRARAINHA." : "Não foi possível enviar o pedido. Tente novamente.");
+    localStorage.removeItem("rdl-cupom");
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
     setPremio(sorteado);
@@ -182,8 +208,21 @@ function CartPage() {
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
           <div className="flex justify-between"><span>Frete</span><span>{subtotal >= FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : ship ? brl(ship.cost) : "—"}</span></div>
         </div>
+        <div className="mt-3 rounded-md border-2 border-dashed border-gold bg-background p-3">
+          <p className="text-sm font-bold text-navy">Cupom de desconto</p>
+          {cupomOn ? (
+            <>
+              <p className="mt-1 flex items-center justify-between text-sm"><span className="font-bold text-navy">{CUPOM} · 10% OFF</span><button onClick={tirarCupom} className="text-xs underline text-muted-foreground">remover</button></p>
+              <input className="mt-2 w-full rounded-md border px-3 py-2 text-sm" placeholder="CPF (obrigatório para o cupom)" inputMode="numeric" value={fmtCpf(cpf)} onChange={(e) => setCpf(e.target.value)} />
+              <p className="mt-1 text-xs text-muted-foreground">Desconto válido 1 vez por CPF, na primeira compra.</p>
+            </>
+          ) : (
+            <div className="mt-2 flex gap-2"><input className="w-full rounded-md border px-3 py-2 text-sm uppercase" placeholder="Digite o cupom" value={cupomTxt} onChange={(e) => setCupomTxt(e.target.value)} /><button onClick={aplicarCupom} className="rounded-md bg-navy px-3 text-sm font-bold text-primary-foreground">Aplicar</button></div>
+          )}
+        </div>
+        {desconto > 0 && <div className="mt-2 flex justify-between text-sm font-bold text-navy"><span>Desconto cupom</span><span>- {brl(desconto)}</span></div>}
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
-        <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + frete)}</span></div>
+        <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal - desconto + frete)}</span></div>
         <p className="mt-3 rounded-md bg-background p-2 text-center text-sm font-semibold text-navy">🎁 {subtotal >= ROLETA_MIN ? "Você vai girar a Roleta da Sorte ao finalizar!" : `Faltam ${brl(ROLETA_MIN - subtotal)} para girar a Roleta da Sorte`}</p>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
