@@ -35,7 +35,7 @@ function Admin() {
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-navy">Painel do administrador</h1>
       <div className="mt-4 flex gap-2">
-        {(["produtos", "pedidos"] as const).map((t) => (
+        {(["produtos", "pedidos", "roleta"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 font-semibold capitalize ${tab === t ? "bg-navy text-primary-foreground" : "border"}`}>{t}</button>
         ))}
       </div>
