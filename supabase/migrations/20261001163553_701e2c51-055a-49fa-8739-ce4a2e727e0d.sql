@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN image3 text NOT NULL DEFAULT '', ADD COLUMN image4 text NOT NULL DEFAULT '', ADD COLUMN image5 text NOT NULL DEFAULT '';

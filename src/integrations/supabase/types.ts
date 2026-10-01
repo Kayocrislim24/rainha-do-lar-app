@@ -83,6 +83,9 @@ export type Database = {
           id: string
           image: string
           image2: string
+          image3: string
+          image4: string
+          image5: string
           old_price: number
           price: number
           stock: number
@@ -102,6 +105,9 @@ export type Database = {
           id: string
           image?: string
           image2?: string
+          image3?: string
+          image4?: string
+          image5?: string
           old_price?: number
           price: number
           stock?: number
@@ -121,6 +127,9 @@ export type Database = {
           id?: string
           image?: string
           image2?: string
+          image3?: string
+          image4?: string
+          image5?: string
           old_price?: number
           price?: number
           stock?: number
