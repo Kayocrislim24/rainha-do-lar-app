@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Gift } from "lucide-react";
@@ -39,7 +39,10 @@ export function Roleta({ premio, premios = PREMIOS }: { premio: string; premios?
   const n = PREMIOS_.length, seg = 360 / n, idx = Math.max(0, PREMIOS_.indexOf(premio));
   const girar = () => { if (rot) return; setRot(360 * 6 + (360 - idx * seg - seg / 2)); setTimeout(() => setFim(true), 4200); };
   const bg = `conic-gradient(${PREMIOS_.map((_, i) => `var(--${i % 2 ? "gold" : "navy"}) ${i * seg}deg ${(i + 1) * seg}deg`).join(",")})`;
-  const fotoCentro = fim ? fotos[premio] : undefined;
+  const comFoto = PREMIOS_.filter((p) => fotos[p]);
+  const [k, setK] = useState(0);
+  useEffect(() => { if (fim || comFoto.length < 2) return; const t = setInterval(() => setK((x) => x + 1), rot ? 150 : 900); return () => clearInterval(t); }, [fim, rot, comFoto.length]);
+  const fotoCentro = fim ? fotos[premio] : comFoto.length ? fotos[comFoto[k % comFoto.length]!] : undefined;
   return (
     <div className="mt-8 rounded-xl border-2 border-gold bg-secondary p-5">
       <p className="flex items-center justify-center gap-2 text-lg font-bold text-navy"><Gift className="size-5 text-gold" />Roleta da Sorte</p>
@@ -48,14 +51,13 @@ export function Roleta({ premio, premios = PREMIOS }: { premio: string; premios?
         <div className="absolute left-1/2 top-[-6px] z-10 -translate-x-1/2 border-x-[14px] border-t-[26px] border-x-transparent border-t-destructive" />
         <div className="relative size-full rounded-full border-4 border-gold shadow-lg" style={{ background: bg, transform: `rotate(${rot}deg)`, transition: "transform 4s cubic-bezier(.17,.67,.2,1)" }}>
           {PREMIOS_.map((p, i) => (
-            <div key={p + i} className="absolute left-1/2 top-1/2 flex w-1/2 origin-left items-center gap-1 pl-[22%] pr-2" style={{ transform: `rotate(${i * seg + seg / 2 - 90}deg)` }}>
-              {fotos[p] && <img src={fotos[p]} alt="" className="size-8 shrink-0 rounded-full border-2 border-background object-cover" style={{ transform: "rotate(90deg)" }} />}
-              <span className={`min-w-0 text-[11px] font-bold uppercase leading-tight ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
+            <div key={p + i} className="absolute left-1/2 top-1/2 flex w-1/2 origin-left items-center pl-[30%] pr-[6%]" style={{ transform: `rotate(${i * seg + seg / 2 - 90}deg)` }}>
+              <span className={`min-w-0 w-full -translate-y-1/2 text-[9px] font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:text-[10px] ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
             </div>
           ))}
         </div>
-        <div className="absolute left-1/2 top-1/2 grid size-20 -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full border-4 border-gold bg-background">
-          {fotoCentro ? <img src={fotoCentro} alt={premio} className="size-full object-cover" /> : <Gift className="size-9 text-gold" />}
+        <div className="absolute left-1/2 top-1/2 grid size-24 -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full border-4 border-gold bg-background">
+          {fotoCentro ? <img src={fotoCentro} alt={premio} className="size-full object-cover" /> : <span className="text-[10px] font-bold text-navy">GIRE</span>}
         </div>
       </div>
       {fim ? (
