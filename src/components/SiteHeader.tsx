@@ -54,16 +54,14 @@ export function SiteHeader() {
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <FreeShippingBar />
       <nav className="border-t">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap">
-          <Link to="/busca" search={{}} className="flex items-center rounded-full bg-navy px-4 py-2 uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
-          {([["Sala de estar", "Sof", imgSofa], ["Quarto", "Cama", imgCama], ["Guarda-roupas", "Guarda", imgGuarda], ["Sala de jantar", "Mesa", imgMesa], ["Sofás", "Sof", imgSofa], ["Camas", "Cama", imgCama], ["Mesas", "Mesa", imgMesa]] as const).map(([l, c, img]) => (
-            <Link key={l} to="/busca" search={{ q: c }} className="flex items-center gap-2 rounded-full border-2 border-gold bg-background py-1 pl-1 pr-4 uppercase text-navy shadow-sm transition hover:-translate-y-0.5 hover:bg-gold hover:shadow-md">
-              <img src={img} alt="" className="size-8 rounded-full object-cover" />{l}
+        <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-3 text-xs font-bold whitespace-nowrap">
+          <Link to="/busca" search={{}} className="flex shrink-0 items-center rounded-full bg-navy px-4 py-2 text-sm uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
+          {([["Sala de estar", "Sof", imgSofa], ["Quarto", "Cama", imgCama], ["Guarda-roupas", "Guarda", imgGuarda], ["Sala de jantar", "Mesa", imgMesa], ["Sofás", "Sof", imgSofa], ["Camas", "Cama", imgCama], ["Mesas", "Mesa", imgMesa], ["Ofertas", "", imgSofa]] as const).map(([l, c, img]) => (
+            <Link key={l} to="/busca" search={c ? { q: c } : {}} className="group flex w-24 shrink-0 flex-col items-center gap-1.5 text-center uppercase text-navy transition hover:-translate-y-0.5">
+              <img src={img} alt="" className="size-16 rounded-full border-2 border-gold object-cover shadow-sm transition group-hover:shadow-md" />
+              <span className={l === "Ofertas" ? "rounded-full bg-gold px-2 py-0.5 text-navy" : ""}>{l}</span>
             </Link>
           ))}
-          <Link to="/busca" search={{}} className="btn-comprar flex items-center gap-2 rounded-full py-1 pl-1 pr-5 font-bold uppercase">
-            <img src={imgSofa} alt="" className="size-8 rounded-full object-cover" />Ofertas
-          </Link>
         </div>
       </nav>
     </header>
