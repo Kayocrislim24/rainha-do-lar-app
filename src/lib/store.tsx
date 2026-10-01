@@ -73,4 +73,4 @@ export async function quoteShipping(cep: string) {
 }
 
 /** Valor mínimo do carrinho para ganhar frete grátis. */
-export const FREE_SHIPPING_MIN = 1000;
+export const FREE_SHIPPING_MIN = 1500;
