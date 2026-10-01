@@ -7,7 +7,8 @@ import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
-import bannerCliente from "@/assets/banner-mes-economia.jpg.asset.json";
+import { useBanners, useSlides } from "@/lib/home";
+import { resolveImage } from "@/lib/products";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,11 +24,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const slides = [
-  { k: "Semana do Sofá", t: "Sofás com até 30% OFF", d: "Conforto para a sala inteira, em até 12x.", img: sofa },
-  { k: "Quarto dos sonhos", t: "Guarda-roupas a partir de 12x", d: "Mais espaço e organização com entrega própria no DF.", img: guarda },
-  { k: "Noites melhores", t: "Camas e cabeceiras em oferta", d: "Modelos casal e queen com preço especial.", img: cama },
-];
+
 
 const cats = [
   { n: "Sala de estar", img: sofa },
@@ -39,10 +36,33 @@ const cats = [
 ];
 
 
-function Hero() {
+function Banners() {
+  const list = useBanners();
   const [i, setI] = useState(0);
-  useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, []);
-  const s = slides[i] ?? slides[0]!;
+  const [anim, setAnim] = useState(true);
+  const n = list.length;
+  useEffect(() => { if (n < 2) return; const id = setInterval(() => { setAnim(true); setI((x) => x + 1); }, 5000); return () => clearInterval(id); }, [n]);
+  useEffect(() => { if (i >= n && n > 0) { const t = setTimeout(() => { setAnim(false); setI(0); }, 700); return () => clearTimeout(t); } return undefined; }, [i, n]);
+  if (!n) return null;
+  const track = n > 1 ? [...list, list[0]!] : list;
+  return (
+    <div className="mx-auto mt-4 max-w-7xl px-4">
+      <div className="relative overflow-hidden rounded-2xl">
+        <div className={`flex ${anim ? "transition-transform duration-700 ease-in-out" : ""}`} style={{ transform: `translateX(-${i * 100}%)` }}>
+          {track.map((src, k) => <img key={k} src={src} alt={`Banner ${(k % n) + 1}`} className="w-full shrink-0" />)}
+        </div>
+        {n > 1 && <div className="absolute inset-x-0 bottom-2 flex justify-center gap-2">{list.map((_, k) => <button key={k} aria-label={`Banner ${k + 1}`} onClick={() => { setAnim(true); setI(k); }} className={`h-2 rounded-full transition-all ${k === i % n ? "w-8 bg-gold" : "w-2 bg-background/70"}`} />)}</div>}
+      </div>
+    </div>
+  );
+}
+
+function Hero() {
+  const slides = useSlides().map((x) => ({ ...x, img: resolveImage(x.img) }));
+  const [i, setI] = useState(0);
+  useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, [slides.length]);
+  if (!slides.length) return null;
+  const s = slides[i % slides.length] ?? slides[0]!;
   return (
     <section className="relative mx-auto mt-4 max-w-7xl px-4">
       <div className="grid items-center gap-6 overflow-hidden rounded-2xl bg-navy px-6 py-8 text-primary-foreground md:grid-cols-2 md:px-12 md:py-14">
@@ -134,9 +154,7 @@ function Index() {
   const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
   return (
     <main>
-      <div className="mx-auto mt-4 max-w-7xl px-4">
-        <img src={bannerCliente.url} alt="Mês da Economia — 5% na primeira compra com o cupom PRIMEIRACOMPRARAINHA" className="w-full rounded-2xl" />
-      </div>
+      <Banners />
       <Hero />
       <div className="mx-auto max-w-7xl px-4">
         <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
