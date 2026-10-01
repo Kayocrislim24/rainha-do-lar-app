@@ -7,7 +7,7 @@ import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
-import bannerCliente from "@/assets/banner-mes-cliente.jpg.asset.json";
+import bannerCliente from "@/assets/banner-mes-economia.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -135,7 +135,7 @@ function Index() {
   return (
     <main>
       <div className="mx-auto mt-4 max-w-7xl px-4">
-        <img src={bannerCliente.url} alt="Mês do Cliente — 5% na primeira compra com o cupom PRIMEIRACOMPRARAINHA" className="w-full rounded-2xl" />
+        <img src={bannerCliente.url} alt="Mês da Economia — 5% na primeira compra com o cupom PRIMEIRACOMPRARAINHA" className="w-full rounded-2xl" />
       </div>
       <Hero />
       <div className="mx-auto max-w-7xl px-4">
