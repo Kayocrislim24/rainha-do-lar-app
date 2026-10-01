@@ -62,7 +62,7 @@ export function Roleta({ premio, premios = PREMIOS }: { premio: string; premios?
         <div className="relative size-full rounded-full border-4 border-gold shadow-lg" style={{ background: bg, transform: `rotate(${rot}deg)`, transition: "transform 4s cubic-bezier(.17,.67,.2,1)" }}>
           {PREMIOS_.map((p, i) => (
             <div key={p + i} className="absolute left-1/2 top-1/2 flex h-0 w-1/2 origin-left items-center pl-[29%] pr-[5%]" style={{ transform: `rotate(${i * seg + seg / 2 - 90}deg)` }}>
-              <span className={`w-full break-words text-center font-bold uppercase leading-[1.05] ${p.length > 20 ? "text-[7px] sm:text-[9px]" : p.length > 12 ? "text-[8px] sm:text-[10px]" : "text-[9px] sm:text-xs"} ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
+              <span className={`w-full whitespace-normal break-normal text-center font-bold uppercase leading-[1.35] [hyphens:none] [word-break:keep-all] ${Math.max(...p.split(" ").map((w) => w.length)) > 11 ? "text-[6px] sm:text-[8px]" : p.length > 20 ? "text-[7px] sm:text-[9px]" : p.length > 12 ? "text-[8px] sm:text-[10px]" : "text-[9px] sm:text-xs"} ${i % 2 ? "text-navy" : "text-gold"}`}>{p}</span>
             </div>
           ))}
         </div>
