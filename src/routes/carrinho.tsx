@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
-import { brl, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+import { FreeShippingBar } from "@/components/FreeShippingBar";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
@@ -60,6 +61,7 @@ function CartPage() {
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
+  const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
   const calc = async () => {
@@ -84,7 +86,7 @@ function CartPage() {
       id: orderId,
       user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes || null,
       itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
-      subtotal, frete: ship.cost, total: subtotal + ship.cost,
+      subtotal, frete, total: subtotal + frete,
     });
     if (error) return setMsg("Não foi possível enviar o pedido. Tente novamente.");
     setMsg("");
@@ -132,6 +134,7 @@ function CartPage() {
   return (
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
+        <FreeShippingBar boxed />
         <section className="rounded-lg border p-4">
           <h1 className="text-xl font-bold text-navy">Seu carrinho</h1>
           {items.map((i) => (
@@ -171,10 +174,10 @@ function CartPage() {
         <h2 className="text-lg font-bold text-navy">Resumo</h2>
         <div className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-          <div className="flex justify-between"><span>Frete</span><span>{ship ? brl(ship.cost) : "—"}</span></div>
+          <div className="flex justify-between"><span>Frete</span><span>{subtotal >= FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : ship ? brl(ship.cost) : "—"}</span></div>
         </div>
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
-        <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + (ship?.cost ?? 0))}</span></div>
+        <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + frete)}</span></div>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
         <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>

@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
 import { LiveSearch } from "@/components/LiveSearch";
+import { FreeShippingBar } from "@/components/FreeShippingBar";
 
 export function SiteHeader() {
   const { count } = useCart();
@@ -47,6 +48,7 @@ export function SiteHeader() {
         </div>
       </div>
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
+      <FreeShippingBar />
       <nav className="border-t">
         <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto px-4 py-3 text-sm font-semibold whitespace-nowrap text-navy">
           <Link to="/busca" search={{}} className="hover:text-gold">Todos os departamentos</Link>

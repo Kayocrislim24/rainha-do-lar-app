@@ -71,3 +71,6 @@ export async function quoteShipping(cep: string) {
   const km = Math.max(1, Math.round(2 * R * Math.asin(Math.sqrt(h)) * 1.3));
   return { km, cost: km * PRICE_PER_KM, lat, lon, address: a as { logradouro: string; bairro: string; localidade: string; uf: string } };
 }
+
+/** Valor mínimo do carrinho para ganhar frete grátis. */
+export const FREE_SHIPPING_MIN = 1000;
