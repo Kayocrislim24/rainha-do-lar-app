@@ -1,7 +1,7 @@
 import { ShoppingBag } from "lucide-react";
 import { Swatches } from "@/components/Swatches";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
 import { brl, quoteShipping, useCart } from "@/lib/store";
 import { useProducts, type Product } from "@/lib/products";
@@ -31,13 +31,31 @@ function ProductRoute() {
   return (
     <>
       <ProductPage key={p.id} p={p} />
-      {rel.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pb-12">
-          <h2 className="mb-4 text-2xl font-bold uppercase text-navy">Produtos relacionados</h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">{rel.map((r) => <ProductCard key={r.id} p={r} />)}</div>
-        </section>
-      )}
+      {rel.length > 0 && <DragRow items={rel} />}
     </>
+  );
+}
+
+function DragRow({ items }: { items: Product[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const st = useRef({ down: false, x: 0, left: 0, moved: false });
+  return (
+    <section className="mx-auto max-w-7xl px-4 pb-12">
+      <div
+        ref={ref}
+        className="flex cursor-grab snap-x gap-3 overflow-x-auto pb-2 select-none active:cursor-grabbing sm:gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        onMouseDown={(e) => { const el = ref.current!; st.current = { down: true, x: e.pageX, left: el.scrollLeft, moved: false }; }}
+        onMouseMove={(e) => { if (!st.current.down) return; const dx = e.pageX - st.current.x; if (Math.abs(dx) > 5) st.current.moved = true; ref.current!.scrollLeft = st.current.left - dx; }}
+        onMouseUp={() => { st.current.down = false; }}
+        onMouseLeave={() => { st.current.down = false; }}
+        onClickCapture={(e) => { if (st.current.moved) { e.preventDefault(); e.stopPropagation(); st.current.moved = false; } }}
+        onDragStart={(e) => e.preventDefault()}
+      >
+        {items.map((r) => (
+          <div key={r.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]"><ProductCard p={r} /></div>
+        ))}
+      </div>
+    </section>
   );
 }
 
