@@ -19,11 +19,11 @@ export function SiteHeader() {
           {[0, 1].map((k) => (
             <div key={k} className="flex shrink-0 items-center gap-10" aria-hidden={k === 1}>
               <span>👑 Sua casa digna de <span className="text-gold">uma rainha</span></span>
-              <span className="rounded-full bg-gold px-3 py-0.5 text-navy">🔥 Ofertas imperdíveis todo dia</span>
+              <span>🔥 Ofertas imperdíveis todo dia</span>
               <span>💳 Parcele em até <span className="text-gold">12x</span></span>
               <span>🚚 Entrega própria em todo o DF</span>
               <span>Desconto especial no <span className="text-gold">PIX</span></span>
-              <span className="rounded-full bg-gold px-3 py-0.5 text-navy">✨ Transforme seu lar hoje</span>
+              <span>✨ Transforme seu lar hoje</span>
               <span>🛋️ Conforto que <span className="text-gold">cabe no seu bolso</span></span>
               <span>💛 Qualidade de rainha, <span className="text-gold">preço de amiga</span></span>
               <span>🎁 Aproveite antes que <span className="text-gold">acabe</span></span>
