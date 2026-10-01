@@ -11,7 +11,7 @@ export function FreeShippingBar({ boxed }: { boxed?: boolean }) {
       <div className="mx-auto max-w-7xl">
         <p className="flex items-center justify-center gap-2 text-sm font-semibold text-navy">
           <Truck className="size-5 text-gold" />
-          {falta > 0 ? <>Faltam apenas <span className="font-bold text-gold">{brl(falta)}</span> para você ganhar <b>Frete Grátis!</b></> : <>👑 Entrega por conta da Rainha! Seu <b className="text-gold">FRETE GRÁTIS</b> está garantido 🎉</>}
+          <span>{falta > 0 ? <>Faltam apenas <span className="font-bold text-gold">{brl(falta)}</span> para você ganhar <b>Frete Grátis!</b></> : <>Você desbloqueou o <b className="text-gold">FRETE GRÁTIS</b>: sua entrega é por nossa conta!</>}</span>
         </p>
         <div className="mx-auto mt-1.5 h-2 max-w-md overflow-hidden rounded-full bg-background">
           <div className="h-full rounded-full bg-gold transition-all duration-500" style={{ width: `${pct}%` }} />
