@@ -135,9 +135,9 @@ function ProductPage({ p }: { p: Product }) {
       </div>
       <section className="mt-10 max-w-3xl">
         <h2 className="text-xl font-bold text-navy">Informações do produto</h2>
-        <p className="mt-2 whitespace-pre-line text-muted-foreground">{p.description}</p>
+        
         {p.specs.length > 0 && (
-          <table className="mt-4 w-full overflow-hidden rounded-lg border text-sm">
+          <table className="mt-3 w-full overflow-hidden rounded-lg border text-sm">
             <tbody>
               {p.specs.map((x, i) => (
                 <tr key={i} className={i % 2 ? "bg-background" : "bg-secondary"}>
@@ -148,6 +148,7 @@ function ProductPage({ p }: { p: Product }) {
             </tbody>
           </table>
         )}
+        <p className="mt-2 whitespace-pre-line text-muted-foreground">{p.description}</p>
       </section>
       <Reviews productId={p.id} />
     </main>

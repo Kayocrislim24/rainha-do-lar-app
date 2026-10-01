@@ -89,7 +89,7 @@ function Produtos() {
 
       {f && (
         <div className="mt-4 grid gap-3 rounded-lg border bg-secondary p-4 sm:grid-cols-2">
-          {fld("title", "Nome do produto")}
+          <label className="text-sm">Nome do produto<input className={input} value={f.title} onChange={(e) => { const title = e.target.value; const vazio = f.specs.every((x) => !x.v.trim()); setF({ ...f, title, specs: vazio ? fichaPara(title + " " + f.category).map((k) => ({ k, v: "" })) : f.specs }); }} /></label>
           {fld("category", "Categoria")}
           {fld("old_price", "Preço antigo (riscado)")}
           {fld("price", "Preço de venda")}
@@ -258,9 +258,27 @@ function Cores({ value, onChange }: { value: ProductColor[]; onChange: (v: Produ
   );
 }
 
+const BASE = ["Cor", "Tonalidade", "Marca", "Altura", "Largura", "Comprimento", "Peso do produto", "Tempo de garantia"];
+/** Escolhe as características certas pelo nome do produto. */
+function fichaPara(nome: string): string[] {
+  const t = nome.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/guarda|roupeiro|armario|closet/.test(t)) return ["Tipo de guarda-roupa", "Quantidade de portas", "Quantidade de gavetas", ...BASE];
+  if (/sofa|poltrona|recamier/.test(t)) return ["Tipo de sofá", "Lugares", "Material do revestimento", "Retrátil / reclinável", ...BASE];
+  if (/cama|box|colchao|beliche/.test(t)) return ["Tipo de cama", "Tamanho (solteiro/casal/queen/king)", "Material", ...BASE];
+  if (/mesa|cadeira|jantar/.test(t)) return ["Tipo de mesa", "Quantidade de lugares", "Material do tampo", "Cadeiras inclusas", ...BASE];
+  if (/rack|painel|estante|tv/.test(t)) return ["Tipo", "Suporta TV até", "Quantidade de portas", "Quantidade de prateleiras", ...BASE];
+  if (/comoda|criado|sapateira|cabeceira/.test(t)) return ["Tipo", "Quantidade de gavetas", "Quantidade de portas", ...BASE];
+  if (/cozinha|balcao|paneleiro|aereo/.test(t)) return ["Tipo de cozinha", "Quantidade de portas", "Quantidade de gavetas", ...BASE];
+  if (/geladeira|refrigerador|freezer/.test(t)) return ["Tipo", "Capacidade (litros)", "Frost free", "Voltagem", "Eficiência energética", ...BASE];
+  if (/fogao|cooktop|forno/.test(t)) return ["Tipo", "Quantidade de bocas", "Voltagem", "Acendimento automático", ...BASE];
+  if (/lavar|lavadora|tanquinho|secadora/.test(t)) return ["Tipo", "Capacidade (kg)", "Voltagem", "Eficiência energética", ...BASE];
+  if (/micro|ventilador|ar condicionado|liquidificador|air ?fryer/.test(t)) return ["Tipo", "Potência", "Voltagem", ...BASE];
+  return ["Tipo", ...BASE];
+}
+
 function Ficha({ value, onChange }: { value: ProductSpec[]; onChange: (v: ProductSpec[]) => void }) {
   const set = (i: number, c: Partial<ProductSpec>) => onChange(value.map((x, j) => (j === i ? { ...x, ...c } : x)));
-  const modelo = ["Tipo", "Quantidade de portas", "Cor", "Tonalidade", "Marca", "Altura", "Largura", "Comprimento", "Peso do produto", "Garantia do fabricante"];
+
   return (
     <div className="text-sm sm:col-span-2">
       <p className="font-semibold">Ficha técnica (características do produto)</p>
@@ -273,7 +291,7 @@ function Ficha({ value, onChange }: { value: ProductSpec[]; onChange: (v: Produc
       ))}
       <div className="mt-2 flex flex-wrap gap-2">
         <button type="button" onClick={() => onChange([...value, { k: "", v: "" }])} className="rounded-md border border-navy px-3 py-1.5 font-semibold text-navy">+ Adicionar característica</button>
-        {!value.length && <button type="button" onClick={() => onChange(modelo.map((k) => ({ k, v: "" })))} className="rounded-md border px-3 py-1.5 font-semibold">Usar modelo pronto</button>}
+        {!value.length && <button type="button" onClick={() => onChange(fichaPara("").map((k) => ({ k, v: "" })))} className="rounded-md border px-3 py-1.5 font-semibold">Usar modelo pronto</button>}
       </div>
     </div>
   );
