@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/store";
 import { SiteHeader, WhatsFab } from "@/components/SiteHeader";
+import { WelcomePopup } from "@/components/WelcomePopup";
 
 function NotFoundComponent() {
   return (
@@ -134,6 +135,7 @@ function RootComponent() {
           <p className="border-t border-primary-foreground/10 py-4 text-center text-xs">© Rainha do Lar · Todos os direitos reservados</p>
         </footer>
         <WhatsFab />
+        <WelcomePopup />
       </CartProvider>
     </QueryClientProvider>
   );
