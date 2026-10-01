@@ -184,6 +184,7 @@ function CartPage() {
         </div>
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal + frete)}</span></div>
+        <p className="mt-3 rounded-md bg-background p-2 text-center text-sm font-semibold text-navy">🎁 {subtotal >= ROLETA_MIN ? "Você vai girar a Roleta da Sorte ao finalizar!" : `Faltam ${brl(ROLETA_MIN - subtotal)} para girar a Roleta da Sorte`}</p>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
         <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>
