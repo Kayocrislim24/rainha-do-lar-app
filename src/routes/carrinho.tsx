@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
-import { FreeShippingBar } from "@/components/FreeShippingBar";
 import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
 
