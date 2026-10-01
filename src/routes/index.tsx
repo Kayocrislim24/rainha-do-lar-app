@@ -7,6 +7,7 @@ import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
+import bannerCliente from "@/assets/banner-mes-cliente.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -133,6 +134,9 @@ function Index() {
   const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
   return (
     <main>
+      <div className="mx-auto mt-4 max-w-7xl px-4">
+        <img src={bannerCliente.url} alt="Mês do Cliente — 5% na primeira compra com o cupom PRIMEIRACOMPRARAINHA" className="w-full rounded-2xl" />
+      </div>
       <Hero />
       <div className="mx-auto max-w-7xl px-4">
         <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
