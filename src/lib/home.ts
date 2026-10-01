@@ -9,7 +9,7 @@ export const slidesKey = ["home-slides"];
 export const BANNERS_PADRAO = [bannerPadrao.url];
 export const SLIDES_PADRAO: Slide[] = [
   { k: "Semana do Sofá", t: "Sofás com até 30% OFF", d: "Conforto para a sala inteira, em até 12x.", img: "local:sofa" },
-  { k: "Quarto dos sonhos", t: "Guarda-roupas a partir de 12x", d: "Mais espaço e organização com entrega própria no DF.", img: "local:guarda" },
+  { k: "Quarto dos sonhos", t: "Guarda-roupas a partir de 12x", d: "Mais espaço e organização com entrega própria no DF.", img: "local:guarda-roupa" },
   { k: "Noites melhores", t: "Camas e cabeceiras em oferta", d: "Modelos casal e queen com preço especial.", img: "local:cama" },
 ];
 
