@@ -29,7 +29,17 @@ export function usePremioFotos() {
   });
   return q.data ?? {};
 }
-export const sortearPremio = (lista: string[] = PREMIOS) => lista[Math.floor(Math.random() * lista.length)]!;
+/** Sorteio com chance igual e sem repetir: cada prêmio sai uma vez antes de qualquer um repetir. */
+const rnd = (n: number) => { try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0]! % n; } catch { return Math.floor(Math.random() * n); } };
+export const sortearPremio = (lista: string[] = PREMIOS) => {
+  const KEY = "rdl-roleta-saco";
+  let saco: string[] = [];
+  try { saco = (JSON.parse(localStorage.getItem(KEY) || "[]") as string[]).filter((p) => lista.includes(p)); } catch { /* vazio */ }
+  if (!saco.length) saco = [...lista];
+  const premio = saco.splice(rnd(saco.length), 1)[0]!;
+  try { localStorage.setItem(KEY, JSON.stringify(saco)); } catch { /* sem armazenamento */ }
+  return premio;
+};
 
 export function Roleta({ premio, premios = PREMIOS }: { premio: string; premios?: string[] }) {
   const PREMIOS_ = premios;
