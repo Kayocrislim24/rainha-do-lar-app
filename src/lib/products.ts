@@ -18,12 +18,14 @@ export type Product = {
   oldPrice: number; price: number; badge?: string | undefined; stock: number; active: boolean; bestSeller: boolean;
   dims: { w: number; h: number; d: number };
   colors: ProductColor[];
+  specs: ProductSpec[];
 };
+export type ProductSpec = { k: string; v: string };
 export type ProductColor = { name: string; hex: string; image: string };
 
 type Row = {
   id: string; title: string; category: string; description: string; image: string; image2: string; image3?: string | null; image4?: string | null; image5?: string | null; old_price: number; price: number;
-  badge: string | null; stock: number; dim_w: number; dim_h: number; dim_d: number; active: boolean; best_seller?: boolean | null; colors?: ProductColor[] | null;
+  badge: string | null; stock: number; dim_w: number; dim_h: number; dim_d: number; active: boolean; best_seller?: boolean | null; colors?: ProductColor[] | null; specs?: ProductSpec[] | null;
 };
 
 const map = (r: Row): Product => ({
@@ -32,6 +34,7 @@ const map = (r: Row): Product => ({
   gallery: [r.image, r.image2, r.image3, r.image4, r.image5].filter((x): x is string => !!x).map(resolveImage),
   oldPrice: Number(r.old_price), price: Number(r.price), badge: r.badge ?? undefined, stock: r.stock, active: r.active, bestSeller: !!r.best_seller,
   dims: { w: r.dim_w, h: r.dim_h, d: r.dim_d },
+  specs: Array.isArray(r.specs) ? r.specs : [],
   colors: Array.isArray(r.colors) ? r.colors.map((c) => ({ ...c, image: resolveImage(c.image ?? "") })) : [],
 });
 

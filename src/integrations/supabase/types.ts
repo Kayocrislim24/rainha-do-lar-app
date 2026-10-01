@@ -88,6 +88,7 @@ export type Database = {
           image5: string
           old_price: number
           price: number
+          specs: Json
           stock: number
           title: string
         }
@@ -110,6 +111,7 @@ export type Database = {
           image5?: string
           old_price?: number
           price: number
+          specs?: Json
           stock?: number
           title: string
         }
@@ -132,6 +134,7 @@ export type Database = {
           image5?: string
           old_price?: number
           price?: number
+          specs?: Json
           stock?: number
           title?: string
         }
