@@ -189,6 +189,7 @@ function Pedidos() {
             <a href={zap(o.telefone, o.nome)} target="_blank" rel="noreferrer" className="rounded-md bg-buy px-4 py-2 font-bold text-buy-foreground">Chamar no WhatsApp</a>
             <a href={rastreio(o)} target="_blank" rel="noreferrer" className="rounded-md bg-navy px-4 py-2 font-bold text-primary-foreground">Enviar link de rastreio</a>
             <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.endereco)}`} target="_blank" rel="noreferrer" className="rounded-md border px-4 py-2 font-semibold text-navy">Ver no mapa</a>
+            <button onClick={async () => { if (!confirm("Apagar este pedido?")) return; await supabase.from("orders").delete().eq("id", o.id); qc.invalidateQueries({ queryKey: ["all-orders"] }); }} className="rounded-md border px-4 py-2 font-semibold text-destructive">Apagar pedido</button>
           </div>
         </div>
       ))}
