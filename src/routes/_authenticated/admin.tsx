@@ -6,7 +6,7 @@ import { brl } from "@/lib/store";
 import { fotosKey, premiosKey, usePremioFotos, usePremios } from "@/components/Roleta";
 import { useAuth } from "@/lib/auth";
 import { HomeAdmin } from "@/components/HomeAdmin";
-import { productsKey, resolveImage, useProducts, type Product, type ProductColor } from "@/lib/products";
+import { productsKey, resolveImage, useProducts, type Product, type ProductColor, type ProductSpec } from "@/lib/products";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const STATUS = ["Aguardando pagamento", "Pago", "Em separação", "Saiu para entrega", "Entregue", "Cancelado"];
 type Item = { title: string; qty: number; price: number };
 
-const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, colors: [] as ProductColor[] };
+const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, colors: [] as ProductColor[], specs: [] as ProductSpec[] };
 type Form = typeof empty;
 
 function Admin() {
@@ -54,7 +54,7 @@ function Produtos() {
 
   const edit = (p: Product) => {
     setEditing(true);
-    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })) });
+    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })), specs: p.specs.map((x) => ({ ...x })) });
   };
 
   const save = async () => {
@@ -62,7 +62,7 @@ function Produtos() {
     if (!f.title || !f.price) return setMsg("Preencha nome e preço.");
     const n = (s: string) => Number(s.replace(",", ".")) || 0;
     const id = f.id || f.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, colors: f.colors.filter((c) => c.name || c.image) };
+    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, colors: f.colors.filter((c) => c.name || c.image), specs: f.specs.filter((x) => x.k.trim() || x.v.trim()) };
     const { error } = editing ? await supabase.from("products").update(row).eq("id", f.id) : await supabase.from("products").insert(row);
     if (error) return setMsg(error.message);
     setMsg("Salvo!"); setF(null); qc.invalidateQueries({ queryKey: productsKey });
@@ -103,6 +103,7 @@ function Produtos() {
           <Cores value={f.colors} onChange={(colors) => setF({ ...f, colors })} />
           <div className="grid grid-cols-3 gap-2">{fld("dim_w", "Largura cm")}{fld("dim_h", "Altura cm")}{fld("dim_d", "Prof. cm")}</div>
           <label className="text-sm sm:col-span-2">Descrição<textarea className={input} rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></label>
+          <Ficha value={f.specs} onChange={(specs) => setF({ ...f, specs })} />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />Visível na loja</label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.best_seller} onChange={(e) => setF({ ...f, best_seller: e.target.checked })} />Mostrar em MAIS VENDIDOS (até 20)</label>
           <div className="flex gap-2 sm:col-span-2">
@@ -253,6 +254,27 @@ function Cores({ value, onChange }: { value: ProductColor[]; onChange: (v: Produ
         </div>
       ))}
       <button type="button" onClick={() => onChange([...value, { name: "", hex: "#8b5a2b", image: "" }])} className="mt-2 rounded-md border border-navy px-3 py-1.5 font-semibold text-navy">+ Adicionar cor</button>
+    </div>
+  );
+}
+
+function Ficha({ value, onChange }: { value: ProductSpec[]; onChange: (v: ProductSpec[]) => void }) {
+  const set = (i: number, c: Partial<ProductSpec>) => onChange(value.map((x, j) => (j === i ? { ...x, ...c } : x)));
+  const modelo = ["Tipo", "Quantidade de portas", "Cor", "Tonalidade", "Marca", "Altura", "Largura", "Comprimento", "Peso do produto", "Garantia do fabricante"];
+  return (
+    <div className="text-sm sm:col-span-2">
+      <p className="font-semibold">Ficha técnica (características do produto)</p>
+      {value.map((x, i) => (
+        <div key={i} className="mt-2 flex flex-wrap items-center gap-2">
+          <input placeholder="Característica (ex: Cor)" value={x.k} onChange={(e) => set(i, { k: e.target.value })} className="h-9 flex-1 rounded-md border bg-background px-2" />
+          <input placeholder="Valor (ex: Branco)" value={x.v} onChange={(e) => set(i, { v: e.target.value })} className="h-9 flex-1 rounded-md border bg-background px-2" />
+          <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-destructive">Remover</button>
+        </div>
+      ))}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <button type="button" onClick={() => onChange([...value, { k: "", v: "" }])} className="rounded-md border border-navy px-3 py-1.5 font-semibold text-navy">+ Adicionar característica</button>
+        {!value.length && <button type="button" onClick={() => onChange(modelo.map((k) => ({ k, v: "" })))} className="rounded-md border px-3 py-1.5 font-semibold">Usar modelo pronto</button>}
+      </div>
     </div>
   );
 }
