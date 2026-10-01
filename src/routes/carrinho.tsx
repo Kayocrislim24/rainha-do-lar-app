@@ -4,7 +4,7 @@ import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
-import { Roleta, ROLETA_MIN, sortearPremio } from "@/components/Roleta";
+import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/carrinho")({
@@ -73,6 +73,7 @@ function CartPage() {
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
   const [premio, setPremio] = useState<string | null>(null);
+  const premios = usePremios();
   const [cupomOn, setCupomOn] = useState(false);
   const [cupomTxt, setCupomTxt] = useState("");
   const [cpf, setCpf] = useState("");
@@ -103,7 +104,7 @@ function CartPage() {
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean);
-    const sorteado = subtotal >= ROLETA_MIN ? sortearPremio() : null;
+    const sorteado = subtotal >= ROLETA_MIN ? sortearPremio(premios) : null;
     if (cupomOn) condicoes.push(`🏷️ Cupom ${CUPOM} (-10%): -R$ ${num(desconto)} · CPF ${fmtCpf(cpfLimpo)}`);
     if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
@@ -150,7 +151,7 @@ function CartPage() {
             <p className="text-2xl font-bold tracking-widest text-navy">{codigo}</p>
             <p className="text-xs text-muted-foreground">Guarde para rastrear sua entrega</p>
           </div>
-          {premio && <Roleta premio={premio} />}
+          {premio && <Roleta premio={premio} premios={premios} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/rastreio" search={{ codigo, tel: f.telefone.replace(/\D/g, "") }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
