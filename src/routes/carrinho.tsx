@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { AlertTriangle, CheckCircle2, Crown, Minus, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, CreditCard, Crown, Minus, Plus, QrCode, Trash2 } from "lucide-react";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
 import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,7 @@ const schema = z.object({
 
 const num = (n: number) => n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const PIX_CHAVE = "59.924.049/0001-83";
 const CUPOM = "PRIMEIRACOMPRARAINHA";
 const CUPOM_PCT = 0.1;
 function cpfValido(v: string) {
@@ -76,6 +77,9 @@ function CartPage() {
   const [cupomOn, setCupomOn] = useState(false);
   const [cupomTxt, setCupomTxt] = useState("");
   const [cpf, setCpf] = useState("");
+  const [step, setStep] = useState(0);
+  const [pag, setPag] = useState<"PIX" | "Cartão de crédito" | "">("");
+  const [copiado, setCopiado] = useState(false);
   useEffect(() => { const c = localStorage.getItem("rdl-cupom"); if (c) { setCupomTxt(c); setCupomOn(c.toUpperCase() === CUPOM); } }, []);
   const desconto = cupomOn ? Math.round(subtotal * CUPOM_PCT * 100) / 100 : 0;
   const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
@@ -88,7 +92,23 @@ function CartPage() {
     try { setShip(await quoteShipping(f.cep)); setMsg(""); } catch (e) { setShip(null); setMsg((e as Error).message); }
   };
 
+  const go = (n: number) => { setMsg(""); setStep(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const next = async () => {
+    if (step === 1) {
+      if (f.nome.trim().length < 2) return setMsg("Informe seu nome");
+      if (f.telefone.replace(/\D/g, "").length < 10) return setMsg("Telefone inválido");
+      if (cupomOn && !cpfValido(cpf)) return setMsg("Informe um CPF válido para usar o cupom.");
+    }
+    if (step === 2) {
+      if (!ship) return setMsg("Calcule o frete pelo CEP para continuar.");
+      if (!f.numero.trim()) return setMsg("Informe o número");
+    }
+    go(step + 1);
+  };
+  const copiarPix = async () => { try { await navigator.clipboard.writeText(PIX_CHAVE.replace(/\D/g, "")); } catch { /* ignore */ } setCopiado(true); setTimeout(() => setCopiado(false), 2500); };
+
   const finish = async () => {
+    if (!pag) return setMsg("Escolha a forma de pagamento.");
     const r = schema.safeParse(f);
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
     if (!ship) return setMsg("Calcule o frete antes de finalizar.");
@@ -104,6 +124,7 @@ function CartPage() {
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean);
     const sorteado = subtotal >= ROLETA_MIN ? sortearPremio(premios) : null;
+    condicoes.unshift(`💳 Pagamento: ${pag}${pag === "PIX" ? " (cliente informou que fez o PIX)" : " (enviar link de pagamento)"}`);
     if (cupomOn) condicoes.push(`🏷️ Cupom ${CUPOM} (-10%): -R$ ${num(desconto)} · CPF ${fmtCpf(cpfLimpo)}`);
     if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
     const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
@@ -162,14 +183,16 @@ function CartPage() {
     <ol className="mx-auto mt-6 flex max-w-6xl items-center gap-2 overflow-x-auto px-4 text-xs font-bold uppercase whitespace-nowrap sm:text-sm">
       {["Carrinho", "Identificação", "Entrega", "Pagamento"].map((s, i) => (
         <li key={s} className="flex shrink-0 items-center gap-2">
-          <span className={`grid size-7 place-items-center rounded-full ${i === 0 ? "bg-navy text-primary-foreground" : "border-2 border-gold text-navy"}`}>{i + 1}</span>
-          <span className="text-navy">{s}</span>{i < 3 && <span className="mx-1 h-0.5 w-6 bg-gold sm:w-12" />}
+          <button type="button" disabled={i > step} onClick={() => go(i)} className="flex items-center gap-2 disabled:opacity-50">
+            <span className={`grid size-8 place-items-center rounded-full transition ${i < step ? "bg-gold text-navy" : i === step ? "bg-navy text-primary-foreground ring-4 ring-gold/40" : "border-2 border-gold text-navy"}`}>{i < step ? "✓" : i + 1}</span>
+            <span className={i === step ? "text-navy underline decoration-gold decoration-2 underline-offset-4" : "text-navy"}>{s}</span>
+          </button>{i < 3 && <span className="mx-1 h-0.5 w-6 bg-gold sm:w-12" />}
         </li>
       ))}
     </ol>
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
-        <section className="rounded-lg border p-4">
+        {step === 0 && <section className="rounded-lg border p-4">
           <h1 className="text-xl font-bold text-navy">Seu carrinho</h1>
           {items.map((i) => (
             <div key={i.id} className="flex items-center gap-3 border-b py-3 last:border-0">
@@ -183,13 +206,20 @@ function CartPage() {
               <button onClick={() => setQty(i.id, 0)} aria-label="Remover"><Trash2 className="size-4 text-muted-foreground" /></button>
             </div>
           ))}
-        </section>
+        </section>}
 
-        <section className="rounded-lg border p-4">
-          <h2 className="text-lg font-bold text-navy">Dados de entrega</h2>
+        {step === 1 && <section className="rounded-lg border p-4">
+          <h2 className="text-lg font-bold text-navy">Identificação</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <input className={input} placeholder="Nome completo" value={f.nome} onChange={set("nome")} />
             <input className={input} placeholder="Telefone / WhatsApp" value={f.telefone} onChange={set("telefone")} />
+            {cupomOn && <input className={`${input} sm:col-span-2`} placeholder="CPF (obrigatório para o cupom)" inputMode="numeric" value={fmtCpf(cpf)} onChange={(e) => setCpf(e.target.value)} />}
+          </div>
+        </section>}
+
+        {step === 2 && <section className="rounded-lg border p-4">
+          <h2 className="text-lg font-bold text-navy">Entrega</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="flex gap-2"><input className={input} placeholder="CEP" value={f.cep} onChange={set("cep")} maxLength={9} /><button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button></div>
             <input className={input} placeholder="Número" value={f.numero} onChange={set("numero")} />
             <input className={`${input} sm:col-span-2`} placeholder="Complemento (apto, bloco...)" value={f.complemento} onChange={set("complemento")} />
@@ -201,7 +231,28 @@ function CartPage() {
           {apto && <p className="ml-6 mt-1 flex gap-1 rounded bg-warn p-2 text-sm text-warn-foreground"><AlertTriangle className="size-4 shrink-0" />Taxas extras de subida serão combinadas com você.</p>}
           <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={chao} onChange={(e) => setChao(e.target.checked)} className="mt-1 size-4" />Estrada de chão ou local de difícil acesso</label>
           {chao && <p className="ml-6 mt-1 flex gap-1 rounded bg-warn p-2 text-sm text-warn-foreground"><AlertTriangle className="size-4 shrink-0" />Vamos combinar a entrega previamente pelo WhatsApp.</p>}
-        </section>
+        </section>}
+
+        {step === 3 && <section className="rounded-lg border p-4">
+          <h2 className="text-lg font-bold text-navy">Pagamento</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {([["PIX", QrCode, "Aprovação na hora"], ["Cartão de crédito", CreditCard, "Parcele em até 12x"]] as const).map(([k, I, d]) => (
+              <button key={k} type="button" onClick={() => setPag(k)} className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition ${pag === k ? "border-gold bg-secondary" : "border-border hover:border-gold"}`}>
+                <I className="size-8 text-gold" /><span><b className="block text-navy">{k}</b><span className="text-sm text-muted-foreground">{d}</span></span>
+              </button>
+            ))}
+          </div>
+          {pag === "PIX" && (
+            <div className="mt-4 rounded-lg border-2 border-dashed border-gold bg-secondary p-4 text-center">
+              <p className="text-sm font-semibold text-navy">Pague {brl(subtotal - desconto + frete)} com a chave PIX (CNPJ):</p>
+              <p className="mt-2 text-2xl font-extrabold tracking-wider text-navy">{PIX_CHAVE}</p>
+              <p className="text-xs text-muted-foreground">Rainha do Lar</p>
+              <button type="button" onClick={copiarPix} className="mt-3 inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2 text-sm font-bold text-primary-foreground"><Copy className="size-4" />{copiado ? "Chave copiada!" : "Copiar chave PIX"}</button>
+              <p className="mt-3 text-xs text-muted-foreground">Depois de pagar, clique em "Já fiz o PIX" para finalizar.</p>
+            </div>
+          )}
+          {pag === "Cartão de crédito" && <p className="mt-4 rounded-lg bg-secondary p-4 text-sm text-navy">Ao finalizar, um de nossos vendedores envia pelo WhatsApp o link seguro para pagar no cartão em até 12x.</p>}
+        </section>}
       </div>
 
       <aside className="h-fit rounded-lg border bg-secondary p-4 lg:sticky lg:top-4">
@@ -215,7 +266,6 @@ function CartPage() {
           {cupomOn ? (
             <>
               <p className="mt-1 flex items-center justify-between text-sm"><span className="font-bold text-navy">{CUPOM} · 10% OFF</span><button onClick={tirarCupom} className="text-xs underline text-muted-foreground">remover</button></p>
-              <input className="mt-2 w-full rounded-md border px-3 py-2 text-sm" placeholder="CPF (obrigatório para o cupom)" inputMode="numeric" value={fmtCpf(cpf)} onChange={(e) => setCpf(e.target.value)} />
               <p className="mt-1 text-xs text-muted-foreground">Desconto válido 1 vez por CPF, na primeira compra.</p>
             </>
           ) : (
@@ -227,8 +277,10 @@ function CartPage() {
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal - desconto + frete)}</span></div>
         <p className="mt-3 rounded-md bg-background p-2 text-center text-sm font-semibold text-navy">🎁 {subtotal >= ROLETA_MIN ? "Você vai girar a Roleta da Sorte ao finalizar!" : `Faltam ${brl(ROLETA_MIN - subtotal)} para girar a Roleta da Sorte`}</p>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
-        <button onClick={finish} className="mt-4 w-full rounded-md bg-buy py-3 font-bold text-buy-foreground hover:opacity-90">Finalizar compra</button>
-        <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>
+        {step < 3
+          ? <button onClick={next} className="btn-comprar mt-4 w-full rounded-md py-3 font-bold">Continuar para {["Identificação", "Entrega", "Pagamento"][step]} →</button>
+          : <button onClick={finish} className="btn-comprar mt-4 w-full rounded-md py-3 font-bold">{pag === "PIX" ? "Já fiz o PIX — Finalizar" : "Finalizar compra"}</button>}
+        {step > 0 && <button onClick={() => go(step - 1)} className="mt-2 w-full text-center text-sm font-semibold text-navy underline">← Voltar</button>}
       </aside>
     </main>
     </>
