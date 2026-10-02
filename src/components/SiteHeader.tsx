@@ -61,7 +61,6 @@ export function SiteHeader() {
             </div>
           </div>
           <Link to="/busca" search={{}} className="shrink-0 py-3 hover:text-navy">Ofertas</Link>
-          <Link to="/rastreio" className="shrink-0 py-3 hover:text-navy">Rastrear pedido</Link>
           <Link to="/ajuda" className="shrink-0 py-3 hover:text-navy">Ajuda</Link>
         </div>
       </nav>

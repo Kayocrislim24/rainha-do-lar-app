@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Truck, Gift, ShoppingCart, QrCode, Tag } from "lucide-react";
+import { ChevronLeft, ChevronRight, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -125,19 +125,6 @@ function Index() {
   const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
   return (
     <main>
-      <div className="mx-auto mt-6 grid max-w-7xl grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-5">
-        {[
-          { i: Truck, a: "Entrega própria", b: "em todo o DF", q: {} },
-          { i: Gift, a: "Frete grátis", b: "acima de R$ 1.500", q: {} },
-          { i: ShoppingCart, a: "", b: "Oportunidades", q: {} },
-          { i: QrCode, a: "Desconto", b: "no PIX", q: {} },
-          { i: Tag, a: "Ofertas da", b: "Semana", q: {} },
-        ].map(({ i: I, a, b }) => (
-          <Link key={a + b} to="/busca" search={{}} className="flex items-center justify-center gap-3 rounded-xl bg-muted px-3 py-5 text-sm text-navy transition hover:shadow-md">
-            <I className="size-8 shrink-0 text-gold" /><span className="leading-tight">{a && <>{a}<br /></>}<b>{b}</b></span>
-          </Link>
-        ))}
-      </div>
       <Banners />
       <div className="mx-auto max-w-7xl px-4">
         <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6">
