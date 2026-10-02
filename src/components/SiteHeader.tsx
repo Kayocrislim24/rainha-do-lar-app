@@ -6,6 +6,41 @@ import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
 import { LiveSearch } from "@/components/LiveSearch";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
+import { useProducts } from "@/lib/products";
+import { brl } from "@/lib/store";
+
+const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+function NavDrop({ label, q }: { label: string; q: string }) {
+  const { data: products = [] } = useProducts();
+  const lista = products.filter((p) => norm(`${p.title} ${p.category}`).includes(norm(q))).slice(0, 6);
+  return (
+    <div className="group/drop shrink-0 lg:static">
+      <Link to="/busca" search={{ q }} className="block py-3 hover:text-navy group-hover/drop:text-navy">{label}</Link>
+      <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/drop:visible group-hover/drop:opacity-100">
+        <div className="mx-auto max-w-7xl px-4 py-5">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-sm font-bold uppercase text-gold">{label}</p>
+            <Link to="/busca" search={{ q }} className="text-sm font-bold text-navy hover:text-gold">Ver todos →</Link>
+          </div>
+          {lista.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">Em breve novos produtos nesta categoria.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-4 lg:grid-cols-6">
+              {lista.map((p) => (
+                <Link key={p.id} to="/produto/$id" params={{ id: p.id }} className="group/item rounded-lg border bg-card p-2 whitespace-normal transition hover:shadow-md">
+                  <img src={p.image} alt={p.title} className="aspect-square w-full rounded object-cover" />
+                  <p className="mt-2 line-clamp-2 text-xs font-semibold text-navy group-hover/item:text-gold">{p.title}</p>
+                  <p className="text-sm font-bold text-price-new">{brl(p.price)}</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function SiteHeader() {
   const { count } = useCart();
@@ -48,7 +83,7 @@ export function SiteHeader() {
       <nav className="relative border-y bg-muted">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 overflow-x-auto px-4 text-xs font-semibold uppercase whitespace-nowrap text-muted-foreground lg:overflow-visible">
           {([["Sofás", "Sof"], ["Guarda-roupas", "Guarda"], ["Camas", "Cama"], ["Mesas de jantar", "Mesa"], ["Eletrodomésticos", "Geladeira"]] as const).map(([l, q]) => (
-            <Link key={l} to="/busca" search={{ q }} className="shrink-0 py-3 hover:text-navy">{l}</Link>
+            <NavDrop key={l} label={l} q={q} />
           ))}
           <div className="group/mega shrink-0 lg:static">
             <Link to="/busca" search={{}} className="block border-r border-navy py-3 pr-6 font-bold text-navy">Ver todos</Link>
