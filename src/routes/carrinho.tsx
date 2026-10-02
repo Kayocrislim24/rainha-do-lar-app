@@ -237,5 +237,6 @@ function CartPage() {
         <p className="mt-2 text-center text-xs text-muted-foreground">Um vendedor entra em contato para finalizar.</p>
       </aside>
     </main>
+    </>
   );
 }
