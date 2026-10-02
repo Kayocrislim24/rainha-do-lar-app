@@ -9,10 +9,19 @@ export function FreeShippingBar({ boxed }: { boxed?: boolean }) {
   return (
     <div className={boxed ? "rounded-lg border-2 border-gold bg-secondary p-4" : "border-b bg-secondary px-4 py-2"}>
       <div className="mx-auto max-w-7xl">
-        <p className="flex items-center justify-center gap-2 text-sm font-semibold text-navy">
-          <Truck className="size-5 text-gold" />
-          <span>{falta > 0 ? <>Faltam apenas <span className="font-bold text-gold">{brl(falta)}</span> para você ganhar <b>Frete Grátis!</b></> : <>Você desbloqueou o <b className="text-gold">FRETE GRÁTIS</b>: sua entrega é por nossa conta!</>}</span>
-        </p>
+        {falta > 0 ? (
+          <p className="flex items-center justify-center gap-2 text-sm font-semibold text-navy">
+            <Truck className="size-5 text-gold" />
+            <span>Faltam apenas <span className="font-bold text-gold">{brl(falta)}</span> para você ganhar <b>Frete Grátis!</b></span>
+          </p>
+        ) : (
+          <p className="flex flex-wrap items-center justify-center gap-x-2 text-center text-base font-extrabold uppercase tracking-wide text-navy sm:text-lg">
+            <Truck className="size-6 text-gold animate-bounce" />
+            <span>Uhuul! Você ganhou</span>
+            <span className="rounded-md bg-navy px-2 py-0.5 text-gold shadow-md">FRETE GRÁTIS</span>
+            <span>a entrega é por nossa conta!</span>
+          </p>
+        )}
         <div className="mx-auto mt-1.5 h-2 max-w-md overflow-hidden rounded-full bg-background">
           <div className="h-full rounded-full bg-gold transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
