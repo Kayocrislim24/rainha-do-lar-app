@@ -82,6 +82,27 @@ function CartPage() {
   const [pag, setPag] = useState<"PIX" | "Cartão de crédito" | "">("");
   const [copiado, setCopiado] = useState(false);
   useEffect(() => { const c = localStorage.getItem("rdl-cupom"); if (c) { setCupomTxt(c); setCupomOn(c.toUpperCase() === CUPOM); } }, []);
+  const [pedido, setPedido] = useState<{ id: string; tel: string } | null>(null);
+  const [pago, setPago] = useState(false);
+  useEffect(() => {
+    try {
+      const p = JSON.parse(localStorage.getItem("rdl-pendente") || "null") as { id: string; tel: string; nome: string; premio: string | null } | null;
+      if (p?.id && p.premio) { setPedido({ id: p.id, tel: p.tel }); setPremio(p.premio); setDone(p.nome); }
+    } catch { /* ignore */ }
+  }, []);
+  useEffect(() => {
+    if (!pedido || pago) return;
+    const PAGOS = ["Pago", "Em separação", "Saiu para entrega", "Entregue"];
+    const check = async () => {
+      const { data } = await supabase.rpc("track_order" as never, { _code: pedido.id, _phone: pedido.tel } as never);
+      const st = (data as { status?: string }[] | null)?.[0]?.status;
+      if (st && PAGOS.includes(st)) { setPago(true); localStorage.removeItem("rdl-pendente"); }
+      if (st === "Cancelado") localStorage.removeItem("rdl-pendente");
+    };
+    void check();
+    const t = setInterval(check, 5000);
+    return () => clearInterval(t);
+  }, [pedido, pago]);
   const desconto = cupomOn ? Math.round(subtotal * CUPOM_PCT * 100) / 100 : 0;
   const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
   const aplicarCupom = () => { const ok = cupomTxt.trim().toUpperCase() === CUPOM; setCupomOn(ok); if (ok) localStorage.setItem("rdl-cupom", CUPOM); setMsg(ok ? "" : "Cupom inválido."); };
