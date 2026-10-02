@@ -1,32 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { CreditCard, Lock, Mail, MessageCircle, QrCode, Truck } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import logo from "@/assets/logo-r.png.asset.json";
 
 export function SiteFooter() {
-  const [email, setEmail] = useState("");
-  const [ok, setOk] = useState(false);
   return (
     <footer className="mt-12">
-      <section className="bg-gold text-navy">
-        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 py-6 md:flex-row md:justify-between">
-          <div className="flex items-center gap-3"><Mail className="size-8 shrink-0" /><div><p className="text-lg font-bold uppercase">Receba ofertas exclusivas</p><p className="text-sm">Cadastre seu e-mail e fique por dentro das promoções da Rainha.</p></div></div>
-          {ok ? <p className="font-bold">Pronto! Você vai receber nossas ofertas.</p> : (
-            <form onSubmit={(e) => { e.preventDefault(); if (email.includes("@")) setOk(true); }} className="flex w-full max-w-md gap-2">
-              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Seu melhor e-mail" className="min-w-0 flex-1 rounded-full bg-background px-4 py-2.5 text-sm text-foreground" />
-              <button className="shrink-0 rounded-full bg-navy px-6 font-bold uppercase text-primary-foreground">Cadastrar</button>
-            </form>
-          )}
-        </div>
-      </section>
-      <section className="border-b bg-secondary">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-5 text-sm text-navy md:grid-cols-4">
-          {[[Truck, "Entrega própria", "Em todo o DF"], [CreditCard, "Até 12x", "No cartão de crédito"], [QrCode, "Desconto no PIX", "Pague com PIX"], [Lock, "Compra 100% segura", "Seus dados protegidos"]].map(([I, t, d]) => {
-            const Icon = I as typeof Truck;
-            return <div key={t as string} className="flex items-center gap-3"><Icon className="size-7 shrink-0 text-gold" /><div><p className="font-bold">{t as string}</p><p className="text-xs text-muted-foreground">{d as string}</p></div></div>;
-          })}
-        </div>
-      </section>
       <div className="bg-navy-deep text-sm text-primary-foreground/80">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-1"><img src={logo.url} alt="Rainha do Lar" className="h-14 w-auto" /><p className="mt-3">Móveis e eletrodomésticos para sua casa com entrega própria no Distrito Federal.</p></div>
