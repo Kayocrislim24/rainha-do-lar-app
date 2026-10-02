@@ -145,11 +145,6 @@ function CartPage() {
           <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
             <CheckCircle2 className="size-5 text-gold" /> Seus dados foram enviados com segurança
           </div>
-          <div className="mt-6 rounded-lg border-2 border-dashed border-gold bg-secondary p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Código do pedido</p>
-            <p className="text-2xl font-bold tracking-widest text-navy">{codigo}</p>
-            <p className="text-xs text-muted-foreground">Guarde este código</p>
-          </div>
           {premio && <Roleta premio={premio} premios={premios} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
