@@ -53,9 +53,18 @@ export function SiteHeader() {
       </div>
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <FreeShippingBar />
-      <nav className="border-t">
+      <nav className="relative border-t">
         <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-3 text-xs font-bold whitespace-nowrap">
-          <Link to="/busca" search={{}} className="flex shrink-0 items-center rounded-full bg-navy px-4 py-2 text-sm uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
+          <div className="group/mega shrink-0">
+            <Link to="/busca" search={{}} className="flex items-center rounded-full bg-navy px-4 py-2 text-sm uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
+            <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background opacity-0 shadow-xl transition group-hover/mega:visible group-hover/mega:opacity-100">
+              <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-6 md:grid-cols-4">
+                {([["Sala de estar", [["Sofás", "Sof"], ["Racks", "Rack"], ["Poltronas", "Poltrona"]]], ["Quarto", [["Camas", "Cama"], ["Guarda-roupas", "Guarda"], ["Cômodas", "Cômoda"]]], ["Sala de jantar", [["Mesas", "Mesa"], ["Cadeiras", "Cadeira"], ["Buffets", "Buffet"]]], ["Eletrodomésticos", [["Geladeiras", "Geladeira"], ["Fogões", "Fogão"], ["Máquinas de lavar", "Máquina"]]]] as const).map(([t, subs]) => (
+                  <div key={t}><p className="text-sm uppercase text-gold">{t}</p><ul className="mt-2 space-y-1.5 font-semibold normal-case text-navy">{subs.map(([l, q]) => <li key={l}><Link to="/busca" search={{ q }} className="hover:text-gold">{l}</Link></li>)}</ul></div>
+                ))}
+              </div>
+            </div>
+          </div>
           {([["Sala de estar", "Sof", imgSofa], ["Quarto", "Cama", imgCama], ["Guarda-roupas", "Guarda", imgGuarda], ["Sala de jantar", "Mesa", imgMesa], ["Sofás", "Sof", imgSofa], ["Camas", "Cama", imgCama], ["Mesas", "Mesa", imgMesa], ["Ofertas", "", imgSofa]] as const).map(([l, c, img]) => (
             <Link key={l} to="/busca" search={c ? { q: c } : {}} className="group flex w-24 shrink-0 flex-col items-center gap-1.5 text-center uppercase text-navy transition hover:-translate-y-0.5">
               <img src={img} alt="" className="size-16 rounded-full border-2 border-gold object-cover shadow-sm transition group-hover:shadow-md" />

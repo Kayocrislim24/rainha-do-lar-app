@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BuscaRouteImport } from './routes/busca'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as EntregaRouteImport } from './routes/entrega'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as RastreioRouteImport } from './routes/rastreio'
+import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as TrocasRouteImport } from './routes/trocas'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
@@ -27,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -44,6 +53,11 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
   path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntregaRoute = EntregaRouteImport.update({
+  id: '/entrega',
+  path: '/entrega',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritosRoute = FavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
@@ -52,6 +66,16 @@ const FavoritosRoute = FavoritosRouteImport.update({
 const RastreioRoute = RastreioRouteImport.update({
   id: '/rastreio',
   path: '/rastreio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrocasRoute = TrocasRouteImport.update({
+  id: '/trocas',
+  path: '/trocas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -72,22 +96,30 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/auth': typeof AuthRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/entrega': typeof EntregaRoute
   '/favoritos': typeof FavoritosRoute
   '/rastreio': typeof RastreioRoute
+  '/sobre': typeof SobreRoute
+  '/trocas': typeof TrocasRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/conta': typeof AuthenticatedContaRoute
   '/produto/$id': typeof ProdutoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ajuda': typeof AjudaRoute
   '/auth': typeof AuthRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/entrega': typeof EntregaRoute
   '/favoritos': typeof FavoritosRoute
   '/rastreio': typeof RastreioRoute
+  '/sobre': typeof SobreRoute
+  '/trocas': typeof TrocasRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/conta': typeof AuthenticatedContaRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -96,11 +128,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/ajuda': typeof AjudaRoute
   '/auth': typeof AuthRoute
   '/busca': typeof BuscaRoute
   '/carrinho': typeof CarrinhoRoute
+  '/entrega': typeof EntregaRoute
   '/favoritos': typeof FavoritosRoute
   '/rastreio': typeof RastreioRoute
+  '/sobre': typeof SobreRoute
+  '/trocas': typeof TrocasRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/produto/$id': typeof ProdutoIdRoute
@@ -109,22 +145,30 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ajuda'
     | '/auth'
     | '/busca'
     | '/carrinho'
+    | '/entrega'
     | '/favoritos'
     | '/rastreio'
+    | '/sobre'
+    | '/trocas'
     | '/admin'
     | '/conta'
     | '/produto/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ajuda'
     | '/auth'
     | '/busca'
     | '/carrinho'
+    | '/entrega'
     | '/favoritos'
     | '/rastreio'
+    | '/sobre'
+    | '/trocas'
     | '/admin'
     | '/conta'
     | '/produto/$id'
@@ -132,11 +176,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/ajuda'
     | '/auth'
     | '/busca'
     | '/carrinho'
+    | '/entrega'
     | '/favoritos'
     | '/rastreio'
+    | '/sobre'
+    | '/trocas'
     | '/_authenticated/admin'
     | '/_authenticated/conta'
     | '/produto/$id'
@@ -145,11 +193,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AjudaRoute: typeof AjudaRoute
   AuthRoute: typeof AuthRoute
   BuscaRoute: typeof BuscaRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  EntregaRoute: typeof EntregaRoute
   FavoritosRoute: typeof FavoritosRoute
   RastreioRoute: typeof RastreioRoute
+  SobreRoute: typeof SobreRoute
+  TrocasRoute: typeof TrocasRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
@@ -167,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -190,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entrega': {
+      id: '/entrega'
+      path: '/entrega'
+      fullPath: '/entrega'
+      preLoaderRoute: typeof EntregaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favoritos': {
       id: '/favoritos'
       path: '/favoritos'
@@ -202,6 +268,20 @@ declare module '@tanstack/react-router' {
       path: '/rastreio'
       fullPath: '/rastreio'
       preLoaderRoute: typeof RastreioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trocas': {
+      id: '/trocas'
+      path: '/trocas'
+      fullPath: '/trocas'
+      preLoaderRoute: typeof TrocasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -244,11 +324,15 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AjudaRoute: AjudaRoute,
   AuthRoute: AuthRoute,
   BuscaRoute: BuscaRoute,
   CarrinhoRoute: CarrinhoRoute,
+  EntregaRoute: EntregaRoute,
   FavoritosRoute: FavoritosRoute,
   RastreioRoute: RastreioRoute,
+  SobreRoute: SobreRoute,
+  TrocasRoute: TrocasRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport

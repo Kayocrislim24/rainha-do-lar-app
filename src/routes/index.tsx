@@ -194,6 +194,30 @@ function Index() {
           ))}
         </div>
 
+        {Array.from(new Set(products.map((p) => p.category))).map((cat) => {
+          const list = products.filter((p) => p.category === cat).slice(0, 4);
+          return (
+            <section key={cat} className="mt-10">
+              <div className="flex items-end justify-between border-b-2 border-gold pb-2">
+                <h2 className="text-xl font-bold uppercase text-navy">{cat}</h2>
+                <Link to="/busca" search={{ q: cat }} className="text-sm font-bold text-navy underline hover:text-gold">Ver tudo</Link>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">{list.map((p) => <Card key={p.id} p={p} />)}</div>
+            </section>
+          );
+        })}
+
+        <section className="mt-10 grid gap-4 md:grid-cols-3">
+          {[{ t: "Inspire-se", d: "Ideias para deixar sua sala aconchegante", img: sofa }, { t: "Quarto de rainha", d: "Conforto para noites perfeitas", img: cama }, { t: "Organize tudo", d: "Guarda-roupas que cabem na sua casa", img: guarda }].map((b) => (
+            <Link key={b.t} to="/busca" search={{}} className="group relative overflow-hidden rounded-2xl bg-navy p-6 text-primary-foreground">
+              <img src={b.img} alt="" loading="lazy" className="absolute -right-6 bottom-0 h-40 opacity-90 transition group-hover:scale-105" />
+              <p className="relative text-2xl font-bold text-gold">{b.t}</p>
+              <p className="relative mt-1 max-w-[60%] text-sm">{b.d}</p>
+              <span className="relative mt-6 inline-block rounded-full bg-gold px-4 py-1.5 text-xs font-bold uppercase text-navy">Confira</span>
+            </Link>
+          ))}
+        </section>
+
         <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Todos os produtos</h2>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
