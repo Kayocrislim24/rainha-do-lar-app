@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { AlertTriangle, CheckCircle2, Copy, CreditCard, Crown, Minus, Plus, QrCode, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Copy, CreditCard, Minus, Plus, QrCode, Trash2 } from "lucide-react";
+import logo from "@/assets/logo-r.png.asset.json";
 import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
 import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
@@ -154,7 +155,7 @@ function CartPage() {
       <main className="grid min-h-[70vh] place-items-center bg-secondary px-4 py-16">
         <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-500 rounded-2xl border-2 border-gold bg-background p-8 text-center shadow-2xl sm:p-12">
           <div className="mx-auto grid size-24 place-items-center rounded-full bg-navy">
-            <Crown className="size-12 text-gold" />
+            <img src={logo.url} alt="Rainha do Lar" className="size-16 object-contain" />
           </div>
           <p className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-gold">Pedido recebido</p>
           <h1 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Parabéns pela sua compra, {done}!</h1>
