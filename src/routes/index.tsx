@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Truck, Gift, ShoppingCart, QrCode, Tag } from "lucide-react";
+import { ChevronLeft, ChevronRight, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
