@@ -1,21 +1,16 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Heart, MapPin, Search, ShoppingCart, User } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Heart, MessageCircle, ShoppingCart, User } from "lucide-react";
 import { useCart } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { useFavs } from "@/lib/favorites";
 import logo from "@/assets/logo-r.png.asset.json";
 import { LiveSearch } from "@/components/LiveSearch";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
-import imgSofa from "@/assets/sofa.jpg";
-import imgCama from "@/assets/cama.jpg";
-import imgGuarda from "@/assets/guarda-roupa.jpg";
-import imgMesa from "@/assets/mesa.jpg";
 
 export function SiteHeader() {
   const { count } = useCart();
   const favs = useFavs();
   const { user, isAdmin } = useAuth();
-  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 bg-background shadow-sm">
       <div className="topbar-marquee overflow-hidden border-b-2 border-gold bg-navy text-xs font-bold uppercase tracking-wide text-primary-foreground sm:text-sm">
@@ -35,42 +30,39 @@ export function SiteHeader() {
           ))}
         </div>
       </div>
-      <div className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-4">
-        <Link to="/" className="flex shrink-0 items-center gap-1.5">
-          <img src={logo.url} alt="Rainha do Lar" className="h-12 w-auto" />
+      <div className="mx-auto grid max-w-7xl grid-cols-[auto_1fr] items-center gap-4 px-4 py-4 md:grid-cols-[1fr_auto_1fr]">
+        <LiveSearch big className="hidden md:block md:max-w-lg" placeholder="Encontre tudo sobre móveis e decoração..." />
+        <Link to="/" className="flex shrink-0 items-center justify-center">
+          <img src={logo.url} alt="Rainha do Lar" className="h-14 w-auto" />
         </Link>
-        <LiveSearch big className="hidden flex-1 md:block" placeholder="Busque por produtos, ambientes, marcas..." />
-        <div className="ml-auto flex items-center gap-5 text-navy">
-          <span className="hidden items-center gap-1.5 text-xs leading-tight lg:flex"><MapPin className="size-5" />Entregamos<br />no DF</span>
+        <div className="flex items-center justify-end gap-4 text-navy sm:gap-7">
           {isAdmin && <Link to="/admin" className="hidden rounded-full bg-gold px-3 py-1.5 text-sm font-bold text-navy sm:block">Painel</Link>}
-          <Link to={user ? "/conta" : "/auth"} className="flex items-center gap-1.5 text-xs leading-tight"><User className="size-6" /><span className="hidden sm:inline">{user ? <>Olá!<br /><b>Minha conta</b></> : <>Olá, visitante<br /><b>Entre ou cadastre-se</b></>}</span></Link>
-          <Link to="/favoritos" aria-label="Favoritos" className="relative hidden sm:block"><Heart className={`size-6 ${favs.length ? "fill-gold text-gold" : ""}`} />{favs.length > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-navy text-[11px] font-bold text-primary-foreground">{favs.length}</span>}</Link>
-          <Link to="/carrinho" className="relative" aria-label="Carrinho">
-            <ShoppingCart className="size-7" />
-            {count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-navy">{count}</span>}
-          </Link>
+          <Link to={user ? "/conta" : "/auth"} className="flex flex-col items-center gap-0.5 text-[11px] font-bold sm:text-xs"><User className="size-6" />Minha conta</Link>
+          <Link to="/favoritos" className="relative hidden flex-col items-center gap-0.5 text-xs font-bold sm:flex"><Heart className={`size-6 ${favs.length ? "fill-gold text-gold" : ""}`} />Favoritos{favs.length > 0 && <span className="absolute -right-1 -top-2 grid size-5 place-items-center rounded-full bg-navy text-[11px] font-bold text-primary-foreground">{favs.length}</span>}</Link>
+          <a href="https://wa.me/5561981804734" target="_blank" rel="noopener noreferrer" className="hidden flex-col items-center gap-0.5 text-xs font-bold lg:flex"><MessageCircle className="size-6" />Atendimento</a>
+          <Link to="/carrinho" className="relative flex flex-col items-center gap-0.5 text-[11px] font-bold sm:text-xs"><ShoppingCart className="size-6" />Carrinho{count > 0 && <span className="absolute -right-2 -top-2 grid size-5 place-items-center rounded-full bg-gold text-[11px] font-bold text-navy">{count}</span>}</Link>
         </div>
       </div>
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <FreeShippingBar />
-      <nav className="relative border-t">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-3 text-xs font-bold whitespace-nowrap">
-          <div className="group/mega shrink-0">
-            <Link to="/busca" search={{}} className="flex items-center rounded-full bg-navy px-4 py-2 text-sm uppercase text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">☰ Todos os departamentos</Link>
-            <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background opacity-0 shadow-xl transition group-hover/mega:visible group-hover/mega:opacity-100">
+      <nav className="relative border-y bg-muted">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 overflow-x-auto px-4 text-xs font-semibold uppercase whitespace-nowrap text-muted-foreground lg:overflow-visible">
+          {([["Sofás", "Sof"], ["Guarda-roupas", "Guarda"], ["Camas", "Cama"], ["Mesas de jantar", "Mesa"], ["Eletrodomésticos", "Geladeira"]] as const).map(([l, q]) => (
+            <Link key={l} to="/busca" search={{ q }} className="shrink-0 py-3 hover:text-navy">{l}</Link>
+          ))}
+          <div className="group/mega shrink-0 lg:static">
+            <Link to="/busca" search={{}} className="block border-r border-navy py-3 pr-6 font-bold text-navy">Ver todos</Link>
+            <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/mega:visible group-hover/mega:opacity-100">
               <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-6 md:grid-cols-4">
                 {([["Sala de estar", [["Sofás", "Sof"], ["Racks", "Rack"], ["Poltronas", "Poltrona"]]], ["Quarto", [["Camas", "Cama"], ["Guarda-roupas", "Guarda"], ["Cômodas", "Cômoda"]]], ["Sala de jantar", [["Mesas", "Mesa"], ["Cadeiras", "Cadeira"], ["Buffets", "Buffet"]]], ["Eletrodomésticos", [["Geladeiras", "Geladeira"], ["Fogões", "Fogão"], ["Máquinas de lavar", "Máquina"]]]] as const).map(([t, subs]) => (
-                  <div key={t}><p className="text-sm uppercase text-gold">{t}</p><ul className="mt-2 space-y-1.5 font-semibold normal-case text-navy">{subs.map(([l, q]) => <li key={l}><Link to="/busca" search={{ q }} className="hover:text-gold">{l}</Link></li>)}</ul></div>
+                  <div key={t}><p className="text-sm font-bold uppercase text-gold">{t}</p><ul className="mt-2 space-y-1.5 font-semibold text-navy">{subs.map(([l, q]) => <li key={l}><Link to="/busca" search={{ q }} className="hover:text-gold">{l}</Link></li>)}</ul></div>
                 ))}
               </div>
             </div>
           </div>
-          {([["Sala de estar", "Sof", imgSofa], ["Quarto", "Cama", imgCama], ["Guarda-roupas", "Guarda", imgGuarda], ["Sala de jantar", "Mesa", imgMesa], ["Sofás", "Sof", imgSofa], ["Camas", "Cama", imgCama], ["Mesas", "Mesa", imgMesa], ["Ofertas", "", imgSofa]] as const).map(([l, c, img]) => (
-            <Link key={l} to="/busca" search={c ? { q: c } : {}} className="group flex w-24 shrink-0 flex-col items-center gap-1.5 text-center uppercase text-navy transition hover:-translate-y-0.5">
-              <img src={img} alt="" className="size-16 rounded-full border-2 border-gold object-cover shadow-sm transition group-hover:shadow-md" />
-              <span className={l === "Ofertas" ? "rounded-full bg-gold px-2 py-0.5 text-navy" : ""}>{l}</span>
-            </Link>
-          ))}
+          <Link to="/busca" search={{}} className="shrink-0 py-3 hover:text-navy">Ofertas</Link>
+          <Link to="/rastreio" className="shrink-0 py-3 hover:text-navy">Rastrear pedido</Link>
+          <Link to="/ajuda" className="shrink-0 py-3 hover:text-navy">Ajuda</Link>
         </div>
       </nav>
     </header>
