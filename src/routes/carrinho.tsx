@@ -164,6 +164,15 @@ function CartPage() {
 
   const input = "w-full rounded-md border px-3 py-2.5";
   return (
+    <>
+    <ol className="mx-auto mt-6 flex max-w-6xl items-center gap-2 overflow-x-auto px-4 text-xs font-bold uppercase whitespace-nowrap sm:text-sm">
+      {["Carrinho", "Identificação", "Entrega", "Pagamento"].map((s, i) => (
+        <li key={s} className="flex shrink-0 items-center gap-2">
+          <span className={`grid size-7 place-items-center rounded-full ${i === 0 ? "bg-navy text-primary-foreground" : "border-2 border-gold text-navy"}`}>{i + 1}</span>
+          <span className="text-navy">{s}</span>{i < 3 && <span className="mx-1 h-0.5 w-6 bg-gold sm:w-12" />}
+        </li>
+      ))}
+    </ol>
     <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
         <section className="rounded-lg border p-4">
