@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import cupomImg from "@/assets/popup-cupom-v3.png.asset.json";
+import cupomImg from "@/assets/popup-cupom-v4.png.asset.json";
 
 const CUPOM = "PRIMEIRACOMPRARAINHA";
 
 export function WelcomePopup() {
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    if (sessionStorage.getItem("rdl-welcome-v3")) return;
+    if (sessionStorage.getItem("rdl-welcome-v4")) return;
     const t = setTimeout(() => setOpen(true), 800);
     return () => clearTimeout(t);
   }, []);
-  const close = () => { sessionStorage.setItem("rdl-welcome-v3", "1"); setOpen(false); };
+  const close = () => { sessionStorage.setItem("rdl-welcome-v4", "1"); setOpen(false); };
   const copy = async () => {
     try { await navigator.clipboard.writeText(CUPOM); } catch { /* ignore */ }
     close();
