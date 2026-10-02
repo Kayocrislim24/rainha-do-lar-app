@@ -162,7 +162,7 @@ function Pedidos() {
   };
   const rastreio = (o: { id: string; telefone: string; nome: string; status: string }) => {
     const d = o.telefone.replace(/\D/g, "").replace(/^55/, "");
-    const t = `Olá ${o.nome.split(" ")[0]}! 👑 Aqui é da Rainha do Lar.\n🚚 Seu pedido está: *${o.status}*\n\nSeu código de compra é: *${o.id.slice(0, 8).toUpperCase()}*\nPara acompanhar, acesse "Rastrear pedido" no nosso site e digite este código e o seu telefone.`;
+    const t = `Olá ${o.nome.split(" ")[0]}! 👑 Aqui é da Rainha do Lar.\n🚚 Seu pedido está: *${o.status}*\n\nSeu código de compra é: *${o.id.slice(0, 8).toUpperCase()}*`;
     return `https://wa.me/55${d}?text=${encodeURIComponent(t)}`;
   };
   if (isLoading) return <p className="mt-6">Carregando...</p>;

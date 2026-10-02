@@ -148,11 +148,10 @@ function CartPage() {
           <div className="mt-6 rounded-lg border-2 border-dashed border-gold bg-secondary p-4">
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Código do pedido</p>
             <p className="text-2xl font-bold tracking-widest text-navy">{codigo}</p>
-            <p className="text-xs text-muted-foreground">Guarde para rastrear sua entrega</p>
+            <p className="text-xs text-muted-foreground">Guarde este código</p>
           </div>
           {premio && <Roleta premio={premio} premios={premios} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/rastreio" search={{ codigo, tel: f.telefone.replace(/\D/g, "") }} className="inline-block rounded-md bg-navy px-6 py-3 font-bold text-primary-foreground hover:opacity-90">Rastrear pedido</Link>
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
           </div>
         </div>
