@@ -7,8 +7,7 @@ import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
-import { useBanners, useSlides } from "@/lib/home";
-import { resolveImage } from "@/lib/products";
+import { useBanners } from "@/lib/home";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,34 +53,6 @@ function Banners() {
         {n > 1 && <div className="absolute inset-x-0 bottom-2 flex justify-center gap-2">{list.map((_, k) => <button key={k} aria-label={`Banner ${k + 1}`} onClick={() => { setAnim(true); setI(k); }} className={`h-2 rounded-full transition-all ${k === i % n ? "w-8 bg-gold" : "w-2 bg-background/70"}`} />)}</div>}
       </div>
     </div>
-  );
-}
-
-function Hero() {
-  const slides = useSlides().map((x) => ({ ...x, img: resolveImage(x.img) }));
-  const [i, setI] = useState(0);
-  useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, [slides.length]);
-  if (!slides.length) return null;
-  const s = slides[i % slides.length] ?? slides[0]!;
-  return (
-    <section className="relative mx-auto mt-4 max-w-7xl px-4">
-      <div className="grid items-center gap-6 overflow-hidden rounded-2xl bg-navy px-6 py-8 text-primary-foreground md:grid-cols-2 md:px-12 md:py-14">
-        <div key={i} className="animate-in fade-in slide-in-from-left-4 duration-500">
-          <p className="text-sm font-bold uppercase tracking-widest text-gold">{s.k}</p>
-          <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">{s.t}</h1>
-          <p className="mt-3 text-primary-foreground/80">{s.d}</p>
-          <a href="#produtos" className="btn-comprar mt-6 inline-flex rounded-full px-8 py-3 text-sm">Aproveitar</a>
-        </div>
-        <div className="rounded-xl bg-background p-4 shadow-2xl">
-          <img key={s.img + i} src={s.img} alt={s.t} width={1024} height={1024} className="mx-auto max-h-72 w-auto object-contain animate-in fade-in zoom-in-95 duration-500" />
-        </div>
-      </div>
-      <button aria-label="Anterior" onClick={() => setI((i + slides.length - 1) % slides.length)} className="absolute left-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronLeft /></button>
-      <button aria-label="Próximo" onClick={() => setI((i + 1) % slides.length)} className="absolute right-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronRight /></button>
-      <div className="flex justify-center gap-2 py-3">
-        {slides.map((_, n) => <button key={n} aria-label={`Banner ${n + 1}`} onClick={() => setI(n)} className={`h-2 rounded-full transition-all ${n === i ? "w-8 bg-gold" : "w-2 bg-navy/30"}`} />)}
-      </div>
-    </section>
   );
 }
 
