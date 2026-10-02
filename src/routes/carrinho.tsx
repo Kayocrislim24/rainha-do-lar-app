@@ -233,25 +233,40 @@ function CartPage() {
           {chao && <p className="ml-6 mt-1 flex gap-1 rounded bg-warn p-2 text-sm text-warn-foreground"><AlertTriangle className="size-4 shrink-0" />Vamos combinar a entrega previamente pelo WhatsApp.</p>}
         </section>}
 
-        {step === 3 && <section className="rounded-lg border p-4">
-          <h2 className="text-lg font-bold text-navy">Pagamento</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            {([["PIX", QrCode, "Aprovação na hora"], ["Cartão de crédito", CreditCard, "Parcele em até 12x"]] as const).map(([k, I, d]) => (
-              <button key={k} type="button" onClick={() => setPag(k)} className={`flex items-center gap-3 rounded-lg border-2 p-4 text-left transition ${pag === k ? "border-gold bg-secondary" : "border-border hover:border-gold"}`}>
-                <I className="size-8 text-gold" /><span><b className="block text-navy">{k}</b><span className="text-sm text-muted-foreground">{d}</span></span>
+        {step === 3 && <section className="overflow-hidden rounded-xl border bg-background shadow-sm">
+          <div className="border-b bg-navy px-5 py-4">
+            <h2 className="text-lg font-bold uppercase tracking-widest text-gold">Pagamento</h2>
+            <p className="text-sm text-primary-foreground/80">Escolha como deseja pagar. Ambiente seguro.</p>
+          </div>
+          <div className="grid gap-3 p-5 sm:grid-cols-2">
+            {([["PIX", QrCode, "Aprovação imediata"], ["Cartão de crédito", CreditCard, "Parcele em até 12x"]] as const).map(([k, I, d]) => (
+              <button key={k} type="button" onClick={() => setPag(k)} className={`relative flex items-center gap-4 rounded-xl border-2 p-5 text-left transition ${pag === k ? "border-gold bg-secondary shadow-md" : "border-border hover:-translate-y-0.5 hover:border-gold hover:shadow"}`}>
+                <span className={`grid size-12 shrink-0 place-items-center rounded-full ${pag === k ? "bg-navy" : "bg-secondary"}`}><I className="size-6 text-gold" /></span>
+                <span><b className="block text-base text-navy">{k}</b><span className="text-sm text-muted-foreground">{d}</span></span>
+                {pag === k && <CheckCircle2 className="absolute right-3 top-3 size-5 text-gold" />}
               </button>
             ))}
           </div>
           {pag === "PIX" && (
-            <div className="mt-4 rounded-lg border-2 border-dashed border-gold bg-secondary p-4 text-center">
-              <p className="text-sm font-semibold text-navy">Pague {brl(subtotal - desconto + frete)} com a chave PIX (CNPJ):</p>
-              <p className="mt-2 text-2xl font-extrabold tracking-wider text-navy">{PIX_CHAVE}</p>
-              <p className="text-xs text-muted-foreground">Rainha do Lar</p>
-              <button type="button" onClick={copiarPix} className="mt-3 inline-flex items-center gap-2 rounded-full bg-navy px-5 py-2 text-sm font-bold text-primary-foreground"><Copy className="size-4" />{copiado ? "Chave copiada!" : "Copiar chave PIX"}</button>
-              <p className="mt-3 text-xs text-muted-foreground">Depois de pagar, clique em "Já fiz o PIX" para finalizar.</p>
+            <div className="mx-5 mb-5 overflow-hidden rounded-xl border-2 border-gold">
+              <div className="flex items-center justify-between bg-navy px-5 py-3">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Valor a pagar</span>
+                <span className="text-2xl font-extrabold text-primary-foreground">{brl(subtotal - desconto + frete)}</span>
+              </div>
+              <div className="bg-secondary p-5 text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Chave PIX · CNPJ</p>
+                <p className="mt-2 break-all text-2xl font-extrabold tracking-wider text-navy sm:text-3xl">{PIX_CHAVE}</p>
+                <p className="mt-2 text-sm text-navy">Favorecido: <b>Kayo Crisostomo Lima</b></p>
+                <button type="button" onClick={copiarPix} className="btn-comprar mt-4 inline-flex items-center gap-2 rounded-md px-6 py-3 text-sm">{copiado ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}{copiado ? "Chave copiada" : "Copiar chave PIX"}</button>
+                <ol className="mx-auto mt-5 grid max-w-md gap-2 text-left text-sm text-navy">
+                  {["Abra o app do seu banco e escolha pagar com PIX.", "Cole a chave copiada e confira o favorecido.", "Após pagar, clique em \"Já fiz o PIX — Finalizar\"."].map((t, i) => (
+                    <li key={t} className="flex gap-3"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-navy text-xs font-bold text-gold">{i + 1}</span>{t}</li>
+                  ))}
+                </ol>
+              </div>
             </div>
           )}
-          {pag === "Cartão de crédito" && <p className="mt-4 rounded-lg bg-secondary p-4 text-sm text-navy">Ao finalizar, um de nossos vendedores envia pelo WhatsApp o link seguro para pagar no cartão em até 12x.</p>}
+          {pag === "Cartão de crédito" && <p className="mx-5 mb-5 rounded-xl border-2 border-gold bg-secondary p-5 text-sm text-navy">Ao finalizar, um de nossos vendedores envia pelo WhatsApp o link seguro para pagar no cartão em até 12x.</p>}
         </section>}
       </div>
 
