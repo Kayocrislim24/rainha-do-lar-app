@@ -147,8 +147,8 @@ function Index() {
           ))}
         </div>
 
-        {Array.from(new Set(products.map((p) => p.category))).map((cat) => {
-          const list = products.filter((p) => p.category === cat).slice(0, 4);
+        {Array.from(new Map(products.map((p) => [p.category.trim().toLowerCase(), p.category.trim()])).entries()).map(([key, cat]) => {
+          const list = products.filter((p) => p.category.trim().toLowerCase() === key).slice(0, 4);
           return (
             <section key={cat} className="mt-10">
               <div className="flex items-end justify-between border-b-2 border-gold pb-2">
