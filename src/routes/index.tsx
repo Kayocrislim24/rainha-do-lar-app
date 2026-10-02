@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Truck, CreditCard, ShieldCheck, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, Gift, ShoppingCart, QrCode, Tag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -7,8 +7,7 @@ import sofa from "@/assets/sofa.jpg";
 import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
-import { useBanners, useSlides } from "@/lib/home";
-import { resolveImage } from "@/lib/products";
+import { useBanners } from "@/lib/home";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,42 +45,14 @@ function Banners() {
   if (!n) return null;
   const track = n > 1 ? [...list, list[0]!] : list;
   return (
-    <div className="mx-auto mt-4 max-w-7xl px-4">
-      <div className="relative overflow-hidden rounded-2xl">
+    <div className="mt-6">
+      <div className="relative overflow-hidden">
         <div className={`flex ${anim ? "transition-transform duration-700 ease-in-out" : ""}`} style={{ transform: `translateX(-${i * 100}%)` }}>
           {track.map((src, k) => <img key={k} src={src} alt={`Banner ${(k % n) + 1}`} className="w-full shrink-0" />)}
         </div>
         {n > 1 && <div className="absolute inset-x-0 bottom-2 flex justify-center gap-2">{list.map((_, k) => <button key={k} aria-label={`Banner ${k + 1}`} onClick={() => { setAnim(true); setI(k); }} className={`h-2 rounded-full transition-all ${k === i % n ? "w-8 bg-gold" : "w-2 bg-background/70"}`} />)}</div>}
       </div>
     </div>
-  );
-}
-
-function Hero() {
-  const slides = useSlides().map((x) => ({ ...x, img: resolveImage(x.img) }));
-  const [i, setI] = useState(0);
-  useEffect(() => { const id = setInterval(() => setI((x) => (x + 1) % slides.length), 5000); return () => clearInterval(id); }, [slides.length]);
-  if (!slides.length) return null;
-  const s = slides[i % slides.length] ?? slides[0]!;
-  return (
-    <section className="relative mx-auto mt-4 max-w-7xl px-4">
-      <div className="grid items-center gap-6 overflow-hidden rounded-2xl bg-navy px-6 py-8 text-primary-foreground md:grid-cols-2 md:px-12 md:py-14">
-        <div key={i} className="animate-in fade-in slide-in-from-left-4 duration-500">
-          <p className="text-sm font-bold uppercase tracking-widest text-gold">{s.k}</p>
-          <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-5xl">{s.t}</h1>
-          <p className="mt-3 text-primary-foreground/80">{s.d}</p>
-          <a href="#produtos" className="btn-comprar mt-6 inline-flex rounded-full px-8 py-3 text-sm">Aproveitar</a>
-        </div>
-        <div className="rounded-xl bg-background p-4 shadow-2xl">
-          <img key={s.img + i} src={s.img} alt={s.t} width={1024} height={1024} className="mx-auto max-h-72 w-auto object-contain animate-in fade-in zoom-in-95 duration-500" />
-        </div>
-      </div>
-      <button aria-label="Anterior" onClick={() => setI((i + slides.length - 1) % slides.length)} className="absolute left-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronLeft /></button>
-      <button aria-label="Próximo" onClick={() => setI((i + 1) % slides.length)} className="absolute right-6 top-1/2 hidden -translate-y-1/2 rounded-full bg-background/90 p-2 text-navy md:block"><ChevronRight /></button>
-      <div className="flex justify-center gap-2 py-3">
-        {slides.map((_, n) => <button key={n} aria-label={`Banner ${n + 1}`} onClick={() => setI(n)} className={`h-2 rounded-full transition-all ${n === i ? "w-8 bg-gold" : "w-2 bg-navy/30"}`} />)}
-      </div>
-    </section>
   );
 }
 
@@ -133,7 +104,7 @@ function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
   return (
     <section className="mt-10 rounded-lg bg-navy p-4 text-primary-foreground sm:p-6" onMouseEnter={() => { hover.current = true; }} onMouseLeave={() => { hover.current = false; }} onTouchStart={() => { pausedUntil.current = performance.now() + 4000; }} onTouchMove={() => { pausedUntil.current = performance.now() + 4000; }}>
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2>
+        <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Mais vendidos</h2><p className="hidden flex-1 text-center text-sm font-semibold uppercase md:block">Aproveite nossas ofertas com preços imperdíveis!</p>
         <div className="flex gap-2">
           <button aria-label="Anterior" onClick={() => go(-1)} className="grid size-9 place-items-center rounded-full bg-gold text-navy transition hover:scale-110"><ChevronLeft className="size-5" /></button>
           <button aria-label="Próximo" onClick={() => go(1)} className="grid size-9 place-items-center rounded-full bg-gold text-navy transition hover:scale-110"><ChevronRight className="size-5" /></button>
@@ -154,31 +125,26 @@ function Index() {
   const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
   return (
     <main>
+      <div className="mx-auto mt-6 grid max-w-7xl grid-cols-2 gap-3 px-4 sm:grid-cols-3 lg:grid-cols-5">
+        {[
+          { i: Truck, a: "Entrega própria", b: "em todo o DF", q: {} },
+          { i: Gift, a: "Frete grátis", b: "acima de R$ 1.500", q: {} },
+          { i: ShoppingCart, a: "", b: "Oportunidades", q: {} },
+          { i: QrCode, a: "Desconto", b: "no PIX", q: {} },
+          { i: Tag, a: "Ofertas da", b: "Semana", q: {} },
+        ].map(({ i: I, a, b }) => (
+          <Link key={a + b} to="/busca" search={{}} className="flex items-center justify-center gap-3 rounded-xl bg-muted px-3 py-5 text-sm text-navy transition hover:shadow-md">
+            <I className="size-8 shrink-0 text-gold" /><span className="leading-tight">{a && <>{a}<br /></>}<b>{b}</b></span>
+          </Link>
+        ))}
+      </div>
       <Banners />
-      <Hero />
       <div className="mx-auto max-w-7xl px-4">
-        <section className="grid grid-cols-2 gap-3 border-b py-5 text-sm sm:grid-cols-4">
-          {[
-            { i: Truck, t: "Entrega própria", d: "Em todo o DF" },
-            { i: CreditCard, t: "Até 12x", d: "No cartão de crédito" },
-            { i: ShieldCheck, t: "Compra segura", d: "Seus dados protegidos" },
-            { i: MessageCircle, t: "Atendimento", d: "Pelo WhatsApp" },
-          ].map(({ i: I, t, d }) => (
-            <div key={t} className="flex items-center gap-3">
-              <I className="size-6 shrink-0 text-gold" />
-              <div><p className="font-semibold">{t}</p><p className="text-xs text-muted-foreground">{d}</p></div>
-            </div>
-          ))}
-        </section>
-
-        <h2 className="mt-8 text-xl font-bold text-navy">Navegue por ambientes</h2>
-        <div className="mt-4 flex gap-5 overflow-x-auto pb-2">
+        <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6">
           {cats.map((c) => (
-            <Link key={c.n} to="/busca" search={{ q: ({"Sala de estar":"Sof","Quarto":"Cama","Guarda-roupas":"Guarda","Sala de jantar":"Mesa","Sofás":"Sof","Mesas":"Mesa"} as Record<string,string>)[c.n] }} className="group flex w-24 shrink-0 flex-col items-center text-center">
-              <span className="grid size-24 place-items-center overflow-hidden rounded-full border-2 border-border bg-secondary transition group-hover:border-gold">
-                <img src={c.img} alt={c.n} loading="lazy" className="size-20 object-contain transition group-hover:scale-110" />
-              </span>
-              <span className="mt-2 text-sm font-semibold">{c.n}</span>
+            <Link key={c.n} to="/busca" search={{ q: ({"Sala de estar":"Sof","Quarto":"Cama","Guarda-roupas":"Guarda","Sala de jantar":"Mesa","Sofás":"Sof","Mesas":"Mesa"} as Record<string,string>)[c.n] }} className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-muted p-3 text-center text-sm text-muted-foreground transition hover:shadow-md">
+              <img src={c.img} alt="" loading="lazy" className="h-16 w-auto object-contain mix-blend-multiply transition group-hover:scale-110" />
+              <span>{c.n}</span>
             </Link>
           ))}
         </div>
