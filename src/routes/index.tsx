@@ -122,7 +122,7 @@ function MaisVendidos({ items }: { items: Parameters<typeof Card>[0]["p"][] }) {
 function Index() {
   const { data: products = [], isLoading } = useProducts();
   const marcados = products.filter((p) => p.bestSeller);
-  const ofertas = (marcados.length ? marcados : [...products].sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))).slice(0, 20);
+  const ofertas = [...marcados, ...[...products].filter((p) => !p.bestSeller).sort((a, b) => b.oldPrice - b.price - (a.oldPrice - a.price))].slice(0, 20);
   return (
     <main>
       <Banners />
