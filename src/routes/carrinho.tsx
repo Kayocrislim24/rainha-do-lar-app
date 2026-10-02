@@ -143,9 +143,13 @@ function CartPage() {
     localStorage.removeItem("rdl-cupom");
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
+    const nomeCurto = r.data.nome.split(" ")[0] ?? r.data.nome;
+    try { localStorage.setItem("rdl-pendente", JSON.stringify({ id: orderId, tel: r.data.telefone, nome: nomeCurto, premio: sorteado })); } catch { /* ignore */ }
     setPremio(sorteado);
+    setPedido({ id: orderId, tel: r.data.telefone });
+    setPago(false);
     setCodigo(orderId.slice(0, 8).toUpperCase());
-    setDone(r.data.nome.split(" ")[0] ?? r.data.nome);
+    setDone(nomeCurto);
     clear();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -157,7 +161,7 @@ function CartPage() {
           <div className="mx-auto grid size-24 place-items-center rounded-full bg-navy">
             <img src={logo.url} alt="Rainha do Lar" className="size-16 object-contain" />
           </div>
-          <p className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-gold">Pedido recebido</p>
+          <p className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-gold">{pago ? "Pagamento confirmado" : "Pedido recebido"}</p>
           <h1 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Parabéns pela sua compra, {done}!</h1>
           <div className="mx-auto my-6 h-px w-24 bg-gold" />
           <p className="text-lg leading-relaxed text-foreground">
@@ -167,7 +171,14 @@ function CartPage() {
           <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
             <CheckCircle2 className="size-5 text-gold" /> Seus dados foram enviados com segurança
           </div>
-          {premio && <Roleta premio={premio} premios={premios} />}
+          {premio && !pago && (
+            <div className="mt-8 rounded-xl border-2 border-gold bg-secondary p-5">
+              <div className="mx-auto size-10 animate-spin rounded-full border-4 border-gold border-t-navy" />
+              <p className="mt-4 text-lg font-bold text-navy">Aguardando confirmação do pagamento</p>
+              <p className="mt-1 text-sm text-muted-foreground">Assim que confirmarmos o seu pagamento, a Roleta da Sorte é liberada aqui nesta tela. Não feche esta página.</p>
+            </div>
+          )}
+          {premio && pago && <Roleta premio={premio} premios={premios} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
           </div>
