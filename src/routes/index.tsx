@@ -160,18 +160,26 @@ function Index() {
           );
         })}
 
-        <section className="mt-10 grid gap-4 md:grid-cols-3">
-          {[{ t: "Inspire-se", d: "Ideias para deixar sua sala aconchegante", img: sofa }, { t: "Quarto de rainha", d: "Conforto para noites perfeitas", img: cama }, { t: "Organize tudo", d: "Guarda-roupas que cabem na sua casa", img: guarda }].map((b) => (
-            <Link key={b.t} to="/busca" search={{}} className="group relative overflow-hidden rounded-2xl bg-navy p-6 text-primary-foreground">
-              <img src={b.img} alt="" loading="lazy" className="absolute -right-6 bottom-0 h-40 opacity-90 transition group-hover:scale-105" />
-              <p className="relative text-2xl font-bold text-gold">{b.t}</p>
-              <p className="relative mt-1 max-w-[60%] text-sm">{b.d}</p>
-              <span className="relative mt-6 inline-block rounded-full bg-gold px-4 py-1.5 text-xs font-bold uppercase text-navy">Confira</span>
+        <section className="mt-12 grid gap-5 md:grid-cols-3">
+          {[{ t: "Inspire-se", d: "Ideias para deixar sua sala aconchegante", img: sofa, q: "Sof" }, { t: "Quarto de rainha", d: "Conforto para noites perfeitas", img: cama, q: "Cama" }, { t: "Organize tudo", d: "Guarda-roupas que cabem na sua casa", img: guarda, q: "Guarda" }].map((b) => (
+            <Link key={b.t} to="/busca" search={{ q: b.q }} className="group relative flex min-h-64 flex-col justify-end overflow-hidden rounded-2xl border-2 border-gold shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-2xl">
+              <img src={b.img} alt={b.t} loading="lazy" className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/70 to-navy/10" />
+              <div className="relative p-6 text-primary-foreground">
+                <span className="text-xs font-bold uppercase tracking-[0.25em] text-gold">Rainha do Lar</span>
+                <p className="mt-1 text-3xl font-extrabold uppercase leading-tight text-gold">{b.t}</p>
+                <p className="mt-2 text-base font-medium">{b.d}</p>
+                <span className="btn-comprar mt-5 inline-flex rounded-full px-6 py-2.5 text-sm font-extrabold uppercase">Confira agora →</span>
+              </div>
             </Link>
           ))}
         </section>
 
-        <h2 id="produtos" className="mt-10 text-xl font-bold text-navy">Todos os produtos</h2>
+        <div id="produtos" className="mt-14 flex items-center gap-4">
+          <span className="h-1 flex-1 rounded bg-gold" />
+          <h2 className="rounded-full bg-navy px-8 py-3 text-xl font-extrabold uppercase tracking-wide text-gold shadow-lg sm:text-2xl">👑 Todos os produtos</h2>
+          <span className="h-1 flex-1 rounded bg-gold" />
+        </div>
         {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
         <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {products.map((p) => <Card key={p.id} p={p} />)}
