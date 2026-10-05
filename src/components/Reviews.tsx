@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Star, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +44,11 @@ function Stars({ n, onPick, size = "size-5" }: { n: number; onPick?: (n: number)
   );
 }
 
+const EMOJIS = ["😍", "🥰", "😊", "👍", "👏", "💛", "⭐", "🔥", "🏠", "🛋️", "🛏️", "📦", "🚚", "💯", "😕", "👎"];
+const TK = "rdl-reviews";
+const getTokens = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(TK) || "{}"); } catch { return {}; } };
+const setToken = (id: string, t: string | null) => { const m = getTokens(); if (t) m[id] = t; else delete m[id]; localStorage.setItem(TK, JSON.stringify(m)); };
+
 export function Reviews({ productId }: { productId: string }) {
   const { user } = useAuth();
   const [list, setList] = useState<Review[]>([]);
@@ -55,9 +60,26 @@ export function Reviews({ productId }: { productId: string }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [zoom, setZoom] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [mine, setMine] = useState<Record<string, string>>({});
+  useEffect(() => { setMine(getTokens()); }, []);
+  const formRef = useRef<HTMLFormElement>(null);
+  const taRef = useRef<HTMLTextAreaElement>(null);
+  const addEmoji = (e: string) => {
+    const ta = taRef.current; const a = ta?.selectionStart ?? comentario.length; const b = ta?.selectionEnd ?? comentario.length;
+    const v = (comentario.slice(0, a) + e + comentario.slice(b)).slice(0, 1000); setComentario(v);
+    requestAnimationFrame(() => { ta?.focus(); ta?.setSelectionRange(a + e.length, a + e.length); });
+  };
+  const editar = (r: Review) => { setEditId(r.id); setNome(r.nome); setNota(r.nota); setComentario(r.comentario); setFotos(r.fotos); setAvatar(r.avatar ?? ""); setMsg(null); formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
+  const cancelar = () => { setEditId(null); setNome(""); setNota(0); setComentario(""); setFotos([]); setAvatar(""); };
+  const apagar = async (r: Review) => {
+    if (!confirm("Apagar sua avaliação?")) return;
+    const { data } = await supabase.rpc("delete_review" as never, { _id: r.id, _token: mine[r.id] } as never);
+    if (data) { setToken(r.id, null); setMine(getTokens()); if (editId === r.id) cancelar(); load(); } else setMsg("Não foi possível apagar.");
+  };
 
   const load = async () => {
-    const { data } = await supabase.from("reviews").select("*").eq("product_id", productId).order("created_at", { ascending: false });
+    const { data } = await supabase.from("reviews").select("id, product_id, user_id, nome, nota, comentario, fotos, avatar, created_at").eq("product_id", productId).order("created_at", { ascending: false });
     setList(((data ?? []) as unknown as Review[]).map((r) => ({ ...r, fotos: (Array.isArray(r.fotos) ? r.fotos : []).filter((f) => typeof f === "string" && f.length > 30) })));
   };
   useEffect(() => { load(); }, [productId]);
@@ -73,11 +95,19 @@ export function Reviews({ productId }: { productId: string }) {
     const v = schema.safeParse({ nome, comentario, nota });
     if (!v.success) { setMsg(v.error.issues[0]!.message); return; }
     setBusy(true);
-    const { error } = await supabase.from("reviews").insert({ product_id: productId, user_id: user?.id ?? null, ...v.data, fotos, avatar } as never);
-    setBusy(false);
-    if (error) { setMsg("Não foi possível enviar. Tente novamente."); return; }
-    setNome(""); setNota(0); setComentario(""); setFotos([]); setAvatar("");
-    setMsg("Obrigado pela sua avaliação! 💛");
+    if (editId) {
+      const { data } = await supabase.rpc("update_review" as never, { _id: editId, _token: mine[editId], _nome: v.data.nome, _nota: v.data.nota, _comentario: v.data.comentario, _fotos: fotos, _avatar: avatar } as never);
+      setBusy(false);
+      if (!data) { setMsg("Não foi possível salvar. Tente novamente."); return; }
+      cancelar(); setMsg("Avaliação atualizada!");
+    } else {
+      const id = crypto.randomUUID(); const token = crypto.randomUUID();
+      const { error } = await supabase.from("reviews").insert({ id, edit_token: token, product_id: productId, user_id: user?.id ?? null, ...v.data, fotos, avatar } as never);
+      setBusy(false);
+      if (error) { setMsg("Não foi possível enviar. Tente novamente."); return; }
+      setToken(id, token); setMine(getTokens());
+      cancelar(); setMsg("Obrigado pela sua avaliação! 💛");
+    }
     load();
   };
 
@@ -124,6 +154,7 @@ export function Reviews({ productId }: { productId: string }) {
                   </div>
                 </div>
                 <div className="mt-2"><Stars n={r.nota} /></div>
+                {mine[r.id] && <div className="mt-2 flex gap-2 text-sm"><button type="button" onClick={() => editar(r)} className="rounded-full border border-navy px-4 py-1.5 font-semibold text-navy">Editar</button><button type="button" onClick={() => apagar(r)} className="rounded-full border px-4 py-1.5 font-semibold text-destructive">Apagar</button></div>}
                 <p className="mt-2 whitespace-pre-line break-words text-base">{r.comentario}</p>
                 {Array.isArray(r.fotos) && r.fotos.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">{r.fotos.map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)}><img src={f} alt="" className="size-28 rounded-lg border object-cover transition hover:scale-105" /></button>)}</div>
@@ -134,8 +165,8 @@ export function Reviews({ productId }: { productId: string }) {
         </div>
       )}
       <div className="mx-auto mt-8 max-w-xl">
-          <form onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
-            <p className="text-2xl font-bold text-navy">Avalie este produto</p>
+          <form ref={formRef} onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
+            <p className="text-2xl font-bold text-navy">{editId ? "Editar sua avaliação" : "Avalie este produto"}</p>
             <Stars n={nota} onPick={setNota} size="size-9" />
             <div className="flex items-center gap-3">
               <label className="relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-gold bg-background text-navy" aria-label="Sua foto de perfil">
@@ -145,7 +176,8 @@ export function Reviews({ productId }: { productId: string }) {
               <input value={nome} onChange={(e) => setNome(e.target.value)} maxLength={80} placeholder="Seu nome" className="w-full rounded-md border bg-background px-4 py-3 text-base" />
             </div>
             <p className="-mt-2 text-xs text-muted-foreground">Toque no círculo para colocar sua foto de perfil (opcional)</p>
-            <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} maxLength={1000} rows={5} placeholder="Conte o que achou: qualidade, entrega, montagem..." className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            <textarea ref={taRef} value={comentario} onChange={(e) => setComentario(e.target.value)} maxLength={1000} rows={5} placeholder="Conte o que achou: qualidade, entrega, montagem..." className="w-full rounded-md border bg-background px-4 py-3 text-base" />
+            <div className="flex flex-wrap gap-1 rounded-md border bg-background p-2">{EMOJIS.map((e) => <button key={e} type="button" onClick={() => addEmoji(e)} aria-label={`Inserir ${e}`} className="grid size-9 place-items-center rounded-md text-xl transition hover:scale-110 hover:bg-muted">{e}</button>)}</div>
             <div className="flex flex-wrap items-center gap-2">
               {fotos.map((f, i) => (
                 <div key={i} className="relative size-20"><img src={f} alt="" className="size-full rounded-md object-cover" />
@@ -160,7 +192,8 @@ export function Reviews({ productId }: { productId: string }) {
               )}
               <span className="text-xs text-muted-foreground">Até 3 fotos</span>
             </div>
-            <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : "Enviar avaliação"}</button>
+            <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : editId ? "Salvar alterações" : "Enviar avaliação"}</button>
+            {editId && <button type="button" onClick={cancelar} className="w-full rounded-full border px-6 py-3 font-semibold text-navy">Cancelar edição</button>}
             {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
           </form>
       </div>

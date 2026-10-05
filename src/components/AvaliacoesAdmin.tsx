@@ -11,7 +11,7 @@ export function AvaliacoesAdmin() {
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-reviews"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("reviews").select("id, product_id, user_id, nome, nota, comentario, fotos, avatar, created_at").order("created_at", { ascending: false });
       if (error) throw error;
       return data as unknown as R[];
     },
