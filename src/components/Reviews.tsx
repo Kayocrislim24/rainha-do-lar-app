@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Star, Video, Volume2, X } from "lucide-react";
+import { Camera, Star, Video, Volume2, VolumeX, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; videos: { path: string; url: string }[]; avatar?: string; created_at: string };
-type VideoDraft = { path?: string; url: string; file?: File };
+type VideoDraft = { path?: string; url: string; file?: File; removeAudio: boolean };
 
 const VIDEO_PREFIX = "review-video:";
 const VIDEO_LIMIT = 20 * 1024 * 1024;
@@ -25,7 +25,9 @@ function toImage(file: File, max = 800): Promise<string> {
         const s = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement("canvas");
         c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
-        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+        const context = c.getContext("2d");
+        if (!context) { rej(new Error("Não foi possível preparar a foto.")); return; }
+        context.drawImage(img, 0, 0, c.width, c.height);
         res(c.toDataURL("image/jpeg", 0.8));
       };
       img.onerror = rej;
@@ -34,6 +36,27 @@ function toImage(file: File, max = 800): Promise<string> {
     r.onerror = rej;
     r.readAsDataURL(file);
   });
+}
+
+async function withoutAudio(file: File): Promise<File> {
+  const [{ FFmpeg }, { fetchFile }, { default: coreURL }, { default: wasmURL }] = await Promise.all([
+    import("@ffmpeg/ffmpeg"),
+    import("@ffmpeg/util"),
+    import("@ffmpeg/core?url"),
+    import("@ffmpeg/core/wasm?url"),
+  ]);
+  const ffmpeg = new FFmpeg();
+  await ffmpeg.load({ coreURL, wasmURL });
+  const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+  const input = `entrada.${extension}`;
+  const output = `video-sem-audio.${extension}`;
+  await ffmpeg.writeFile(input, await fetchFile(file));
+  const result = await ffmpeg.exec(["-i", input, "-map", "0:v:0", "-c:v", "copy", "-an", output]);
+  if (result !== 0) throw new Error("Não foi possível remover o áudio deste vídeo.");
+  const data = await ffmpeg.readFile(output);
+  ffmpeg.terminate();
+  const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
+  return new File([bytes], `video-sem-audio.${extension}`, { type: file.type, lastModified: Date.now() });
 }
 
 function Stars({ n, onPick, size = "size-5" }: { n: number; onPick?: (n: number) => void; size?: string }) {
@@ -64,6 +87,7 @@ export function Reviews({ productId }: { productId: string }) {
   const [avatar, setAvatar] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [videoStatus, setVideoStatus] = useState<string | null>(null);
   const [zoom, setZoom] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [mine, setMine] = useState<Record<string, string>>({});
@@ -75,8 +99,8 @@ export function Reviews({ productId }: { productId: string }) {
     const v = (comentario.slice(0, a) + e + comentario.slice(b)).slice(0, 1000); setComentario(v);
     requestAnimationFrame(() => { ta?.focus(); ta?.setSelectionRange(a + e.length, a + e.length); });
   };
-  const editar = (r: Review) => { setEditId(r.id); setNome(r.nome); setNota(r.nota); setComentario(r.comentario); setFotos(r.fotos); setVideo(r.videos[0] ?? null); setAvatar(r.avatar ?? ""); setMsg(null); formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
-  const clearVideo = () => { if (video?.file) URL.revokeObjectURL(video.url); setVideo(null); };
+  const editar = (r: Review) => { setEditId(r.id); setNome(r.nome); setNota(r.nota); setComentario(r.comentario); setFotos(r.fotos); setVideo(r.videos[0] ? { ...r.videos[0], removeAudio: false } : null); setAvatar(r.avatar ?? ""); setMsg(null); formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
+  const clearVideo = () => { if (video?.file) URL.revokeObjectURL(video.url); setVideo(null); setVideoStatus(null); };
   const cancelar = () => { setEditId(null); setNome(""); setNota(0); setComentario(""); setFotos([]); clearVideo(); setAvatar(""); };
   const apagar = async (r: Review) => {
     if (!confirm("Apagar sua avaliação?")) return;
@@ -115,23 +139,32 @@ export function Reviews({ productId }: { productId: string }) {
     if (!file.type.startsWith("video/")) { setMsg("Escolha um arquivo de vídeo."); return; }
     if (file.size > VIDEO_LIMIT) { setMsg("O vídeo deve ter no máximo 20 MB."); return; }
     clearVideo();
-    setVideo({ file, url: URL.createObjectURL(file) });
+    setVideo({ file, url: URL.createObjectURL(file), removeAudio: false });
     setMsg(null);
   };
 
   const uploadVideo = async (reviewId: string) => {
     if (!video?.file) return video?.path ?? null;
-    const extension = video.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+    let uploadFile = video.file;
+    if (video.removeAudio) {
+      setVideoStatus("Removendo o áudio do vídeo...");
+      uploadFile = await withoutAudio(video.file);
+      setVideoStatus("Áudio removido. Enviando vídeo...");
+    } else {
+      setVideoStatus("Enviando vídeo...");
+    }
+    const extension = uploadFile.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
     const path = `${reviewId}/${crypto.randomUUID()}.${extension}`;
-    const { error } = await supabase.storage.from("review-media").upload(path, video.file, { contentType: video.file.type, upsert: false });
+    const { error } = await supabase.storage.from("review-media").upload(path, uploadFile, { contentType: uploadFile.type, upsert: false });
     if (error) throw new Error("Não foi possível enviar o vídeo. Tente novamente.");
+    setVideoStatus(null);
     return path;
   };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const v = schema.safeParse({ nome, comentario, nota });
-    if (!v.success) { setMsg(v.error.issues[0]!.message); return; }
+    if (!v.success) { setMsg(v.error.issues[0]?.message ?? "Confira os dados da avaliação."); return; }
     setBusy(true);
     try {
       const id = editId ?? crypto.randomUUID();
@@ -153,6 +186,7 @@ export function Reviews({ productId }: { productId: string }) {
       load();
     } catch (error) {
       setBusy(false);
+      setVideoStatus(null);
       setMsg(error instanceof Error ? error.message : "Não foi possível enviar. Tente novamente.");
     }
   };
@@ -242,7 +276,7 @@ export function Reviews({ productId }: { productId: string }) {
             <div className="rounded-md border bg-background p-3">
               {video ? (
                 <div className="relative overflow-hidden rounded-md border">
-                  <video src={video.url} controls playsInline preload="metadata" className="aspect-video w-full bg-foreground object-contain" />
+                  <video src={video.url} controls playsInline preload="metadata" muted={video.removeAudio} className="aspect-video w-full bg-foreground object-contain" />
                   <button type="button" onClick={clearVideo} className="absolute right-2 top-2 rounded-full bg-navy p-1.5 text-primary-foreground" aria-label="Remover vídeo"><X className="size-4" /></button>
                 </div>
               ) : (
@@ -251,7 +285,23 @@ export function Reviews({ productId }: { productId: string }) {
                   <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => { addVideo(e.target.files?.[0]); e.target.value = ""; }} />
                 </label>
               )}
-              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><Volume2 className="size-3.5" />1 vídeo de até 20 MB, com ou sem áudio</p>
+              {video?.file && (
+                <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-md border border-gold bg-secondary p-3 text-navy">
+                  <input
+                    type="checkbox"
+                    checked={video.removeAudio}
+                    disabled={busy}
+                    onChange={(e) => setVideo((current) => current ? { ...current, removeAudio: e.target.checked } : current)}
+                    className="mt-0.5 size-5 shrink-0 accent-[var(--navy)]"
+                  />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-2 font-bold"><VolumeX className="size-5 shrink-0" />Enviar sem áudio</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">Remove toda a fala e qualquer som antes de publicar.</span>
+                  </span>
+                </label>
+              )}
+              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><Volume2 className="size-3.5" />1 vídeo de até 20 MB. Você escolhe enviar com áudio ou em mudo.</p>
+              {videoStatus && <p role="status" className="mt-2 text-sm font-bold text-navy">{videoStatus}</p>}
             </div>
             <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : editId ? "Salvar alterações" : "Enviar avaliação"}</button>
             {editId && <button type="button" onClick={cancelar} className="w-full rounded-full border px-6 py-3 font-semibold text-navy">Cancelar edição</button>}
