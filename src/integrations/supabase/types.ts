@@ -169,6 +169,7 @@ export type Database = {
           avatar: string
           comentario: string
           created_at: string
+          edit_token: string | null
           fotos: Json
           id: string
           nome: string
@@ -180,6 +181,7 @@ export type Database = {
           avatar?: string
           comentario: string
           created_at?: string
+          edit_token?: string | null
           fotos?: Json
           id?: string
           nome: string
@@ -191,6 +193,7 @@ export type Database = {
           avatar?: string
           comentario?: string
           created_at?: string
+          edit_token?: string | null
           fotos?: Json
           id?: string
           nome?: string
@@ -253,6 +256,7 @@ export type Database = {
         Args: { _cpf: string; _cupom: string }
         Returns: boolean
       }
+      delete_review: { Args: { _id: string; _token: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -270,6 +274,18 @@ export type Database = {
           status: string
           total: number
         }[]
+      }
+      update_review: {
+        Args: {
+          _avatar: string
+          _comentario: string
+          _fotos: Json
+          _id: string
+          _nome: string
+          _nota: number
+          _token: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
