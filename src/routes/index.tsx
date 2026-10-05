@@ -140,14 +140,6 @@ function Index() {
         </div>
 
 
-        <div className="mt-10 grid gap-4 md:grid-cols-2">
-          {[{ t: "Quarto completo", d: "Camas, guarda-roupas e mais", img: cama }, { t: "Sala de jantar", d: "Mesas para receber bem", img: mesa }].map((b) => (
-            <a key={b.t} href="#produtos" className="flex items-center justify-between gap-4 overflow-hidden rounded-lg bg-secondary p-6 hover:ring-2 hover:ring-gold">
-              <div><p className="text-2xl font-bold text-navy">{b.t}</p><p className="text-sm text-muted-foreground">{b.d}</p><span className="mt-3 inline-block text-sm font-bold text-navy underline">Ver produtos</span></div>
-              <img src={b.img} alt={b.t} loading="lazy" className="size-32 object-contain mix-blend-multiply" />
-            </a>
-          ))}
-        </div>
 
         {Array.from(new Map(products.map((p) => [p.category.trim().toLowerCase(), p.category.trim()])).entries()).map(([key, cat]) => {
           const list = products.filter((p) => p.category.trim().toLowerCase() === key).slice(0, 4);
