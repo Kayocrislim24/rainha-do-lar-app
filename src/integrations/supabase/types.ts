@@ -176,6 +176,7 @@ export type Database = {
           nota: number
           product_id: string
           user_id: string | null
+          videos: Json
         }
         Insert: {
           avatar?: string
@@ -188,6 +189,7 @@ export type Database = {
           nota: number
           product_id: string
           user_id?: string | null
+          videos?: Json
         }
         Update: {
           avatar?: string
@@ -200,6 +202,7 @@ export type Database = {
           nota?: number
           product_id?: string
           user_id?: string | null
+          videos?: Json
         }
         Relationships: [
           {
@@ -275,18 +278,32 @@ export type Database = {
           total: number
         }[]
       }
-      update_review: {
-        Args: {
-          _avatar: string
-          _comentario: string
-          _fotos: Json
-          _id: string
-          _nome: string
-          _nota: number
-          _token: string
-        }
-        Returns: boolean
-      }
+      update_review:
+        | {
+            Args: {
+              _avatar: string
+              _comentario: string
+              _fotos: Json
+              _id: string
+              _nome: string
+              _nota: number
+              _token: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              _avatar: string
+              _comentario: string
+              _fotos: Json
+              _id: string
+              _nome: string
+              _nota: number
+              _token: string
+              _videos: Json
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       app_role: "admin" | "user"
