@@ -118,7 +118,49 @@ export function Reviews({ productId }: { productId: string }) {
             {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
           </form>
       </div>
-      {void dist}{void media}{void zoom}{void setZoom}
+      {list.length > 0 && (
+        <div className="mx-auto mt-8 max-w-4xl">
+          <div className="flex flex-col gap-6 rounded-xl border p-5 sm:flex-row sm:items-center">
+            <div className="text-center sm:w-48 sm:shrink-0">
+              <p className="text-5xl font-bold text-navy">{media.toFixed(1)}</p>
+              <div className="mt-1 flex justify-center"><Stars n={Math.round(media)} /></div>
+              <p className="mt-1 text-sm text-muted-foreground">{list.length} {list.length === 1 ? "avaliação" : "avaliações"}</p>
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              {dist.map(({ s, c }) => (
+                <div key={s} className="flex items-center gap-2 text-sm">
+                  <span className="w-4 shrink-0">{s}</span><Star className="size-4 shrink-0 fill-gold text-gold" />
+                  <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-gold" style={{ width: `${(c / list.length) * 100}%` }} /></div>
+                  <span className="w-6 shrink-0 text-right text-muted-foreground">{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4 space-y-4">
+            {list.map((r) => (
+              <div key={r.id} className="rounded-xl border p-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  {r.avatar ? <img src={r.avatar} alt="" className="size-12 shrink-0 rounded-full object-cover" /> : <div className="grid size-12 shrink-0 place-items-center rounded-full bg-navy text-lg font-bold text-primary-foreground">{r.nome.charAt(0).toUpperCase()}</div>}
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-navy">{r.nome}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                </div>
+                <div className="mt-2"><Stars n={r.nota} /></div>
+                <p className="mt-2 whitespace-pre-line break-words text-base">{r.comentario}</p>
+                {Array.isArray(r.fotos) && r.fotos.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">{r.fotos.map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)}><img src={f} alt="" className="size-24 rounded-md object-cover" /></button>)}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {zoom && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/80 p-4" onClick={() => setZoom(null)}>
+          <img src={zoom} alt="" className="max-h-[90vh] max-w-full rounded-lg" />
+        </div>
+      )}
     </section>
   );
 }
