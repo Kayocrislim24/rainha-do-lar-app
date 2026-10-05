@@ -13,6 +13,7 @@ export function ProductCard({ p, glass = false }: { p: Product; glass?: boolean 
   return (
     <Link to="/produto/$id" params={{ id: p.id }} className={`group flex flex-col rounded-lg border p-3 transition hover:-translate-y-1 hover:shadow-lg ${glass ? "border-primary-foreground/25 bg-primary-foreground/10 text-primary-foreground shadow-xl backdrop-blur-md" : "bg-card"}`}>
       <div className="relative overflow-hidden">
+        {p.sold > 0 && <span className="absolute left-1 top-1 z-10 rounded-full bg-gold px-2.5 py-1 text-[11px] sm:text-xs font-extrabold uppercase text-navy shadow-lg ring-2 ring-background">🔥 {p.sold.toLocaleString("pt-BR")} {p.sold === 1 ? "vendido" : "vendidos"}</span>}
         <img src={img} alt={p.title} width={1024} height={1024} loading="lazy" className={`aspect-square w-full object-contain ${glass ? "rounded-md bg-background" : ""} transition group-hover:scale-105`} />
         <button type="button" aria-label={fav ? "Remover dos favoritos" : "Adicionar aos favoritos"} onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(p.id); }} className="absolute right-1 top-1 grid size-9 place-items-center rounded-full bg-background/90 text-navy shadow transition hover:scale-110">
           <Heart className={`size-5 ${fav ? "fill-gold text-gold" : ""}`} />
