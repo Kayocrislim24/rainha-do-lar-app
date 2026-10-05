@@ -129,7 +129,7 @@ function Index() {
       <div className="mx-auto max-w-7xl px-4">
         {ofertas.length > 0 && <MaisVendidos items={ofertas} />}
         <div className="mt-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_5%,#000_95%,transparent)]">
-          <div className="cats-marquee flex w-max gap-3 hover:[animation-play-state:paused]">
+          <div className="cats-marquee flex w-max gap-3 pr-3 hover:[animation-play-state:paused]">
             {[...cats, ...cats, ...cats, ...cats].map((c, k) => (
               <Link key={k} aria-hidden={k >= cats.length * 2 || undefined} to="/busca" search={{ q: ({"Sala de estar":"Sof","Quarto":"Cama","Guarda-roupas":"Guarda","Sala de jantar":"Mesa","Sofás":"Sof","Mesas":"Mesa"} as Record<string,string>)[c.n] }} className="group flex size-32 shrink-0 flex-col items-center justify-center gap-2 rounded-xl bg-muted p-3 text-center text-sm text-muted-foreground transition hover:shadow-md sm:size-40">
                 <img src={c.img} alt="" loading="lazy" className="h-16 w-auto object-contain mix-blend-multiply transition group-hover:scale-110" />
