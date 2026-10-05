@@ -20,7 +20,7 @@ function toImage(file: File, max = 800): Promise<string> {
       img.onload = () => {
         const s = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement("canvas");
-        c.width = img.width * s; c.height = img.height * s;
+        c.width = Math.max(1, Math.round(img.width * s)); c.height = Math.max(1, Math.round(img.height * s));
         c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
         res(c.toDataURL("image/jpeg", 0.8));
       };
@@ -58,13 +58,13 @@ export function Reviews({ productId }: { productId: string }) {
 
   const load = async () => {
     const { data } = await supabase.from("reviews").select("*").eq("product_id", productId).order("created_at", { ascending: false });
-    setList((data ?? []) as unknown as Review[]);
+    setList(((data ?? []) as unknown as Review[]).map((r) => ({ ...r, fotos: (Array.isArray(r.fotos) ? r.fotos : []).filter((f) => typeof f === "string" && f.length > 30) })));
   };
   useEffect(() => { load(); }, [productId]);
 
   const addFotos = async (files: FileList | null) => {
     if (!files) return;
-    const arr = await Promise.all(Array.from(files).slice(0, 3 - fotos.length).map(toImage));
+    const arr = await Promise.all(Array.from(files).slice(0, 3 - fotos.length).map((f) => toImage(f, 1000)));
     setFotos((f) => [...f, ...arr].slice(0, 3));
   };
 
@@ -87,7 +87,53 @@ export function Reviews({ productId }: { productId: string }) {
 
   return (
     <section className="mt-12 border-t pt-8">
-      <div className="mx-auto max-w-xl">
+      {list.length > 0 && (
+        <div className="mx-auto max-w-4xl">
+          <h2 className="text-2xl font-extrabold uppercase tracking-wide text-navy">Avaliações dos clientes</h2>
+          <div className="mt-4 flex flex-col gap-6 overflow-hidden rounded-2xl border-2 border-gold bg-navy p-6 text-primary-foreground shadow-xl sm:flex-row sm:items-center">
+            <div className="text-center sm:w-56 sm:shrink-0 sm:border-r sm:border-gold/40 sm:pr-6">
+              <p className="text-6xl font-extrabold text-gold">{media.toFixed(1)}</p>
+              <div className="mt-2 flex justify-center"><Stars n={Math.round(media)} size="size-7" /></div>
+              <p className="mt-2 text-sm font-semibold">{list.length} {list.length === 1 ? "avaliação" : "avaliações"}</p>
+              {list.some((r) => r.fotos.length) && <p className="mt-1 text-xs text-primary-foreground/70">{list.reduce((t, r) => t + r.fotos.length, 0)} fotos de clientes</p>}
+            </div>
+            <div className="min-w-0 flex-1 space-y-2">
+              {dist.map(({ s, c }) => (
+                <div key={s} className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="w-4 shrink-0 text-right">{s}</span><Star className="size-4 shrink-0 fill-gold text-gold" />
+                  <div className="h-3 min-w-0 flex-1 overflow-hidden rounded-full bg-primary-foreground/15"><div className="h-full rounded-full bg-gold transition-all duration-700" style={{ width: `${(c / list.length) * 100}%` }} /></div>
+                  <span className="w-6 shrink-0 text-right">{c}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {list.some((r) => r.fotos.length) && (
+            <div className="mt-4">
+              <p className="text-sm font-bold uppercase text-navy">Fotos dos clientes</p>
+              <div className="mt-2 flex gap-2 overflow-x-auto pb-2">{list.flatMap((r) => r.fotos).map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)} className="shrink-0"><img src={f} alt="Foto de cliente" className="size-24 rounded-lg border-2 border-gold object-cover transition hover:scale-105 sm:size-28" /></button>)}</div>
+            </div>
+          )}
+          <div className="mt-4 space-y-4">
+            {list.map((r) => (
+              <div key={r.id} className="rounded-xl border bg-card p-4 shadow-sm">
+                <div className="flex min-w-0 items-center gap-3">
+                  {r.avatar ? <img src={r.avatar} alt="" className="size-12 shrink-0 rounded-full object-cover" /> : <div className="grid size-12 shrink-0 place-items-center rounded-full bg-navy text-lg font-bold text-primary-foreground">{r.nome.charAt(0).toUpperCase()}</div>}
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-navy">{r.nome}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p>
+                  </div>
+                </div>
+                <div className="mt-2"><Stars n={r.nota} /></div>
+                <p className="mt-2 whitespace-pre-line break-words text-base">{r.comentario}</p>
+                {Array.isArray(r.fotos) && r.fotos.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">{r.fotos.map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)}><img src={f} alt="" className="size-28 rounded-lg border object-cover transition hover:scale-105" /></button>)}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="mx-auto mt-8 max-w-xl">
           <form onSubmit={send} className="space-y-4 rounded-xl border bg-secondary p-5">
             <p className="text-2xl font-bold text-navy">Avalie este produto</p>
             <Stars n={nota} onPick={setNota} size="size-9" />
@@ -118,44 +164,6 @@ export function Reviews({ productId }: { productId: string }) {
             {msg && <p className="text-sm font-semibold text-navy">{msg}</p>}
           </form>
       </div>
-      {list.length > 0 && (
-        <div className="mx-auto mt-8 max-w-4xl">
-          <div className="flex flex-col gap-6 rounded-xl border p-5 sm:flex-row sm:items-center">
-            <div className="text-center sm:w-48 sm:shrink-0">
-              <p className="text-5xl font-bold text-navy">{media.toFixed(1)}</p>
-              <div className="mt-1 flex justify-center"><Stars n={Math.round(media)} /></div>
-              <p className="mt-1 text-sm text-muted-foreground">{list.length} {list.length === 1 ? "avaliação" : "avaliações"}</p>
-            </div>
-            <div className="min-w-0 flex-1 space-y-1">
-              {dist.map(({ s, c }) => (
-                <div key={s} className="flex items-center gap-2 text-sm">
-                  <span className="w-4 shrink-0">{s}</span><Star className="size-4 shrink-0 fill-gold text-gold" />
-                  <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full bg-gold" style={{ width: `${(c / list.length) * 100}%` }} /></div>
-                  <span className="w-6 shrink-0 text-right text-muted-foreground">{c}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mt-4 space-y-4">
-            {list.map((r) => (
-              <div key={r.id} className="rounded-xl border p-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  {r.avatar ? <img src={r.avatar} alt="" className="size-12 shrink-0 rounded-full object-cover" /> : <div className="grid size-12 shrink-0 place-items-center rounded-full bg-navy text-lg font-bold text-primary-foreground">{r.nome.charAt(0).toUpperCase()}</div>}
-                  <div className="min-w-0">
-                    <p className="truncate font-bold text-navy">{r.nome}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("pt-BR")}</p>
-                  </div>
-                </div>
-                <div className="mt-2"><Stars n={r.nota} /></div>
-                <p className="mt-2 whitespace-pre-line break-words text-base">{r.comentario}</p>
-                {Array.isArray(r.fotos) && r.fotos.length > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-2">{r.fotos.map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)}><img src={f} alt="" className="size-24 rounded-md object-cover" /></button>)}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {zoom && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/80 p-4" onClick={() => setZoom(null)}>
           <img src={zoom} alt="" className="max-h-[90vh] max-w-full rounded-lg" />
