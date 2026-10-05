@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AvaliacoesAdmin } from "@/components/AvaliacoesAdmin";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,23 +25,23 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const STATUS = ["Aguardando pagamento", "Pago", "Em separação", "Saiu para entrega", "Entregue", "Cancelado"];
 type Item = { title: string; qty: number; price: number };
 
-const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, colors: [] as ProductColor[], specs: [] as ProductSpec[] };
+const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, sold: "0", colors: [] as ProductColor[], specs: [] as ProductSpec[] };
 type Form = typeof empty;
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta" | "banners">("produtos");
+  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta" | "banners" | "avaliações">("produtos");
   if (loading) return <main className="p-10 text-center">Carregando...</main>;
   if (!isAdmin) return <main className="p-10 text-center">Acesso restrito ao administrador. <Link to="/conta" className="text-link underline">Minha conta</Link></main>;
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-navy">Painel do administrador</h1>
       <div className="mt-4 flex flex-wrap gap-2">
-        {(["produtos", "pedidos", "roleta", "banners"] as const).map((t) => (
+        {(["produtos", "pedidos", "roleta", "banners", "avaliações"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 font-semibold capitalize ${tab === t ? "bg-navy text-primary-foreground" : "border"}`}>{t}</button>
         ))}
       </div>
-      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "roleta" ? <RoletaAdmin /> : <HomeAdmin />}
+      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "roleta" ? <RoletaAdmin /> : tab === "banners" ? <HomeAdmin /> : <AvaliacoesAdmin />}
     </main>
   );
 }
@@ -54,7 +55,7 @@ function Produtos() {
 
   const edit = (p: Product) => {
     setEditing(true);
-    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })), specs: p.specs.map((x) => ({ ...x })) });
+    setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, sold: String(p.sold), colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })), specs: p.specs.map((x) => ({ ...x })) });
   };
 
   const save = async () => {
@@ -62,7 +63,7 @@ function Produtos() {
     if (!f.title || !f.price) return setMsg("Preencha nome e preço.");
     const n = (s: string) => Number(s.replace(",", ".")) || 0;
     const id = f.id || f.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, colors: f.colors.filter((c) => c.name || c.image), specs: f.specs.filter((x) => x.k.trim() || x.v.trim()) };
+    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, sold: n(f.sold), colors: f.colors.filter((c) => c.name || c.image), specs: f.specs.filter((x) => x.k.trim() || x.v.trim()) };
     const { error } = editing ? await supabase.from("products").update(row).eq("id", f.id) : await supabase.from("products").insert(row);
     if (error) return setMsg(error.message);
     setMsg("Salvo!"); setF(null); qc.invalidateQueries({ queryKey: productsKey });
@@ -106,6 +107,7 @@ function Produtos() {
           <Ficha value={f.specs} onChange={(specs) => setF({ ...f, specs })} />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.active} onChange={(e) => setF({ ...f, active: e.target.checked })} />Visível na loja</label>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.best_seller} onChange={(e) => setF({ ...f, best_seller: e.target.checked })} />Mostrar em MAIS VENDIDOS (até 20)</label>
+          <label className="grid gap-1 text-sm">Quantidade já vendida<input type="number" min="0" value={f.sold} onChange={(e) => setF({ ...f, sold: e.target.value })} className="rounded-md border px-3 py-2" /></label>
           <div className="flex gap-2 sm:col-span-2">
             <button onClick={save} className="rounded-md bg-buy px-5 py-2 font-bold text-buy-foreground">Salvar</button>
             <button onClick={() => setF(null)} className="rounded-md border px-5 py-2">Cancelar</button>

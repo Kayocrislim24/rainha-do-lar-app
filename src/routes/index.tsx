@@ -127,6 +127,7 @@ function Index() {
     <main>
       <Banners />
       <div className="mx-auto max-w-7xl px-4">
+        {ofertas.length > 0 && <MaisVendidos items={ofertas} />}
         <div className="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-6">
           {cats.map((c) => (
             <Link key={c.n} to="/busca" search={{ q: ({"Sala de estar":"Sof","Quarto":"Cama","Guarda-roupas":"Guarda","Sala de jantar":"Mesa","Sofás":"Sof","Mesas":"Mesa"} as Record<string,string>)[c.n] }} className="group flex aspect-square flex-col items-center justify-center gap-2 rounded-xl bg-muted p-3 text-center text-sm text-muted-foreground transition hover:shadow-md">
@@ -136,7 +137,6 @@ function Index() {
           ))}
         </div>
 
-        {ofertas.length > 0 && <MaisVendidos items={ofertas} />}
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           {[{ t: "Quarto completo", d: "Camas, guarda-roupas e mais", img: cama }, { t: "Sala de jantar", d: "Mesas para receber bem", img: mesa }].map((b) => (
