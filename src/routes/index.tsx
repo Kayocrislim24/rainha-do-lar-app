@@ -169,15 +169,16 @@ function Index() {
           ))}
         </section>
 
-        <div id="produtos" className="mt-14 flex items-center gap-4">
-          <span className="h-1 flex-1 rounded bg-gold" />
-          <h2 className="rounded-full bg-navy px-8 py-3 text-xl font-extrabold uppercase tracking-wide text-gold shadow-lg sm:text-2xl">👑 Todos os produtos</h2>
-          <span className="h-1 flex-1 rounded bg-gold" />
-        </div>
-        {isLoading && <p className="mt-4 text-sm text-muted-foreground">Carregando produtos...</p>}
-        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {products.map((p) => <Card key={p.id} p={p} />)}
-        </div>
+        <section id="produtos" className="mt-14 rounded-lg bg-navy p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold uppercase tracking-wide text-gold">Todos os produtos</h2>
+            <p className="hidden flex-1 text-center text-sm font-semibold uppercase text-primary-foreground md:block">Encontre tudo para deixar sua casa digna de uma rainha</p>
+          </div>
+          {isLoading && <p className="mt-4 text-sm text-primary-foreground/80">Carregando produtos...</p>}
+          <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {products.map((p) => <ProductCard key={p.id} p={p} glass />)}
+          </div>
+        </section>
       </div>
     </main>
   );
