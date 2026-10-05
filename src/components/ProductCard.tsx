@@ -24,7 +24,7 @@ export function ProductCard({ p }: { p: Product }) {
         <p className="text-xs text-price-old line-through">{brl(p.oldPrice)}</p>
         <p className="text-xl font-bold text-price-new">{brl(p.price)}</p>
         <p className="text-xs text-muted-foreground">ou 12x de {brl(p.price / 12)}</p>
-        <div className="mt-3 flex items-center gap-2"><span className="btn-comprar flex flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm">Comprar</span>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-gold bg-gold/15 px-2 py-1 text-center text-[11px] font-bold leading-tight text-navy">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center"><span className="btn-comprar flex w-full sm:flex-1 items-center justify-center gap-2 rounded-full py-2.5 text-sm">Comprar</span>{p.oldPrice > p.price && <span className="rounded-full border-2 border-gold bg-gold/15 px-2 py-1 text-center text-[11px] sm:shrink-0 font-bold leading-tight text-navy">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
       </div>
     </Link>
   );
