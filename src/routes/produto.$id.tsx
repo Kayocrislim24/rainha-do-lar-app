@@ -80,7 +80,7 @@ function ProductPage({ p }: { p: Product }) {
       <p className="text-sm text-muted-foreground"><Link to="/" className="text-link underline">Início</Link> › {p.category}</p>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <div>
-          <div className="rounded-lg border p-4"><img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
+          <div className="relative rounded-lg border p-4">{p.sold > 0 && <span className="absolute left-3 top-3 z-10 rounded-full bg-gold px-4 py-1 text-sm font-extrabold uppercase text-navy shadow-lg ring-2 ring-background">🔥 {p.sold.toLocaleString("pt-BR")} {p.sold === 1 ? "vendido" : "vendidos"}</span>}<img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
           {p.colors.length > 0 && <div className="mt-3"><p className="text-sm font-semibold">Cor: {p.colors.find((c) => c.image === foto)?.name ?? "Escolha"}</p><Swatches colors={p.colors} current={foto} onPick={setFoto} big /></div>}
           {p.gallery.length > 1 && (
             <div className="mt-3 flex flex-wrap gap-3">
@@ -97,7 +97,6 @@ function ProductPage({ p }: { p: Product }) {
           <div className="mt-4"><Price old={p.oldPrice} price={p.price} big /></div>
           <p className="text-sm text-muted-foreground">ou em até 12x de {brl(p.price / 12)} no cartão</p>
           <ul className="mt-3 grid gap-1 rounded-lg border bg-secondary p-3 text-sm text-navy"><li>✔ Entrega própria em todo o DF</li><li>✔ Frete grátis acima de R$ 1.500</li><li>✔ Compra 100% segura</li></ul>
-          {p.sold > 0 && <p className="mt-3 text-sm font-semibold text-navy">{p.sold.toLocaleString("pt-BR")} {p.sold === 1 ? "vendido" : "vendidos"}</p>}
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"><button onClick={() => { add(p.id, qty); nav({ to: "/carrinho" }); }} className="btn-comprar flex flex-1 items-center justify-center gap-3 rounded-full py-4 text-xl">Comprar</button>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-price-new bg-price-new/10 px-4 py-2 text-center text-sm font-bold leading-tight text-price-new">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
           <button onClick={() => { localStorage.setItem("rdl-cupom", "PRIMEIRACOMPRARAINHA"); add(p.id, qty); nav({ to: "/carrinho" }); }} className="mt-3 w-full rounded-full border-2 border-dashed border-gold bg-navy px-4 py-3 text-center text-primary-foreground transition hover:brightness-110">
             <span className="block text-base font-bold uppercase tracking-wide">Comprar com cupom <span className="text-gold">10% OFF</span> · {brl(p.price * 0.9)}</span>
