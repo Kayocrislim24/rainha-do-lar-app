@@ -56,7 +56,9 @@ async function withoutAudio(file: File): Promise<File> {
   const data = await ffmpeg.readFile(output);
   ffmpeg.terminate();
   const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
-  return new File([bytes], `video-sem-audio.${extension}`, { type: file.type, lastModified: Date.now() });
+  const cleanBytes = new Uint8Array(bytes.byteLength);
+  cleanBytes.set(bytes);
+  return new File([cleanBytes.buffer], `video-sem-audio.${extension}`, { type: file.type, lastModified: Date.now() });
 }
 
 function Stars({ n, onPick, size = "size-5" }: { n: number; onPick?: (n: number) => void; size?: string }) {
