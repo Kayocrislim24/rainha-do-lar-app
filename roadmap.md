@@ -9,4 +9,4 @@
 - [x] Painel /admin: CRUD produtos, pedidos com status
 - [ ] Envio de fotos direto no painel — bloqueado pela configuração do workspace (pastas públicas)
 - [ ] Pagamento PIX/cartão + webhook — aguardando escolha do usuário
-- [x] Avaliações com até 3 fotos e 1 vídeo, com áudio opcional e exibição pública
+- [ ] Avaliações com até 3 fotos e 1 vídeo, incluindo opção para remover o áudio antes do envio
