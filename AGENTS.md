@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Review videos are stored in the private `review-media` bucket and referenced from the existing review media array with a `review-video:` prefix, because signed URLs keep public playback controlled without exposing a public bucket.

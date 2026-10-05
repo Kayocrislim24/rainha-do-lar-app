@@ -3,7 +3,8 @@ import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProducts } from "@/lib/products";
 
-type R = { id: string; product_id: string; nome: string; nota: number; comentario: string; fotos: string[]; avatar: string; created_at: string };
+type R = { id: string; product_id: string; nome: string; nota: number; comentario: string; fotos: string[]; videos: { path: string; url: string }[]; avatar: string; created_at: string };
+const VIDEO_PREFIX = "review-video:";
 
 export function AvaliacoesAdmin() {
   const qc = useQueryClient();
@@ -13,7 +14,15 @@ export function AvaliacoesAdmin() {
     queryFn: async () => {
       const { data, error } = await supabase.from("reviews").select("id, product_id, user_id, nome, nota, comentario, fotos, avatar, created_at").order("created_at", { ascending: false });
       if (error) throw error;
-      return data as unknown as R[];
+      return Promise.all(((data ?? []) as unknown as Omit<R, "videos">[]).map(async (r) => {
+        const media = Array.isArray(r.fotos) ? r.fotos : [];
+        const videoPaths = media.filter((item) => item.startsWith(VIDEO_PREFIX)).map((item) => item.slice(VIDEO_PREFIX.length));
+        const videos = await Promise.all(videoPaths.map(async (path) => {
+          const { data: signed } = await supabase.storage.from("review-media").createSignedUrl(path, 3600);
+          return signed?.signedUrl ? { path, url: signed.signedUrl } : null;
+        }));
+        return { ...r, fotos: media.filter((item) => !item.startsWith(VIDEO_PREFIX)), videos: videos.filter((item): item is { path: string; url: string } => item !== null) };
+      }));
     },
   });
   const apagar = async (id: string) => {
@@ -38,6 +47,7 @@ export function AvaliacoesAdmin() {
           </div>
           <p className="mt-2 whitespace-pre-line break-words">{r.comentario}</p>
           {Array.isArray(r.fotos) && r.fotos.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{r.fotos.map((f, i) => <a key={i} href={f} target="_blank" rel="noreferrer"><img src={f} alt="" className="size-20 rounded object-cover" /></a>)}</div>}
+          {r.videos.map((v) => <video key={v.path} src={v.url} controls playsInline preload="metadata" className="mt-2 aspect-video w-full max-w-md rounded-md border bg-foreground object-contain" />)}
           <button onClick={() => apagar(r.id)} className="mt-3 rounded-md border px-3 py-1.5 text-sm text-destructive">Apagar</button>
         </div>
       ))}

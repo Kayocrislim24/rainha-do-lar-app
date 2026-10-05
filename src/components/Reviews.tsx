@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Star, X } from "lucide-react";
+import { Camera, Star, Video, Volume2, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; avatar?: string; created_at: string };
+type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; videos: { path: string; url: string }[]; avatar?: string; created_at: string };
+type VideoDraft = { path?: string; url: string; file?: File };
+
+const VIDEO_PREFIX = "review-video:";
+const VIDEO_LIMIT = 20 * 1024 * 1024;
 
 const schema = z.object({
   nome: z.string().trim().min(1, "Digite seu nome").max(80),
@@ -56,6 +60,7 @@ export function Reviews({ productId }: { productId: string }) {
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState("");
   const [fotos, setFotos] = useState<string[]>([]);
+  const [video, setVideo] = useState<VideoDraft | null>(null);
   const [avatar, setAvatar] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -70,8 +75,9 @@ export function Reviews({ productId }: { productId: string }) {
     const v = (comentario.slice(0, a) + e + comentario.slice(b)).slice(0, 1000); setComentario(v);
     requestAnimationFrame(() => { ta?.focus(); ta?.setSelectionRange(a + e.length, a + e.length); });
   };
-  const editar = (r: Review) => { setEditId(r.id); setNome(r.nome); setNota(r.nota); setComentario(r.comentario); setFotos(r.fotos); setAvatar(r.avatar ?? ""); setMsg(null); formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
-  const cancelar = () => { setEditId(null); setNome(""); setNota(0); setComentario(""); setFotos([]); setAvatar(""); };
+  const editar = (r: Review) => { setEditId(r.id); setNome(r.nome); setNota(r.nota); setComentario(r.comentario); setFotos(r.fotos); setVideo(r.videos[0] ?? null); setAvatar(r.avatar ?? ""); setMsg(null); formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); };
+  const clearVideo = () => { if (video?.file) URL.revokeObjectURL(video.url); setVideo(null); };
+  const cancelar = () => { setEditId(null); setNome(""); setNota(0); setComentario(""); setFotos([]); clearVideo(); setAvatar(""); };
   const apagar = async (r: Review) => {
     if (!confirm("Apagar sua avaliação?")) return;
     const { data } = await supabase.rpc("delete_review" as never, { _id: r.id, _token: mine[r.id] } as never);
@@ -80,7 +86,21 @@ export function Reviews({ productId }: { productId: string }) {
 
   const load = async () => {
     const { data } = await supabase.from("reviews").select("id, product_id, user_id, nome, nota, comentario, fotos, avatar, created_at").eq("product_id", productId).order("created_at", { ascending: false });
-    setList(((data ?? []) as unknown as Review[]).map((r) => ({ ...r, fotos: (Array.isArray(r.fotos) ? r.fotos : []).filter((f) => typeof f === "string" && f.length > 30) })));
+    const rows = (data ?? []) as unknown as Omit<Review, "videos">[];
+    const mapped = await Promise.all(rows.map(async (r) => {
+      const media = Array.isArray(r.fotos) ? r.fotos.filter((f) => typeof f === "string") : [];
+      const paths = media.filter((f) => f.startsWith(VIDEO_PREFIX)).map((f) => f.slice(VIDEO_PREFIX.length));
+      const videos = await Promise.all(paths.map(async (path) => {
+        const { data: signed } = await supabase.storage.from("review-media").createSignedUrl(path, 3600);
+        return signed?.signedUrl ? { path, url: signed.signedUrl } : null;
+      }));
+      return {
+        ...r,
+        fotos: media.filter((f) => !f.startsWith(VIDEO_PREFIX) && f.length > 30),
+        videos: videos.filter((v): v is { path: string; url: string } => v !== null),
+      };
+    }));
+    setList(mapped);
   };
   useEffect(() => { load(); }, [productId]);
 
@@ -90,25 +110,51 @@ export function Reviews({ productId }: { productId: string }) {
     setFotos((f) => [...f, ...arr].slice(0, 3));
   };
 
+  const addVideo = (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("video/")) { setMsg("Escolha um arquivo de vídeo."); return; }
+    if (file.size > VIDEO_LIMIT) { setMsg("O vídeo deve ter no máximo 20 MB."); return; }
+    clearVideo();
+    setVideo({ file, url: URL.createObjectURL(file) });
+    setMsg(null);
+  };
+
+  const uploadVideo = async (reviewId: string) => {
+    if (!video?.file) return video?.path ?? null;
+    const extension = video.file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
+    const path = `${reviewId}/${crypto.randomUUID()}.${extension}`;
+    const { error } = await supabase.storage.from("review-media").upload(path, video.file, { contentType: video.file.type, upsert: false });
+    if (error) throw new Error("Não foi possível enviar o vídeo. Tente novamente.");
+    return path;
+  };
+
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const v = schema.safeParse({ nome, comentario, nota });
     if (!v.success) { setMsg(v.error.issues[0]!.message); return; }
     setBusy(true);
-    if (editId) {
-      const { data } = await supabase.rpc("update_review" as never, { _id: editId, _token: mine[editId], _nome: v.data.nome, _nota: v.data.nota, _comentario: v.data.comentario, _fotos: fotos, _avatar: avatar } as never);
+    try {
+      const id = editId ?? crypto.randomUUID();
+      const videoPath = await uploadVideo(id);
+      const media = videoPath ? [...fotos, `${VIDEO_PREFIX}${videoPath}`] : fotos;
+      if (editId) {
+      const { data } = await supabase.rpc("update_review" as never, { _id: editId, _token: mine[editId], _nome: v.data.nome, _nota: v.data.nota, _comentario: v.data.comentario, _fotos: media, _avatar: avatar } as never);
       setBusy(false);
       if (!data) { setMsg("Não foi possível salvar. Tente novamente."); return; }
       cancelar(); setMsg("Avaliação atualizada!");
     } else {
-      const id = crypto.randomUUID(); const token = crypto.randomUUID();
-      const { error } = await supabase.from("reviews").insert({ id, edit_token: token, product_id: productId, user_id: user?.id ?? null, ...v.data, fotos, avatar } as never);
+      const token = crypto.randomUUID();
+      const { error } = await supabase.from("reviews").insert({ id, edit_token: token, product_id: productId, user_id: user?.id ?? null, ...v.data, fotos: media, avatar } as never);
       setBusy(false);
       if (error) { setMsg("Não foi possível enviar. Tente novamente."); return; }
       setToken(id, token); setMine(getTokens());
       cancelar(); setMsg("Obrigado pela sua avaliação! 💛");
     }
-    load();
+      load();
+    } catch (error) {
+      setBusy(false);
+      setMsg(error instanceof Error ? error.message : "Não foi possível enviar. Tente novamente.");
+    }
   };
 
   const media = list.length ? list.reduce((s, r) => s + r.nota, 0) / list.length : 0;
@@ -125,7 +171,7 @@ export function Reviews({ productId }: { productId: string }) {
               <p className="text-6xl font-extrabold text-gold">{media.toFixed(1)}</p>
               <div className="mt-2 flex justify-center"><Stars n={Math.round(media)} size="size-7" /></div>
               <p className="mt-2 text-sm font-semibold">{list.length} {list.length === 1 ? "avaliação" : "avaliações"}</p>
-              {list.some((r) => r.fotos.length) && <p className="mt-1 text-xs text-primary-foreground/70">{list.reduce((t, r) => t + r.fotos.length, 0)} fotos de clientes</p>}
+               {list.some((r) => r.fotos.length || r.videos.length) && <p className="mt-1 text-xs text-primary-foreground/70">Fotos e vídeos reais de clientes</p>}
             </div>
             <div className="min-w-0 flex-1 space-y-2">
               {dist.map(({ s, c }) => (
@@ -159,6 +205,7 @@ export function Reviews({ productId }: { productId: string }) {
                 {Array.isArray(r.fotos) && r.fotos.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">{r.fotos.map((f, i) => <button key={i} type="button" onClick={() => setZoom(f)}><img src={f} alt="" className="size-28 rounded-lg border object-cover transition hover:scale-105" /></button>)}</div>
                 )}
+                {r.videos.map((v) => <video key={v.path} src={v.url} controls playsInline preload="metadata" className="mt-3 aspect-video w-full max-w-xl rounded-lg border bg-foreground object-contain" />)}
               </div>
             ))}
           </div>
@@ -191,6 +238,20 @@ export function Reviews({ productId }: { productId: string }) {
                 </label>
               )}
               <span className="text-xs text-muted-foreground">Até 3 fotos</span>
+            </div>
+            <div className="rounded-md border bg-background p-3">
+              {video ? (
+                <div className="relative overflow-hidden rounded-md border">
+                  <video src={video.url} controls playsInline preload="metadata" className="aspect-video w-full bg-foreground object-contain" />
+                  <button type="button" onClick={clearVideo} className="absolute right-2 top-2 rounded-full bg-navy p-1.5 text-primary-foreground" aria-label="Remover vídeo"><X className="size-4" /></button>
+                </div>
+              ) : (
+                <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-md border-2 border-dashed border-gold text-sm font-semibold text-navy">
+                  <Video className="mb-1 size-7" />Adicionar vídeo
+                  <input type="file" accept="video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => { addVideo(e.target.files?.[0]); e.target.value = ""; }} />
+                </label>
+              )}
+              <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground"><Volume2 className="size-3.5" />1 vídeo de até 20 MB, com ou sem áudio</p>
             </div>
             <button disabled={busy} className="btn-comprar w-full rounded-full px-6 py-3.5 text-base">{busy ? "Enviando..." : editId ? "Salvar alterações" : "Enviar avaliação"}</button>
             {editId && <button type="button" onClick={cancelar} className="w-full rounded-full border px-6 py-3 font-semibold text-navy">Cancelar edição</button>}
