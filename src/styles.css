@@ -100,3 +100,6 @@
 
 html, body { max-width: 100%; overflow-x: hidden; }
 img { max-width: 100%; }
+
+@keyframes cats-marquee { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+.cats-marquee { animation: cats-marquee 30s linear infinite; }
