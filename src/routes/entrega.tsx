@@ -7,6 +7,8 @@ export const Route = createFileRoute("/entrega")({
     { name: "description", content: "Como funciona a entrega própria da Rainha do Lar no DF e o frete grátis." },
     { property: "og:title", content: "Política de entrega — Rainha do Lar" },
     { property: "og:description", content: "Entrega própria no DF e frete grátis acima de R$ 1.500." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: () => <InfoPage title="Política de entrega" items={[
     { q: "Onde entregamos?", a: "Entregamos em todo o Distrito Federal com equipe própria." },

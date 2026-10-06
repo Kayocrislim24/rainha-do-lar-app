@@ -16,6 +16,8 @@ export const Route = createFileRoute("/produto/$id")({
       { name: "description", content: "Detalhes, medidas e preço do móvel na Rainha do Lar." },
       { property: "og:title", content: "Produto — Rainha do Lar" },
       { property: "og:description", content: "Confira detalhes e ofertas deste móvel." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProductRoute,

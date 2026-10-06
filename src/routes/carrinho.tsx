@@ -15,6 +15,8 @@ export const Route = createFileRoute("/carrinho")({
       { name: "description", content: "Revise seus itens e finalize seu pedido com entrega de valor fixo por cidade." },
       { property: "og:title", content: "Carrinho — Rainha do Lar" },
       { property: "og:description", content: "Finalize seu pedido na Rainha do Lar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CartPage,

@@ -7,6 +7,8 @@ export const Route = createFileRoute("/sobre")({
     { name: "description", content: "Conheça a Rainha do Lar, loja de móveis e eletrodomésticos em Taguatinga-DF." },
     { property: "og:title", content: "Sobre a Rainha do Lar" },
     { property: "og:description", content: "Móveis e eletrodomésticos com entrega própria no DF." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: () => <InfoPage title="Sobre a Rainha do Lar" items={[
     { q: "Quem somos", a: "A Rainha do Lar é uma loja de móveis e eletrodomésticos de Taguatinga-DF. Nosso objetivo é deixar a sua casa digna de uma rainha, com qualidade e preço justo." },

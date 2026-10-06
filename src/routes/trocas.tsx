@@ -7,6 +7,8 @@ export const Route = createFileRoute("/trocas")({
     { name: "description", content: "Saiba como trocar ou devolver um produto comprado na Rainha do Lar." },
     { property: "og:title", content: "Trocas e devoluções — Rainha do Lar" },
     { property: "og:description", content: "Prazo de 7 dias para arrependimento e garantia dos produtos." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: () => <InfoPage title="Trocas e devoluções" items={[
     { q: "Arrependimento", a: "Você tem até 7 dias após o recebimento para desistir da compra, conforme o Código de Defesa do Consumidor." },

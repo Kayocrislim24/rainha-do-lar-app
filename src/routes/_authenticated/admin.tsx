@@ -18,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
       { name: "description", content: "Gerencie produtos, preços e pedidos." },
       { property: "og:title", content: "Painel — Rainha do Lar" },
       { property: "og:description", content: "Área do administrador." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
     ],
   }),
