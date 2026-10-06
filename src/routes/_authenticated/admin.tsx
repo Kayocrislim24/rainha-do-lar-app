@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
-import { fotosKey, premiosKey, usePremioFotos, usePremios } from "@/components/Roleta";
 import { useAuth } from "@/lib/auth";
 import { HomeAdmin } from "@/components/HomeAdmin";
 import { ShippingAdmin } from "@/components/ShippingAdmin";
@@ -36,18 +35,18 @@ const PRODUCT_CATEGORIES = ["Sofás", "Guarda-roupas", "Camas", "Colchões", "Me
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta" | "banners" | "avaliações" | "frete">("produtos");
+  const [tab, setTab] = useState<"produtos" | "pedidos" | "banners" | "avaliações" | "frete">("produtos");
   if (loading) return <main className="p-10 text-center">Carregando...</main>;
   if (!isAdmin) return <main className="p-10 text-center">Acesso restrito ao administrador. <Link to="/conta" className="text-link underline">Minha conta</Link></main>;
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-navy">Painel do administrador</h1>
       <div className="mt-4 flex flex-wrap gap-2">
-        {(["produtos", "pedidos", "roleta", "banners", "avaliações", "frete"] as const).map((t) => (
+        {(["produtos", "pedidos", "banners", "avaliações", "frete"] as const).map((t) => (
           <Button key={t} variant={tab === t ? "default" : "outline"} onClick={() => setTab(t)} className="capitalize">{t}</Button>
         ))}
       </div>
-      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "roleta" ? <RoletaAdmin /> : tab === "banners" ? <HomeAdmin /> : tab === "frete" ? <ShippingAdmin /> : <AvaliacoesAdmin />}
+      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "banners" ? <HomeAdmin /> : tab === "frete" ? <ShippingAdmin /> : <AvaliacoesAdmin />}
     </main>
   );
 }
@@ -320,50 +319,5 @@ function Ficha({ value, onChange }: { value: ProductSpec[]; onChange: (v: Produc
         {!value.length && <button type="button" onClick={() => onChange(fichaPara("").map((k) => ({ k, v: "" })))} className="rounded-md border px-3 py-1.5 font-semibold">Usar modelo pronto</button>}
       </div>
     </div>
-  );
-}
-
-function RoletaAdmin() {
-  const atuais = usePremios();
-  const fotosAtuais = usePremioFotos();
-  const qc = useQueryClient();
-  const [lista, setLista] = useState<string[] | null>(null);
-  const [fotosEd, setFotosEd] = useState<string[] | null>(null);
-  const [msg, setMsg] = useState("");
-  const l = lista ?? atuais;
-  const fs = fotosEd ?? l.map((p) => fotosAtuais[p] ?? "");
-  const salvar = async () => {
-    const pares = l.map((x, i) => [x.trim(), fs[i] ?? ""] as const).filter(([x]) => x).slice(0, 12);
-    const limpa = pares.map(([x]) => x);
-    if (limpa.length < 2) return setMsg("Coloque pelo menos 2 prêmios.");
-    const mapa = Object.fromEntries(pares.filter(([, f]) => f));
-    const now = new Date().toISOString();
-    const { error } = await supabase.from("settings" as never).upsert([{ key: "roleta_premios", value: limpa, updated_at: now }, { key: "roleta_fotos", value: mapa, updated_at: now }] as never);
-    if (error) return setMsg("Não foi possível salvar.");
-    setLista(limpa); setFotosEd(pares.map(([, f]) => f)); setMsg("Prêmios salvos!");
-    qc.invalidateQueries({ queryKey: premiosKey }); qc.invalidateQueries({ queryKey: fotosKey });
-  };
-  return (
-    <section className="max-w-xl rounded-lg border p-4">
-      <h2 className="text-lg font-bold text-navy">Prêmios da Roleta da Sorte</h2>
-      <p className="text-sm text-muted-foreground">Compras acima de R$ 2.000 giram a roleta. De 2 a 12 prêmios. Clique no círculo para colocar a foto do prêmio.</p>
-      <div className="mt-3 space-y-2">
-        {l.map((p, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <label className="grid size-12 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border-2 border-dashed border-gold text-[10px] text-muted-foreground">
-              {fs[i] ? <img src={fs[i]} alt="" className="size-full object-cover" /> : "Foto"}
-              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (file) { const img = await toImage(file); setFotosEd(l.map((_, j) => (j === i ? img : fs[j] ?? ""))); } e.target.value = ""; }} />
-            </label>
-            <input value={p} maxLength={40} onChange={(e) => { setFotosEd(fs); setLista(l.map((x, j) => (j === i ? e.target.value : x))); }} className="w-full rounded-md border px-3 py-2" />
-            <button onClick={() => { setFotosEd(fs.filter((_, j) => j !== i)); setLista(l.filter((_, j) => j !== i)); }} className="rounded-md border px-3 py-2 text-sm text-destructive">Apagar</button>
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 flex gap-2">
-        {l.length < 12 && <button onClick={() => setLista([...l, ""])} className="rounded-md border px-4 py-2 font-semibold">+ Adicionar prêmio</button>}
-        <button onClick={salvar} className="rounded-md bg-navy px-4 py-2 font-bold text-primary-foreground">Salvar prêmios</button>
-      </div>
-      {msg && <p className="mt-2 text-sm font-semibold text-navy">{msg}</p>}
-    </section>
   );
 }

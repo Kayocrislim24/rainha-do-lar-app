@@ -72,18 +72,17 @@
   --link: oklch(0.3 0.09 262);
   --warn: oklch(0.96 0.06 90);
   --warn-foreground: oklch(0.4 0.09 70);
-  --sold-glass-surface: color-mix(in oklch, var(--background) 88%, transparent);
-  --sold-glass-border: var(--gold);
-  --sold-glass-shadow: 0 4px 14px color-mix(in oklch, var(--navy) 12%, transparent), inset 0 1px 0 var(--background);
+  --purchase-gold-light: #ecc760;
+  --purchase-gold-deep: #d4a93c;
+  --purchase-gold-gradient: linear-gradient(180deg, var(--purchase-gold-light) 0%, var(--purchase-gold-deep) 100%);
+  --sold-shadow: 0 4px 14px color-mix(in oklch, var(--navy) 12%, transparent);
 }
 
-.sold-glass {
+.sold-gold {
   color: var(--navy);
-  background: var(--sold-glass-surface);
-  border: 1px solid var(--sold-glass-border);
-  box-shadow: var(--sold-glass-shadow);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  background: var(--purchase-gold-gradient);
+  border: 1px solid var(--gold);
+  box-shadow: var(--sold-shadow);
 }
 
 @layer base {
@@ -99,7 +98,7 @@
 .btn-comprar {
   position: relative; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
   color: var(--navy);
-  background: linear-gradient(180deg, #ecc760 0%, #d4a93c 100%);
+  background: var(--purchase-gold-gradient);
   box-shadow: 0 2px 6px -2px rgba(184,134,42,.5);
   transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
