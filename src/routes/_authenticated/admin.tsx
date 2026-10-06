@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { HomeAdmin } from "@/components/HomeAdmin";
 import { ShippingAdmin } from "@/components/ShippingAdmin";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { productsKey, resolveImage, useProducts, type Product, type ProductColor, type ProductSpec } from "@/lib/products";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -31,6 +32,7 @@ type Item = { title: string; qty: number; price: number };
 
 const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, sold: "0", colors: [] as ProductColor[], specs: [] as ProductSpec[] };
 type Form = typeof empty;
+const PRODUCT_CATEGORIES = ["Sofás", "Guarda-roupas", "Camas", "Colchões", "Mesas", "Cadeiras", "Poltronas", "Racks e painéis", "Cômodas", "Armários de cozinha", "Sala de estar", "Sala de jantar", "Quarto", "Cozinha", "Eletrodomésticos", "Eletrônicos", "Decoração", "Geral"];
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
@@ -56,9 +58,12 @@ function Produtos() {
   const [f, setF] = useState<Form | null>(null);
   const [editing, setEditing] = useState(false);
   const [msg, setMsg] = useState("");
+  const [customCategory, setCustomCategory] = useState(false);
+  const categories = Array.from(new Map([...PRODUCT_CATEGORIES, ...products.map((p) => p.category), f?.category ?? ""].filter((c) => c.trim()).map((c) => [c.trim().toLocaleLowerCase("pt-BR"), c.trim()])).values()).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
   const edit = (p: Product) => {
     setEditing(true);
+    setCustomCategory(false);
     setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, sold: String(p.sold), colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })), specs: p.specs.map((x) => ({ ...x })) });
   };
 
@@ -88,14 +93,29 @@ function Produtos() {
     <section className="mt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-navy">Produtos ({products.length})</h2>
-        <button onClick={() => { setEditing(false); setF({ ...empty }); setMsg(""); }} className="rounded-md bg-buy px-4 py-2 font-bold text-buy-foreground">+ Novo produto</button>
+        <Button onClick={() => { setEditing(false); setCustomCategory(false); setF({ ...empty }); setMsg(""); }}>+ Novo produto</Button>
       </div>
       {msg && <p className="mt-2 text-sm text-navy">{msg}</p>}
 
       {f && (
         <div className="mt-4 grid gap-3 rounded-lg border bg-secondary p-4 sm:grid-cols-2">
           <label className="text-sm">Nome do produto<input className={input} value={f.title} onChange={(e) => { const title = e.target.value; const vazio = f.specs.every((x) => !x.v.trim()); setF({ ...f, title, specs: vazio ? fichaPara(title + " " + f.category).map((k) => ({ k, v: "" })) : f.specs }); }} /></label>
-          {fld("category", "Categoria")}
+          <div className="min-w-0 text-sm">
+            <label htmlFor="product-category">Categoria</label>
+            <Select value={customCategory ? "__custom__" : f.category} onValueChange={(category) => {
+              if (category === "__custom__") { setCustomCategory(true); return; }
+              setCustomCategory(false);
+              const vazio = f.specs.every((x) => !x.v.trim());
+              setF({ ...f, category, specs: vazio ? fichaPara(f.title + " " + category).map((k) => ({ k, v: "" })) : f.specs });
+            }}>
+              <SelectTrigger id="product-category" className="h-10 bg-background"><SelectValue placeholder="Selecione a categoria" /></SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
+                <SelectItem value="__custom__">Outra categoria</SelectItem>
+              </SelectContent>
+            </Select>
+            {customCategory && <input aria-label="Nome da nova categoria" placeholder="Nome da nova categoria" className={`${input} mt-2 bg-background`} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} />}
+          </div>
           {fld("old_price", "Preço antigo (riscado)")}
           {fld("price", "Preço de venda")}
           {fld("badge", "Selo (ex: 35% OFF)")}

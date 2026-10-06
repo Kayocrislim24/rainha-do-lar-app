@@ -90,6 +90,7 @@ function ProductPage({ p }: { p: Product }) {
           )}
         </div>
         <div>
+          <SoldBadge sold={p.sold} inline />
           <p className="text-xs font-bold uppercase tracking-wide text-gold">{p.category}</p>
           <h1 className="text-2xl font-semibold leading-snug sm:text-3xl">{p.title}</h1>
           <p className="mt-1 text-xs text-muted-foreground">Cód. {p.id.slice(0, 8).toUpperCase()} · Vendido e entregue por Rainha do Lar</p>

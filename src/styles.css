@@ -72,9 +72,9 @@
   --link: oklch(0.3 0.09 262);
   --warn: oklch(0.96 0.06 90);
   --warn-foreground: oklch(0.4 0.09 70);
-  --sold-glass-surface: color-mix(in oklch, var(--background) 78%, transparent);
-  --sold-glass-border: color-mix(in oklch, var(--background) 90%, var(--gold));
-  --sold-glass-shadow: 0 3px 12px color-mix(in oklch, var(--navy) 16%, transparent), inset 0 1px 0 var(--background);
+  --sold-glass-surface: color-mix(in oklch, var(--background) 88%, transparent);
+  --sold-glass-border: color-mix(in oklch, var(--navy) 12%, var(--background));
+  --sold-glass-shadow: 0 4px 14px color-mix(in oklch, var(--navy) 12%, transparent), inset 0 1px 0 var(--background);
 }
 
 .sold-glass {
