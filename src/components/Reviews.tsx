@@ -173,6 +173,7 @@ export function Reviews({ productId }: { productId: string }) {
     try {
       const id = editId ?? crypto.randomUUID();
       const token = editId ? mine[editId] : crypto.randomUUID();
+      if (!token) throw new Error("Não foi possível autorizar a edição.");
       const videoPath = await uploadVideo(id, token);
       const media = videoPath ? [...fotos, `${VIDEO_PREFIX}${videoPath}`] : fotos;
       if (editId) {
