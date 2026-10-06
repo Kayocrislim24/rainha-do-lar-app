@@ -1,5 +1,7 @@
 # Rainha do Lar — Roadmap
 
+- [ ] Remover toda a roleta da loja e do painel; frete grátis somente acima de R$ 2.000
+
 - [x] Frete grátis acima de R$ 1.299,90 atualizado na loja e na regra dos pedidos; limite exato conferido, carrinho e vendidos com borda dourada na foto e texto simples acima da categoria verificados
 
 - [x] Corrigir Eletrodomésticos no menu superior; cadastro, edição e Ver todos conferidos sem recarregar, testes temporários removidos
