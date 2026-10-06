@@ -1,5 +1,7 @@
 # Rainha do Lar — Roadmap
 
+- [x] Corrigir Eletrodomésticos no menu superior; cadastro, edição e Ver todos conferidos sem recarregar, testes temporários removidos
+
 - [x] Reposicionar vendidos acima do nome na página do produto e refinar o selo no canto esquerdo; conferido na loja
 - [x] Oferecer categorias prontas e categorias existentes no cadastro de produtos; seleção, salvamento e leitura conferidos no painel
 
