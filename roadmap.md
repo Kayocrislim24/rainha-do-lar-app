@@ -2,7 +2,7 @@
 
 - [x] Loja no estilo Zema (home, página de produto)
 - [x] Preço antigo tachado vermelho + promo verde
-- [ ] Frete fixo por cidade cadastrada no painel, endereço manual e acesso exclusivo ao administrador
+- [x] Frete fixo por cidade cadastrada no painel, endereço manual e acesso exclusivo ao administrador
 - [x] Envio do pedido para WhatsApp 5561981804734
 - [x] Diferencial: "Cabe no meu espaço?" (medida da parede)
 - [x] Login cliente (e-mail + Google), área /conta com histórico de pedidos
