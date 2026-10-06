@@ -1,5 +1,7 @@
 # Rainha do Lar — Roadmap
 
+- [ ] Atualizar frete grátis acima de R$ 1.299,90 na loja e nos pedidos; vendidos com borda dourada na foto e texto simples acima da categoria
+
 - [x] Corrigir Eletrodomésticos no menu superior; cadastro, edição e Ver todos conferidos sem recarregar, testes temporários removidos
 
 - [x] Reposicionar vendidos acima do nome na página do produto e refinar o selo no canto esquerdo; conferido na loja
