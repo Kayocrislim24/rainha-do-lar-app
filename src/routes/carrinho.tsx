@@ -72,6 +72,41 @@ const enviarParaWhatsApp = (dadosPedido: DadosPedido) => {
 function CartPage() {
   const { items, setQty, subtotal, clear } = useCart();
   const [f, setF] = useState({ nome: "", telefone: "", cep: "", rua: "", bairro: "", numero: "", complemento: "" });
+  const [cepStatus, setCepStatus] = useState("");
+  useEffect(() => {
+    const cep = f.cep.replace(/\D/g, "");
+    setCepStatus("");
+    if (cep.length !== 8) return;
+    const controller = new AbortController();
+    let active = true;
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    setCepStatus("Buscando endereço...");
+    void (async () => {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`, { signal: controller.signal });
+        if (!response.ok) throw new Error("CEP indisponível");
+        const address = await response.json() as { erro?: boolean; logradouro?: string; bairro?: string };
+        if (!active) return;
+        if (address.erro) {
+          setCepStatus("CEP não encontrado. Confira o CEP ou preencha o endereço manualmente.");
+          return;
+        }
+        setF((current) => current.cep.replace(/\D/g, "") === cep ? {
+          ...current,
+          rua: address.logradouro || "",
+          bairro: address.bairro || "",
+        } : current);
+        setCepStatus(address.logradouro && address.bairro
+          ? "Endereço encontrado."
+          : "CEP encontrado. Complete a rua e o bairro que não foram informados.");
+      } catch {
+        if (active) setCepStatus("Não foi possível consultar o CEP. Preencha o endereço manualmente.");
+      } finally {
+        clearTimeout(timeout);
+      }
+    })();
+    return () => { active = false; clearTimeout(timeout); controller.abort(); };
+  }, [f.cep]);
   const [apto, setApto] = useState(false);
   const [chao, setChao] = useState(false);
   const { data: cities = [], isLoading: citiesLoading, isError: citiesError } = useShippingCities();
@@ -114,7 +149,10 @@ function CartPage() {
   const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (city?.price ?? 0);
   const aplicarCupom = () => { const ok = cupomTxt.trim().toUpperCase() === CUPOM; setCupomOn(ok); if (ok) localStorage.setItem("rdl-cupom", CUPOM); setMsg(ok ? "" : "Cupom inválido."); };
   const tirarCupom = () => { setCupomOn(false); setCupomTxt(""); localStorage.removeItem("rdl-cupom"); };
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setF((current) => ({ ...current, [k]: value }));
+  };
 
   const go = (n: number) => { setMsg(""); setStep(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const next = async () => {
@@ -256,13 +294,19 @@ function CartPage() {
         {step === 2 && <section className="rounded-lg border p-4">
           <h2 className="text-lg font-bold text-navy">Entrega</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-sm sm:col-span-2">CEP
+              <input aria-label="CEP" autoComplete="postal-code" inputMode="numeric" className={`${input} mt-1`} placeholder="00000-000" value={f.cep} onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+                setF((current) => ({ ...current, cep: digits.replace(/(\d{5})(\d)/, "$1-$2") }));
+              }} maxLength={9} />
+              <span role="status" aria-live="polite" className="mt-1 block text-sm text-muted-foreground">{cepStatus}</span>
+            </label>
             <label className="text-sm sm:col-span-2">Cidade de entrega<select aria-label="Cidade de entrega" className={`${input} mt-1 bg-background`} value={cityId} onChange={(e) => { setCityId(e.target.value); setMsg(""); }} disabled={citiesLoading || citiesError}>
               <option value="">{citiesLoading ? "Carregando cidades..." : "Selecione sua cidade"}</option>
               {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state} — {subtotal >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(c.price)}</option>)}
             </select></label>
-            <input className={`${input} sm:col-span-2`} placeholder="Rua / endereço" value={f.rua} onChange={set("rua")} maxLength={200} />
-            <input className={input} placeholder="Bairro" value={f.bairro} onChange={set("bairro")} maxLength={100} />
-            <input className={input} placeholder="CEP" value={f.cep} onChange={set("cep")} maxLength={9} />
+            <input aria-label="Rua / endereço" autoComplete="address-line1" className={`${input} sm:col-span-2`} placeholder="Rua / endereço" value={f.rua} onChange={set("rua")} maxLength={200} />
+            <input aria-label="Bairro" className={input} placeholder="Bairro" value={f.bairro} onChange={set("bairro")} maxLength={100} />
             <input className={input} placeholder="Número" value={f.numero} onChange={set("numero")} />
             <input className={`${input} sm:col-span-2`} placeholder="Complemento (apto, bloco...)" value={f.complemento} onChange={set("complemento")} />
           </div>
