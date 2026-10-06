@@ -8,20 +8,21 @@ import { LiveSearch } from "@/components/LiveSearch";
 import { FreeShippingBar } from "@/components/FreeShippingBar";
 import { useProducts } from "@/lib/products";
 import { brl } from "@/lib/store";
+import { categoryMatches, categoryOptions } from "@/lib/categories";
 
 const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-function NavDrop({ label, q }: { label: string; q: string }) {
+function NavDrop({ label }: { label: string }) {
   const { data: products = [], refetch } = useProducts();
-  const lista = products.filter((p) => p.active && norm(`${p.title} ${p.category}`).includes(norm(q))).slice(0, 6);
+  const lista = products.filter((p) => p.active && categoryMatches(p.category, label)).slice(0, 6);
   return (
-    <div className="group/drop shrink-0 lg:static" onMouseEnter={() => { void refetch(); }} onFocus={() => { void refetch(); }}>
-      <Link to="/busca" search={{ q }} className="block py-3 hover:text-navy group-hover/drop:text-navy">{label}</Link>
-      <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/drop:visible group-hover/drop:opacity-100">
+    <div className="group/drop shrink-0" onMouseEnter={() => { void refetch(); }} onFocus={() => { void refetch(); }}>
+      <Link to="/busca" search={{ cat: label }} className="block py-3 hover:text-navy group-hover/drop:text-navy">{label}</Link>
+      <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/drop:visible group-hover/drop:opacity-100 group-focus-within/drop:visible group-focus-within/drop:opacity-100">
         <div className="mx-auto max-w-7xl px-4 py-5">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold uppercase text-gold">{label}</p>
-            <Link to="/busca" search={{ q }} className="text-sm font-bold text-navy hover:text-gold">Ver todos →</Link>
+            <Link to="/busca" search={{ cat: label }} className="text-sm font-bold text-navy hover:text-gold">Ver todos →</Link>
           </div>
           {lista.length === 0 ? (
             <p className="py-4 text-sm text-muted-foreground">Em breve novos produtos nesta categoria.</p>
@@ -46,6 +47,8 @@ export function SiteHeader() {
   const { count } = useCart();
   const favs = useFavs();
   const { user, isAdmin } = useAuth();
+  const { data: products = [] } = useProducts();
+  const categories = categoryOptions(products.filter((p) => p.active).map((p) => p.category)).filter((c) => c !== "Geral");
   return (
     <header className="sticky top-0 z-40 bg-background shadow-sm">
       <div className="topbar-marquee overflow-hidden border-b-2 border-gold bg-navy text-xs font-bold uppercase tracking-wide text-primary-foreground sm:text-sm">
@@ -81,17 +84,15 @@ export function SiteHeader() {
       <LiveSearch className="mx-4 mb-3 md:hidden" placeholder="O que você procura?" />
       <FreeShippingBar />
       <nav className="relative border-y bg-muted">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 overflow-x-auto px-4 text-xs font-semibold uppercase whitespace-nowrap text-muted-foreground lg:overflow-visible">
-          {([["Sofás", "Sof"], ["Guarda-roupas", "Guarda"], ["Camas", "Cama"], ["Mesas de jantar", "Mesa"], ["Eletrodomésticos", "Eletrodom"]] as const).map(([l, q]) => (
-            <NavDrop key={l} label={l} q={q} />
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-6 px-4 text-xs font-semibold uppercase whitespace-nowrap text-muted-foreground">
+          {categories.map((category) => (
+            <NavDrop key={category} label={category} />
           ))}
           <div className="group/mega shrink-0 lg:static">
             <Link to="/busca" search={{}} className="block border-r border-navy py-3 pr-6 font-bold text-navy">Ver todos</Link>
             <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/mega:visible group-hover/mega:opacity-100">
-              <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-6 md:grid-cols-4">
-                {([["Sala de estar", [["Sofás", "Sof"], ["Racks", "Rack"], ["Poltronas", "Poltrona"]]], ["Quarto", [["Camas", "Cama"], ["Guarda-roupas", "Guarda"], ["Cômodas", "Cômoda"]]], ["Sala de jantar", [["Mesas", "Mesa"], ["Cadeiras", "Cadeira"], ["Buffets", "Buffet"]]], ["Eletrodomésticos", [["Geladeiras", "Geladeira"], ["Fogões", "Fogão"], ["Máquinas de lavar", "Máquina"]]]] as const).map(([t, subs]) => (
-                  <div key={t}><p className="text-sm font-bold uppercase text-gold">{t}</p><ul className="mt-2 space-y-1.5 font-semibold text-navy">{subs.map(([l, q]) => <li key={l}><Link to="/busca" search={{ q }} className="hover:text-gold">{l}</Link></li>)}</ul></div>
-                ))}
+              <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-6 md:grid-cols-4">
+                {categories.map((category) => <Link key={category} to="/busca" search={{ cat: category }} className="font-semibold text-navy hover:text-gold">{category}</Link>)}
               </div>
             </div>
           </div>

@@ -1,5 +1,8 @@
 # Rainha do Lar — Roadmap
 
+- [ ] Melhorar retorno de salvar/apagar, cursor dos botões e abertura da edição no topo; conferir cadastro real
+- [ ] Ampliar categorias do topo e unificar nomes equivalentes no cadastro, menu e catálogo
+
 - [x] Selo superior esquerdo mais comprido e levemente transparente, com número ao lado de vendidos
 - [x] Remover toda a roleta da loja e do painel; frete grátis somente acima de R$ 2.000; compra e leitura no painel conferidas, teste removido
 - [x] Selo de vendidos sobre a foto dourado como o botão Comprar, com texto azul-marinho; aparência compartilhada conferida e texto simples acima da categoria preservado
