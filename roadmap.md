@@ -1,5 +1,8 @@
 # Rainha do Lar — Roadmap
 
+- [ ] Reposicionar vendidos acima do nome na página do produto e refinar o selo no canto esquerdo
+- [ ] Oferecer categorias prontas e categorias existentes no cadastro de produtos
+
 - [x] Loja no estilo Zema (home, página de produto)
 - [x] Preço antigo tachado vermelho + promo verde
 - [x] Frete fixo por cidade cadastrada no painel, endereço manual e acesso exclusivo ao administrador
