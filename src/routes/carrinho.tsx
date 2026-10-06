@@ -5,7 +5,6 @@ import { AlertTriangle, CheckCircle2, Copy, CreditCard, Minus, Plus, QrCode, Tra
 import logo from "@/assets/logo-r.png.asset.json";
 import { brl, FREE_SHIPPING_MIN, useCart, WHATSAPP } from "@/lib/store";
 import { useShippingCities } from "@/lib/shipping";
-import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -116,8 +115,6 @@ function CartPage() {
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
-  const [premio, setPremio] = useState<string | null>(null);
-  const premios = usePremios();
   const [cupomOn, setCupomOn] = useState(false);
   const [cupomTxt, setCupomTxt] = useState("");
   const [cpf, setCpf] = useState("");
@@ -129,8 +126,8 @@ function CartPage() {
   const [pago, setPago] = useState(false);
   useEffect(() => {
     try {
-      const p = JSON.parse(localStorage.getItem("rdl-pendente") || "null") as { id: string; tel: string; nome: string; premio: string | null } | null;
-      if (p?.id) { setPedido({ id: p.id, tel: p.tel }); setPremio(p.premio); setDone(p.nome); }
+      const p = JSON.parse(localStorage.getItem("rdl-pendente") || "null") as { id: string; tel: string; nome: string } | null;
+      if (p?.id) { setPedido({ id: p.id, tel: p.tel }); setDone(p.nome); }
     } catch { /* ignore */ }
   }, []);
   useEffect(() => {
@@ -186,10 +183,8 @@ function CartPage() {
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
     ].filter(Boolean);
-    const sorteado = subtotal >= ROLETA_MIN ? sortearPremio(premios) : null;
     condicoes.unshift(`💳 Pagamento: ${pag}${pag === "PIX" ? " (cliente informou que fez o PIX)" : " (enviar link de pagamento)"}`);
     if (cupomOn) condicoes.push(`🏷️ Cupom ${CUPOM} (-10%): -R$ ${num(desconto)} · CPF ${fmtCpf(cpfLimpo)}`);
-    if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
     const endereco = `${r.data.rua}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${r.data.bairro}, ${city.name}/${city.state} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
     setMsg("Enviando pedido...");
@@ -207,8 +202,7 @@ function CartPage() {
     setMsg("");
     void enviarParaWhatsApp; // envio automático para a loja será ligado pelo WhatsApp Business
     const nomeCurto = r.data.nome.split(" ")[0] ?? r.data.nome;
-    try { localStorage.setItem("rdl-pendente", JSON.stringify({ id: orderId, tel: r.data.telefone, nome: nomeCurto, premio: sorteado })); } catch { /* ignore */ }
-    setPremio(sorteado);
+    try { localStorage.setItem("rdl-pendente", JSON.stringify({ id: orderId, tel: r.data.telefone, nome: nomeCurto })); } catch { /* ignore */ }
     setPedido({ id: orderId, tel: r.data.telefone });
     setPago(false);
     setCodigo(orderId.slice(0, 8).toUpperCase());
@@ -234,13 +228,6 @@ function CartPage() {
           <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
             <CheckCircle2 className="size-5 text-navy" /> {pago ? "Tudo certo com seu pagamento" : "Pedido registrado na Rainha do Lar"}
           </div>
-          {premio && !pago && (
-            <div className="mt-8 border-y py-5">
-              <p className="text-lg font-bold text-navy">Seu presente está reservado</p>
-              <p className="mt-1 text-sm text-muted-foreground">A Roleta da Sorte será liberada nesta tela após a confirmação do pagamento.</p>
-            </div>
-          )}
-          {premio && pago && <Roleta premio={premio} premios={premios} />}
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/" className="inline-block rounded-md bg-buy px-6 py-3 font-bold text-buy-foreground hover:opacity-90">Continuar comprando</Link>
           </div>
@@ -379,7 +366,6 @@ function CartPage() {
         {desconto > 0 && <div className="mt-2 flex justify-between text-sm font-bold text-navy"><span>Desconto cupom</span><span>- {brl(desconto)}</span></div>}
         <p className="mt-2 text-xs text-warn-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
         <div className="mt-3 flex justify-between border-t pt-3 text-xl font-bold"><span>Total</span><span className="text-price-new">{brl(subtotal - desconto + frete)}</span></div>
-        <p className="mt-3 rounded-md bg-background p-2 text-center text-sm font-semibold text-navy">🎁 {subtotal >= ROLETA_MIN ? "Você vai girar a Roleta da Sorte ao finalizar!" : `Faltam ${brl(ROLETA_MIN - subtotal)} para girar a Roleta da Sorte`}</p>
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         {step < 3
           ? <button onClick={next} className="btn-comprar mt-4 w-full rounded-md py-3 font-bold">Continuar para {["Identificação", "Entrega", "Pagamento"][step]} →</button>

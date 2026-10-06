@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
-import { fotosKey, premiosKey, usePremioFotos, usePremios } from "@/components/Roleta";
 import { useAuth } from "@/lib/auth";
 import { HomeAdmin } from "@/components/HomeAdmin";
 import { ShippingAdmin } from "@/components/ShippingAdmin";
@@ -36,18 +35,18 @@ const PRODUCT_CATEGORIES = ["Sofás", "Guarda-roupas", "Camas", "Colchões", "Me
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
-  const [tab, setTab] = useState<"produtos" | "pedidos" | "roleta" | "banners" | "avaliações" | "frete">("produtos");
+  const [tab, setTab] = useState<"produtos" | "pedidos" | "banners" | "avaliações" | "frete">("produtos");
   if (loading) return <main className="p-10 text-center">Carregando...</main>;
   if (!isAdmin) return <main className="p-10 text-center">Acesso restrito ao administrador. <Link to="/conta" className="text-link underline">Minha conta</Link></main>;
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold text-navy">Painel do administrador</h1>
       <div className="mt-4 flex flex-wrap gap-2">
-        {(["produtos", "pedidos", "roleta", "banners", "avaliações", "frete"] as const).map((t) => (
+        {(["produtos", "pedidos", "banners", "avaliações", "frete"] as const).map((t) => (
           <Button key={t} variant={tab === t ? "default" : "outline"} onClick={() => setTab(t)} className="capitalize">{t}</Button>
         ))}
       </div>
-      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "roleta" ? <RoletaAdmin /> : tab === "banners" ? <HomeAdmin /> : tab === "frete" ? <ShippingAdmin /> : <AvaliacoesAdmin />}
+      {tab === "produtos" ? <Produtos /> : tab === "pedidos" ? <Pedidos /> : tab === "banners" ? <HomeAdmin /> : tab === "frete" ? <ShippingAdmin /> : <AvaliacoesAdmin />}
     </main>
   );
 }
