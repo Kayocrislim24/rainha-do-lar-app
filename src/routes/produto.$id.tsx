@@ -96,7 +96,7 @@ function ProductPage({ p }: { p: Product }) {
           <p className="mt-1 text-xs text-muted-foreground">Cód. {p.id.slice(0, 8).toUpperCase()} · Vendido e entregue por Rainha do Lar</p>
           <div className="mt-4"><Price old={p.oldPrice} price={p.price} big /></div>
           <p className="text-sm text-muted-foreground">ou em até 12x de {brl(p.price / 12)} no cartão</p>
-          <ul className="mt-3 grid gap-1 rounded-lg border bg-secondary p-3 text-sm text-navy"><li>✔ Entrega própria em todo o DF</li><li>✔ Frete grátis acima de R$ 1.500</li><li>✔ Compra 100% segura</li></ul>
+          <ul className="mt-3 grid gap-1 rounded-lg border bg-secondary p-3 text-sm text-navy"><li>✔ Entrega própria em todo o DF</li><li>✔ Frete grátis acima de {brl(FREE_SHIPPING_MIN)}</li><li>✔ Compra 100% segura</li></ul>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center"><button onClick={() => { add(p.id, qty); nav({ to: "/carrinho" }); }} className="btn-comprar flex flex-1 items-center justify-center gap-3 rounded-full py-4 text-xl">Comprar</button>{p.oldPrice > p.price && <span className="shrink-0 rounded-full border-2 border-price-new bg-price-new/10 px-4 py-2 text-center text-sm font-bold leading-tight text-price-new">{brl(p.oldPrice - p.price)}<br />de cashback</span>}</div>
           <button onClick={() => { localStorage.setItem("rdl-cupom", "PRIMEIRACOMPRARAINHA"); add(p.id, qty); nav({ to: "/carrinho" }); }} className="mt-3 w-full rounded-full border-2 border-dashed border-gold bg-navy px-4 py-3 text-center text-primary-foreground transition hover:brightness-110">
             <span className="block text-base font-bold uppercase tracking-wide">Comprar com cupom <span className="text-gold">10% OFF</span> · {brl(p.price * 0.9)}</span>
@@ -120,7 +120,7 @@ function ProductPage({ p }: { p: Product }) {
               <option value="">{citiesLoading ? "Carregando cidades..." : "Selecione sua cidade"}</option>
               {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state}</option>)}
             </select>
-            {city && <p className="mt-2 text-sm font-semibold text-navy">{city.name}/{city.state} · {p.price * qty >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
+            {city && <p className="mt-2 text-sm font-semibold text-navy">{city.name}/{city.state} · {p.price * qty > FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
             {citiesError && <p className="mt-2 text-sm text-destructive">Não foi possível carregar as cidades.</p>}
             {!citiesLoading && !citiesError && !cities.length && <p className="mt-2 text-sm text-muted-foreground">Consulte a loja sobre as cidades de entrega.</p>}
             <p className="mt-1 text-xs text-muted-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>

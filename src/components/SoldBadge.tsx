@@ -1,9 +1,11 @@
 export function SoldBadge({ sold, inline = false }: { sold: number; inline?: boolean }) {
   if (sold <= 0) return null;
+  const label = `${sold.toLocaleString("pt-BR")} ${sold === 1 ? "vendido" : "vendidos"}`;
+  if (inline) return <p aria-label={label} className="mb-2 font-sans text-base font-semibold leading-snug text-navy">{label}</p>;
   return (
-    <span aria-label={`${sold.toLocaleString("pt-BR")} ${sold === 1 ? "vendido" : "vendidos"}`} className={`sold-glass inline-flex rounded-md ${inline ? "mb-3 max-w-full items-center gap-3 px-4 py-2.5" : "absolute left-2 top-2 z-10 max-w-[calc(100%-3.5rem)] flex-col items-start px-3 py-2"}`}>
-      <b className={`font-bold tabular-nums leading-none ${inline ? "text-2xl" : "text-lg sm:text-xl"}`}>{sold.toLocaleString("pt-BR")}</b>
-      <span className={`font-semibold leading-tight ${inline ? "border-l border-navy/15 pl-3 text-sm" : "mt-1 text-[10px] sm:text-xs"}`}>{sold === 1 ? "vendido" : "vendidos"}</span>
+    <span aria-label={label} className="sold-glass absolute left-2 top-2 z-10 inline-flex max-w-[calc(100%-3.5rem)] flex-col items-start rounded-md px-3 py-2 font-sans">
+      <b className="text-xl font-bold tabular-nums leading-none">{sold.toLocaleString("pt-BR")}</b>
+      <span className="mt-1 text-xs font-bold leading-tight">{sold === 1 ? "vendido" : "vendidos"}</span>
     </span>
   );
 }

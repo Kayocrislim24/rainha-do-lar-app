@@ -147,7 +147,7 @@ function CartPage() {
     return () => clearInterval(t);
   }, [pedido, pago]);
   const desconto = cupomOn ? Math.round(subtotal * CUPOM_PCT * 100) / 100 : 0;
-  const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (city?.price ?? 0);
+  const frete = subtotal > FREE_SHIPPING_MIN ? 0 : (city?.price ?? 0);
   const aplicarCupom = () => { const ok = cupomTxt.trim().toUpperCase() === CUPOM; setCupomOn(ok); if (ok) localStorage.setItem("rdl-cupom", CUPOM); setMsg(ok ? "" : "Cupom inválido."); };
   const tirarCupom = () => { setCupomOn(false); setCupomTxt(""); localStorage.removeItem("rdl-cupom"); };
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -303,7 +303,7 @@ function CartPage() {
             </label>
             <label className="text-sm sm:col-span-2">Cidade de entrega<select aria-label="Cidade de entrega" className={`${input} mt-1 bg-background`} value={cityId} onChange={(e) => { setCityId(e.target.value); setMsg(""); }} disabled={citiesLoading || citiesError}>
               <option value="">{citiesLoading ? "Carregando cidades..." : "Selecione sua cidade"}</option>
-              {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state} — {subtotal >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(c.price)}</option>)}
+              {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state} — {subtotal > FREE_SHIPPING_MIN ? "Frete grátis" : brl(c.price)}</option>)}
             </select></label>
             <input aria-label="Rua / endereço" autoComplete="address-line1" className={`${input} sm:col-span-2`} placeholder="Rua / endereço" value={f.rua} onChange={set("rua")} maxLength={200} />
             <input aria-label="Bairro" className={input} placeholder="Bairro" value={f.bairro} onChange={set("bairro")} maxLength={100} />
@@ -312,7 +312,7 @@ function CartPage() {
           </div>
           {citiesError && <p className="mt-2 text-sm text-destructive">Não foi possível carregar as cidades. Tente novamente mais tarde.</p>}
           {!citiesLoading && !citiesError && !cities.length && <p className="mt-2 text-sm text-muted-foreground">As cidades de entrega ainda não foram cadastradas. Entre em contato com a loja.</p>}
-          {city && <p className="mt-2 text-sm font-semibold text-navy">Entrega em {city.name}/{city.state}: {subtotal >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
+          {city && <p className="mt-2 text-sm font-semibold text-navy">Entrega em {city.name}/{city.state}: {subtotal > FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
 
           <h3 className="mt-5 font-semibold">Condições especiais de entrega</h3>
           <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={apto} onChange={(e) => setApto(e.target.checked)} className="mt-1 size-4" />Entrega em Apartamento (subida de escada/elevador)</label>
@@ -363,7 +363,7 @@ function CartPage() {
         <h2 className="text-lg font-bold text-navy">Resumo</h2>
         <div className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-          <div className="flex justify-between"><span>Frete</span><span>{subtotal >= FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : city ? brl(city.price) : "Selecione a cidade"}</span></div>
+          <div className="flex justify-between"><span>Frete</span><span>{subtotal > FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : city ? brl(city.price) : "Selecione a cidade"}</span></div>
         </div>
         <div className="mt-3 rounded-md border-2 border-dashed border-gold bg-background p-3">
           <p className="text-sm font-bold text-navy">Cupom de desconto</p>
