@@ -1,5 +1,6 @@
 # Rainha do Lar — Roadmap
 
+- [x] Selo superior esquerdo mais comprido e levemente transparente, com número ao lado de vendidos
 - [x] Remover toda a roleta da loja e do painel; frete grátis somente acima de R$ 2.000; compra e leitura no painel conferidas, teste removido
 - [x] Selo de vendidos sobre a foto dourado como o botão Comprar, com texto azul-marinho; aparência compartilhada conferida e texto simples acima da categoria preservado
 

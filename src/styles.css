@@ -76,13 +76,15 @@
   --purchase-gold-deep: #d4a93c;
   --purchase-gold-gradient: linear-gradient(180deg, var(--purchase-gold-light) 0%, var(--purchase-gold-deep) 100%);
   --sold-shadow: 0 4px 14px color-mix(in oklch, var(--navy) 12%, transparent);
+  --sold-gold-gradient: linear-gradient(180deg, color-mix(in oklch, var(--purchase-gold-light) 84%, transparent), color-mix(in oklch, var(--purchase-gold-deep) 84%, transparent));
 }
 
 .sold-gold {
   color: var(--navy);
-  background: var(--purchase-gold-gradient);
+  background: var(--sold-gold-gradient);
   border: 1px solid var(--gold);
   box-shadow: var(--sold-shadow);
+  backdrop-filter: blur(6px);
 }
 
 @layer base {
