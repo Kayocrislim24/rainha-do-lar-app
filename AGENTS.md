@@ -10,6 +10,8 @@
 <!-- LOVABLE:END -->
 
 - Review videos are stored in the private `review-media` bucket and referenced from the existing review media array with a `review-video:` prefix, because signed URLs keep public playback controlled without exposing a public bucket.
+- Review media server functions authorize uploads with private review-edit capabilities and sign playback only for media attached to active-product reviews; direct storage access is owner/admin scoped to preserve guest reviews without unrestricted bucket access.
+- Public review reads exclude edit_token through column grants and are scoped to active products, owners or admins, because editing capabilities must never be exposed with public comments.
 - Muted review videos have their audio track removed client-side with FFmpeg before upload, because playback muting alone would still expose spoken audio.
 - Shipping rates live in a dedicated public-readable, admin-writable city table and are applied by an order insert trigger, because prices must remain consistent across product pages, checkout, and saved orders.
 - Checkout looks up street and neighborhood through ViaCEP after eight postal-code digits, with cancellation and manual fallback, because address convenience must not alter city shipping rates.

@@ -3,6 +3,7 @@ import { Camera, Star, Video, Volume2, VolumeX, X } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { getReviewVideoUrl, prepareReviewVideoUpload } from "@/lib/review-media.functions";
 
 type Review = { id: string; nome: string; nota: number; comentario: string; fotos: string[]; videos: { path: string; url: string }[]; avatar?: string; created_at: string };
 type VideoDraft = { path?: string; url: string; file?: File; removeAudio: boolean };
@@ -117,8 +118,8 @@ export function Reviews({ productId }: { productId: string }) {
       const media = Array.isArray(r.fotos) ? r.fotos.filter((f) => typeof f === "string") : [];
       const paths = media.filter((f) => f.startsWith(VIDEO_PREFIX)).map((f) => f.slice(VIDEO_PREFIX.length));
       const videos = await Promise.all(paths.map(async (path) => {
-        const { data: signed } = await supabase.storage.from("review-media").createSignedUrl(path, 3600);
-        return signed?.signedUrl ? { path, url: signed.signedUrl } : null;
+        const url = await getReviewVideoUrl({ data: { reviewId: r.id, path } });
+        return url ? { path, url } : null;
       }));
       return {
         ...r,
@@ -145,7 +146,7 @@ export function Reviews({ productId }: { productId: string }) {
     setMsg(null);
   };
 
-  const uploadVideo = async (reviewId: string) => {
+  const uploadVideo = async (reviewId: string, token: string) => {
     if (!video?.file) return video?.path ?? null;
     let uploadFile = video.file;
     if (video.removeAudio) {
@@ -155,9 +156,10 @@ export function Reviews({ productId }: { productId: string }) {
     } else {
       setVideoStatus("Enviando vídeo...");
     }
-    const extension = uploadFile.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mp4";
-    const path = `${reviewId}/${crypto.randomUUID()}.${extension}`;
-    const { error } = await supabase.storage.from("review-media").upload(path, uploadFile, { contentType: uploadFile.type, upsert: false });
+    const ext = uploadFile.name.split(".").pop()?.toLowerCase();
+    if (ext !== "mp4" && ext !== "webm" && ext !== "mov") throw new Error("Envie um vídeo MP4, WebM ou MOV.");
+    const { path, token: uploadToken } = await prepareReviewVideoUpload({ data: { reviewId, token, productId, extension: ext } });
+    const { error } = await supabase.storage.from("review-media").uploadToSignedUrl(path, uploadToken, uploadFile, { contentType: uploadFile.type });
     if (error) throw new Error("Não foi possível enviar o vídeo. Tente novamente.");
     setVideoStatus(null);
     return path;
@@ -170,7 +172,9 @@ export function Reviews({ productId }: { productId: string }) {
     setBusy(true);
     try {
       const id = editId ?? crypto.randomUUID();
-      const videoPath = await uploadVideo(id);
+      const token = editId ? mine[editId] : crypto.randomUUID();
+      if (!token) throw new Error("Não foi possível autorizar a edição.");
+      const videoPath = await uploadVideo(id, token);
       const media = videoPath ? [...fotos, `${VIDEO_PREFIX}${videoPath}`] : fotos;
       if (editId) {
       const { data } = await supabase.rpc("update_review" as never, { _id: editId, _token: mine[editId], _nome: v.data.nome, _nota: v.data.nota, _comentario: v.data.comentario, _fotos: media, _avatar: avatar } as never);
@@ -178,7 +182,6 @@ export function Reviews({ productId }: { productId: string }) {
       if (!data) { setMsg("Não foi possível salvar. Tente novamente."); return; }
       cancelar(); setMsg("Avaliação atualizada!");
     } else {
-      const token = crypto.randomUUID();
       const { error } = await supabase.from("reviews").insert({ id, edit_token: token, product_id: productId, user_id: user?.id ?? null, ...v.data, fotos: media, avatar } as never);
       setBusy(false);
       if (error) { setMsg("Não foi possível enviar. Tente novamente."); return; }
