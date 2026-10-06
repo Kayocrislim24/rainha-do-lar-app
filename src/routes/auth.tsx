@@ -10,6 +10,8 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Acesse sua conta Rainha do Lar para acompanhar seus pedidos." },
       { property: "og:title", content: "Entrar — Rainha do Lar" },
       { property: "og:description", content: "Acesse sua conta e veja seus pedidos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: AuthPage,

@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { AlertTriangle, CheckCircle2, Copy, CreditCard, Minus, Plus, QrCode, Trash2 } from "lucide-react";
 import logo from "@/assets/logo-r.png.asset.json";
-import { brl, FREE_SHIPPING_MIN, quoteShipping, useCart, WHATSAPP } from "@/lib/store";
+import { brl, FREE_SHIPPING_MIN, useCart, WHATSAPP } from "@/lib/store";
+import { useShippingCities } from "@/lib/shipping";
 import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,9 +12,11 @@ export const Route = createFileRoute("/carrinho")({
   head: () => ({
     meta: [
       { title: "Carrinho e checkout — Rainha do Lar" },
-      { name: "description", content: "Revise seus itens, calcule o frete e envie seu pedido pelo WhatsApp." },
+      { name: "description", content: "Revise seus itens e finalize seu pedido com entrega de valor fixo por cidade." },
       { property: "og:title", content: "Carrinho — Rainha do Lar" },
       { property: "og:description", content: "Finalize seu pedido na Rainha do Lar." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: CartPage,
@@ -23,6 +26,8 @@ const schema = z.object({
   nome: z.string().trim().min(2, "Informe seu nome").max(100),
   telefone: z.string().trim().min(10, "Telefone inválido").max(20),
   cep: z.string().trim().min(8, "CEP inválido").max(9),
+  rua: z.string().trim().min(2, "Informe a rua ou endereço").max(200),
+  bairro: z.string().trim().min(2, "Informe o bairro").max(100),
   numero: z.string().trim().min(1, "Informe o número").max(20),
   complemento: z.string().trim().max(100),
 });
@@ -66,10 +71,12 @@ const enviarParaWhatsApp = (dadosPedido: DadosPedido) => {
 
 function CartPage() {
   const { items, setQty, subtotal, clear } = useCart();
-  const [f, setF] = useState({ nome: "", telefone: "", cep: "", numero: "", complemento: "" });
+  const [f, setF] = useState({ nome: "", telefone: "", cep: "", rua: "", bairro: "", numero: "", complemento: "" });
   const [apto, setApto] = useState(false);
   const [chao, setChao] = useState(false);
-  const [ship, setShip] = useState<Awaited<ReturnType<typeof quoteShipping>> | null>(null);
+  const { data: cities = [], isLoading: citiesLoading, isError: citiesError } = useShippingCities();
+  const [cityId, setCityId] = useState("");
+  const city = cities.find((c) => c.id === cityId);
   const [msg, setMsg] = useState("");
   const [done, setDone] = useState<string | null>(null);
   const [codigo, setCodigo] = useState("");
@@ -104,15 +111,10 @@ function CartPage() {
     return () => clearInterval(t);
   }, [pedido, pago]);
   const desconto = cupomOn ? Math.round(subtotal * CUPOM_PCT * 100) / 100 : 0;
-  const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (ship?.cost ?? 0);
+  const frete = subtotal >= FREE_SHIPPING_MIN ? 0 : (city?.price ?? 0);
   const aplicarCupom = () => { const ok = cupomTxt.trim().toUpperCase() === CUPOM; setCupomOn(ok); if (ok) localStorage.setItem("rdl-cupom", CUPOM); setMsg(ok ? "" : "Cupom inválido."); };
   const tirarCupom = () => { setCupomOn(false); setCupomTxt(""); localStorage.removeItem("rdl-cupom"); };
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
-
-  const calc = async () => {
-    setMsg("Calculando frete...");
-    try { setShip(await quoteShipping(f.cep)); setMsg(""); } catch (e) { setShip(null); setMsg((e as Error).message); }
-  };
 
   const go = (n: number) => { setMsg(""); setStep(n); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const next = async () => {
@@ -122,8 +124,9 @@ function CartPage() {
       if (cupomOn && !cpfValido(cpf)) return setMsg("Informe um CPF válido para usar o cupom.");
     }
     if (step === 2) {
-      if (!ship) return setMsg("Calcule o frete pelo CEP para continuar.");
-      if (!f.numero.trim()) return setMsg("Informe o número");
+      if (!city) return setMsg("Selecione sua cidade de entrega.");
+      const valid = schema.safeParse(f);
+      if (!valid.success) return setMsg(valid.error.issues[0]?.message ?? "Confira o endereço.");
     }
     go(step + 1);
   };
@@ -133,14 +136,13 @@ function CartPage() {
     if (!pag) return setMsg("Escolha a forma de pagamento.");
     const r = schema.safeParse(f);
     if (!r.success) return setMsg(r.error.issues[0]?.message ?? "Dados inválidos");
-    if (!ship) return setMsg("Calcule o frete antes de finalizar.");
+    if (!city) return setMsg("Selecione sua cidade de entrega.");
     const cpfLimpo = cpf.replace(/\D/g, "");
     if (cupomOn) {
       if (!cpfValido(cpfLimpo)) return setMsg("Informe um CPF válido para usar o cupom.");
       const { data: livre } = await supabase.rpc("cupom_disponivel" as never, { _cpf: cpfLimpo, _cupom: CUPOM } as never);
       if (livre === false) return setMsg("Este CPF já usou o cupom PRIMEIRACOMPRARAINHA. Remova o cupom para continuar.");
     }
-    const a = ship.address;
     const condicoes = [
       apto && "Apartamento (subida de escada/elevador) — taxa extra a combinar",
       chao && "Estrada de chão / difícil acesso — combinar previamente",
@@ -149,12 +151,13 @@ function CartPage() {
     condicoes.unshift(`💳 Pagamento: ${pag}${pag === "PIX" ? " (cliente informou que fez o PIX)" : " (enviar link de pagamento)"}`);
     if (cupomOn) condicoes.push(`🏷️ Cupom ${CUPOM} (-10%): -R$ ${num(desconto)} · CPF ${fmtCpf(cpfLimpo)}`);
     if (sorteado) condicoes.push(`🎁 Prêmio da roleta: ${sorteado}`);
-    const endereco = `${a.logradouro}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${a.bairro}, ${a.localidade}/${a.uf} - CEP ${r.data.cep}`;
+    const endereco = `${r.data.rua}, ${r.data.numero}${r.data.complemento ? " - " + r.data.complemento : ""}, ${r.data.bairro}, ${city.name}/${city.state} - CEP ${r.data.cep}`;
     const { data: u } = await supabase.auth.getUser();
     setMsg("Enviando pedido...");
     const orderId = crypto.randomUUID();
     const { error } = await supabase.from("orders").insert({
       id: orderId,
+      shipping_city_id: city.id,
       user_id: u.user?.id ?? null, nome: r.data.nome, telefone: r.data.telefone, endereco, condicao: condicoes.join(" | ") || null,
       itens: items.map((i) => ({ id: i.id, title: i.product.title, qty: i.qty, price: i.product.price })),
       subtotal, frete, total: subtotal - desconto + frete,
@@ -253,11 +256,19 @@ function CartPage() {
         {step === 2 && <section className="rounded-lg border p-4">
           <h2 className="text-lg font-bold text-navy">Entrega</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div className="flex gap-2"><input className={input} placeholder="CEP" value={f.cep} onChange={set("cep")} maxLength={9} /><button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button></div>
+            <label className="text-sm sm:col-span-2">Cidade de entrega<select aria-label="Cidade de entrega" className={`${input} mt-1 bg-background`} value={cityId} onChange={(e) => { setCityId(e.target.value); setMsg(""); }} disabled={citiesLoading || citiesError}>
+              <option value="">{citiesLoading ? "Carregando cidades..." : "Selecione sua cidade"}</option>
+              {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state} — {subtotal >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(c.price)}</option>)}
+            </select></label>
+            <input className={`${input} sm:col-span-2`} placeholder="Rua / endereço" value={f.rua} onChange={set("rua")} maxLength={200} />
+            <input className={input} placeholder="Bairro" value={f.bairro} onChange={set("bairro")} maxLength={100} />
+            <input className={input} placeholder="CEP" value={f.cep} onChange={set("cep")} maxLength={9} />
             <input className={input} placeholder="Número" value={f.numero} onChange={set("numero")} />
             <input className={`${input} sm:col-span-2`} placeholder="Complemento (apto, bloco...)" value={f.complemento} onChange={set("complemento")} />
           </div>
-          {ship && <p className="mt-2 text-sm text-muted-foreground">{ship.address.logradouro}, {ship.address.bairro} — {ship.address.localidade}/{ship.address.uf}</p>}
+          {citiesError && <p className="mt-2 text-sm text-destructive">Não foi possível carregar as cidades. Tente novamente mais tarde.</p>}
+          {!citiesLoading && !citiesError && !cities.length && <p className="mt-2 text-sm text-muted-foreground">As cidades de entrega ainda não foram cadastradas. Entre em contato com a loja.</p>}
+          {city && <p className="mt-2 text-sm font-semibold text-navy">Entrega em {city.name}/{city.state}: {subtotal >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
 
           <h3 className="mt-5 font-semibold">Condições especiais de entrega</h3>
           <label className="mt-2 flex items-start gap-2"><input type="checkbox" checked={apto} onChange={(e) => setApto(e.target.checked)} className="mt-1 size-4" />Entrega em Apartamento (subida de escada/elevador)</label>
@@ -307,7 +318,7 @@ function CartPage() {
         <h2 className="text-lg font-bold text-navy">Resumo</h2>
         <div className="mt-3 space-y-1 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{brl(subtotal)}</span></div>
-          <div className="flex justify-between"><span>Frete</span><span>{subtotal >= FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : ship ? brl(ship.cost) : "—"}</span></div>
+          <div className="flex justify-between"><span>Frete</span><span>{subtotal >= FREE_SHIPPING_MIN ? <b className="text-gold">Grátis</b> : city ? brl(city.price) : "Selecione a cidade"}</span></div>
         </div>
         <div className="mt-3 rounded-md border-2 border-dashed border-gold bg-background p-3">
           <p className="text-sm font-bold text-navy">Cupom de desconto</p>

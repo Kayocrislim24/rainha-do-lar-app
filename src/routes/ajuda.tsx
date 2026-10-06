@@ -7,6 +7,8 @@ export const Route = createFileRoute("/ajuda")({
     { name: "description", content: "Respostas sobre pedidos, pagamento, entrega e cupons na Rainha do Lar." },
     { property: "og:title", content: "Dúvidas frequentes — Rainha do Lar" },
     { property: "og:description", content: "Tire suas dúvidas sobre compras na Rainha do Lar." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: () => <InfoPage title="Dúvidas frequentes" items={[
     { q: "Preciso ter cadastro para comprar?", a: "Não. Você pode comprar como visitante ou criar uma conta para ver seus pedidos." },

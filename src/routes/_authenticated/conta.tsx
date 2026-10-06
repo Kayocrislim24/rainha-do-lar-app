@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_authenticated/conta")({
       { name: "description", content: "Seus pedidos na Rainha do Lar." },
       { property: "og:title", content: "Minha conta — Rainha do Lar" },
       { property: "og:description", content: "Acompanhe seus pedidos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Conta,

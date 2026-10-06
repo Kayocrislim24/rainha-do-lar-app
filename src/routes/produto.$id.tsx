@@ -2,7 +2,8 @@ import { Swatches } from "@/components/Swatches";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { CheckCircle2, Minus, Plus, Ruler, Truck } from "lucide-react";
-import { brl, quoteShipping, useCart } from "@/lib/store";
+import { brl, FREE_SHIPPING_MIN, useCart } from "@/lib/store";
+import { useShippingCities } from "@/lib/shipping";
 import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
 import { Reviews } from "@/components/Reviews";
@@ -15,6 +16,8 @@ export const Route = createFileRoute("/produto/$id")({
       { name: "description", content: "Detalhes, medidas e preço do móvel na Rainha do Lar." },
       { property: "og:title", content: "Produto — Rainha do Lar" },
       { property: "og:description", content: "Confira detalhes e ofertas deste móvel." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ProductRoute,
@@ -62,18 +65,13 @@ function ProductPage({ p }: { p: Product }) {
   const { add } = useCart();
   const nav = useNavigate();
   const [qty, setQty] = useState(1);
-  const [cep, setCep] = useState("");
-  const [ship, setShip] = useState<string | null>(null);
+  const { data: cities = [], isLoading: citiesLoading, isError: citiesError } = useShippingCities();
+  const [cityId, setCityId] = useState("");
+  const city = cities.find((c) => c.id === cityId);
   const [wall, setWall] = useState("");
   const [foto, setFoto] = useState(p.image);
   const off = Math.round((1 - p.price / p.oldPrice) * 100);
   const wallCm = parseFloat(wall.replace(",", ".")) * 100;
-
-  const calc = async () => {
-    setShip("Calculando...");
-    try { const r = await quoteShipping(cep); setShip(`${r.address.localidade}/${r.address.uf} · ${brl(r.cost)}`); }
-    catch (e) { setShip((e as Error).message); }
-  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -115,12 +113,14 @@ function ProductPage({ p }: { p: Product }) {
           <button onClick={() => add(p.id, qty)} className="mt-3 w-full rounded-md border-2 border-buy py-3 font-bold text-buy hover:bg-buy/5">Adicionar ao carrinho</button>
 
           <div className="mt-6">
-            <p className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Simular frete</p>
-            <div className="mt-2 flex gap-2">
-              <input value={cep} onChange={(e) => setCep(e.target.value)} placeholder="CEP" maxLength={9} className="flex-1 rounded-md bg-muted px-4 py-2.5" />
-              <button onClick={calc} className="rounded-md bg-link px-4 font-semibold text-primary-foreground">Calcular</button>
-            </div>
-            {ship && <p className="mt-2 text-sm">{ship}</p>}
+            <label htmlFor="product-city" className="flex items-center gap-2 font-semibold text-navy"><Truck className="size-5" />Entrega por cidade</label>
+            <select id="product-city" value={cityId} onChange={(e) => setCityId(e.target.value)} disabled={citiesLoading || citiesError} className="mt-2 w-full min-w-0 rounded-md border bg-background px-3 py-2.5">
+              <option value="">{citiesLoading ? "Carregando cidades..." : "Selecione sua cidade"}</option>
+              {cities.map((c) => <option key={c.id} value={c.id}>{c.name}/{c.state}</option>)}
+            </select>
+            {city && <p className="mt-2 text-sm font-semibold text-navy">{city.name}/{city.state} · {p.price * qty >= FREE_SHIPPING_MIN ? "Frete grátis" : brl(city.price)}</p>}
+            {citiesError && <p className="mt-2 text-sm text-destructive">Não foi possível carregar as cidades.</p>}
+            {!citiesLoading && !citiesError && !cities.length && <p className="mt-2 text-sm text-muted-foreground">Consulte a loja sobre as cidades de entrega.</p>}
             <p className="mt-1 text-xs text-muted-foreground">A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso.</p>
           </div>
 
