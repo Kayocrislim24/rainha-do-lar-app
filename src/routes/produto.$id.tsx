@@ -8,6 +8,7 @@ import { useProducts, type Product } from "@/lib/products";
 import { Price } from "@/components/SiteHeader";
 import { Reviews } from "@/components/Reviews";
 import { ProductCard } from "@/components/ProductCard";
+import { SoldBadge } from "@/components/SoldBadge";
 
 export const Route = createFileRoute("/produto/$id")({
   head: () => ({
@@ -78,7 +79,7 @@ function ProductPage({ p }: { p: Product }) {
       <p className="text-sm text-muted-foreground"><Link to="/" className="text-link underline">Início</Link> › {p.category}</p>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <div>
-          <div className="relative rounded-lg border p-4">{p.sold > 0 && <span className="absolute left-3 top-3 z-10 rounded-full bg-gold px-4 py-1 text-sm font-extrabold uppercase text-navy shadow-lg ring-2 ring-background">🔥 {p.sold.toLocaleString("pt-BR")} {p.sold === 1 ? "vendido" : "vendidos"}</span>}<img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
+          <div className="relative rounded-lg border p-4"><SoldBadge sold={p.sold} /><img src={foto} alt={p.title} width={1024} height={1024} className="aspect-square w-full object-contain" /></div>
           {p.colors.length > 0 && <div className="mt-3"><p className="text-sm font-semibold">Cor: {p.colors.find((c) => c.image === foto)?.name ?? "Escolha"}</p><Swatches colors={p.colors} current={foto} onPick={setFoto} big /></div>}
           {p.gallery.length > 1 && (
             <div className="mt-3 flex flex-wrap gap-3">
