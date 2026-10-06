@@ -11,7 +11,7 @@ export const Route = createFileRoute("/entrega")({
   component: () => <InfoPage title="Política de entrega" items={[
     { q: "Onde entregamos?", a: "Entregamos em todo o Distrito Federal com equipe própria." },
     { q: "Frete grátis", a: "Compras acima de R$ 1.500 têm frete grátis." },
-    { q: "Como calcular o frete?", a: "Digite seu CEP na página do produto ou no carrinho para ver o valor da entrega." },
+    { q: "Qual é o valor do frete?", a: "Cada cidade possui um valor fixo de entrega. Selecione sua cidade na página do produto ou no carrinho e informe seu endereço completo na compra." },
     { q: "Apartamento ou estrada de chão", a: "A combinar caso seja apartamento ou acesso por estrada de chão/difícil acesso." },
   ]} />,
 });
