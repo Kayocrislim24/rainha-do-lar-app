@@ -4,7 +4,7 @@ import { brl, FREE_SHIPPING_MIN, useCart } from "@/lib/store";
 export function FreeShippingBar({ boxed }: { boxed?: boolean }) {
   const { subtotal, count } = useCart();
   if (!count) return null;
-  const falta = Math.max(0, FREE_SHIPPING_MIN - subtotal);
+  const falta = Math.max(0, Math.round((FREE_SHIPPING_MIN + 0.01 - subtotal) * 100) / 100);
   const pct = Math.min(100, (subtotal / FREE_SHIPPING_MIN) * 100);
   return (
     <div className={boxed ? "rounded-lg border-2 border-gold bg-secondary p-4" : "border-b bg-secondary px-4 py-2"}>

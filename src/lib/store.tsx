@@ -52,4 +52,4 @@ export function useCart() {
 }
 
 /** Valor mínimo do carrinho para ganhar frete grátis. */
-export const FREE_SHIPPING_MIN = 1500;
+export const FREE_SHIPPING_MIN = 1299.90;

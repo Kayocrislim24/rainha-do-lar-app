@@ -73,7 +73,7 @@
   --warn: oklch(0.96 0.06 90);
   --warn-foreground: oklch(0.4 0.09 70);
   --sold-glass-surface: color-mix(in oklch, var(--background) 88%, transparent);
-  --sold-glass-border: color-mix(in oklch, var(--navy) 12%, var(--background));
+  --sold-glass-border: var(--gold);
   --sold-glass-shadow: 0 4px 14px color-mix(in oklch, var(--navy) 12%, transparent), inset 0 1px 0 var(--background);
 }
 
