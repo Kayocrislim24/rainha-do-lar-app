@@ -26,6 +26,7 @@ export type Database = {
           id: string
           itens: Json
           nome: string
+          shipping_city_id: string | null
           status: string
           subtotal: number
           telefone: string
@@ -43,6 +44,7 @@ export type Database = {
           id?: string
           itens?: Json
           nome: string
+          shipping_city_id?: string | null
           status?: string
           subtotal: number
           telefone: string
@@ -60,13 +62,22 @@ export type Database = {
           id?: string
           itens?: Json
           nome?: string
+          shipping_city_id?: string | null
           status?: string
           subtotal?: number
           telefone?: string
           total?: number
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_shipping_city_id_fkey"
+            columns: ["shipping_city_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -226,6 +237,33 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      shipping_cities: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          price: number
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          price: number
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+          state?: string
+          updated_at?: string
         }
         Relationships: []
       }
