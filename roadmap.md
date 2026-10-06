@@ -10,6 +10,6 @@
 - [x] Painel /admin: CRUD produtos, pedidos com status
 - [ ] Envio de fotos direto no painel — bloqueado pela configuração do workspace (pastas públicas)
 - [ ] Pagamento integrado com confirmação automática — pausado: usuário escolheu manter PIX manual, sem conectar Shopify
-- [ ] Pagamento e confirmação com aparência refinada e estados distintos de pedido recebido e pagamento confirmado
+- [x] Pagamento e confirmação com aparência refinada e estados distintos de pedido recebido e pagamento confirmado; etapa PIX conferida sem cobrança real
 - [x] Selo de vendidos em vidro translúcido, sem emoji de fogo ou fundo amarelo
 - [x] Avaliações com até 3 fotos e 1 vídeo, incluindo opção para remover o áudio antes do envio
