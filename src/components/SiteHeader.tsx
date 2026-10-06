@@ -12,10 +12,10 @@ import { brl } from "@/lib/store";
 const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 function NavDrop({ label, q }: { label: string; q: string }) {
-  const { data: products = [] } = useProducts();
-  const lista = products.filter((p) => norm(`${p.title} ${p.category}`).includes(norm(q))).slice(0, 6);
+  const { data: products = [], refetch } = useProducts();
+  const lista = products.filter((p) => p.active && norm(`${p.title} ${p.category}`).includes(norm(q))).slice(0, 6);
   return (
-    <div className="group/drop shrink-0 lg:static">
+    <div className="group/drop shrink-0 lg:static" onMouseEnter={() => { void refetch(); }} onFocus={() => { void refetch(); }}>
       <Link to="/busca" search={{ q }} className="block py-3 hover:text-navy group-hover/drop:text-navy">{label}</Link>
       <div className="invisible absolute left-0 right-0 top-full z-50 border-t-2 border-gold bg-background normal-case opacity-0 shadow-xl transition group-hover/drop:visible group-hover/drop:opacity-100">
         <div className="mx-auto max-w-7xl px-4 py-5">
@@ -82,7 +82,7 @@ export function SiteHeader() {
       <FreeShippingBar />
       <nav className="relative border-y bg-muted">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 overflow-x-auto px-4 text-xs font-semibold uppercase whitespace-nowrap text-muted-foreground lg:overflow-visible">
-          {([["Sofás", "Sof"], ["Guarda-roupas", "Guarda"], ["Camas", "Cama"], ["Mesas de jantar", "Mesa"], ["Eletrodomésticos", "Geladeira"]] as const).map(([l, q]) => (
+          {([["Sofás", "Sof"], ["Guarda-roupas", "Guarda"], ["Camas", "Cama"], ["Mesas de jantar", "Mesa"], ["Eletrodomésticos", "Eletrodom"]] as const).map(([l, q]) => (
             <NavDrop key={l} label={l} q={q} />
           ))}
           <div className="group/mega shrink-0 lg:static">
