@@ -7,6 +7,7 @@ import { brl, FREE_SHIPPING_MIN, useCart, WHATSAPP } from "@/lib/store";
 import { useShippingCities } from "@/lib/shipping";
 import { Roleta, ROLETA_MIN, sortearPremio, usePremios } from "@/components/Roleta";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -129,7 +130,7 @@ function CartPage() {
   useEffect(() => {
     try {
       const p = JSON.parse(localStorage.getItem("rdl-pendente") || "null") as { id: string; tel: string; nome: string; premio: string | null } | null;
-      if (p?.id && p.premio) { setPedido({ id: p.id, tel: p.tel }); setPremio(p.premio); setDone(p.nome); }
+      if (p?.id) { setPedido({ id: p.id, tel: p.tel }); setPremio(p.premio); setDone(p.nome); }
     } catch { /* ignore */ }
   }, []);
   useEffect(() => {
@@ -168,7 +169,7 @@ function CartPage() {
     }
     go(step + 1);
   };
-  const copiarPix = async () => { try { await navigator.clipboard.writeText(PIX_CHAVE.replace(/\D/g, "")); } catch { /* ignore */ } setCopiado(true); setTimeout(() => setCopiado(false), 2500); };
+  const copiarPix = async () => { try { await navigator.clipboard.writeText(PIX_CHAVE.replace(/\D/g, "")); setCopiado(true); setTimeout(() => setCopiado(false), 2500); } catch { setMsg("Não foi possível copiar. Selecione a chave PIX e copie manualmente."); } };
 
   const finish = async () => {
     if (!pag) return setMsg("Escolha a forma de pagamento.");
@@ -218,26 +219,25 @@ function CartPage() {
 
   if (done)
     return (
-      <main className="grid min-h-[70vh] place-items-center bg-secondary px-4 py-16">
-        <div className="w-full max-w-lg animate-in fade-in zoom-in-95 duration-500 rounded-2xl border-2 border-gold bg-background p-8 text-center shadow-2xl sm:p-12">
+      <main className="grid min-h-[70vh] place-items-center bg-background px-4 py-16">
+        <div className="w-full max-w-xl text-center" aria-live="polite">
           <div className="mx-auto grid size-24 place-items-center rounded-full bg-navy">
             <img src={logo.url} alt="Rainha do Lar" className="size-16 object-contain" />
           </div>
-          <p className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-gold">{pago ? "Pagamento confirmado" : "Pedido recebido"}</p>
-          <h1 className="mt-2 text-3xl font-bold text-navy sm:text-4xl">Parabéns pela sua compra, {done}!</h1>
+          <p className="mt-6 text-sm font-bold uppercase text-navy">{pago ? "Pagamento confirmado" : "Pedido recebido · pagamento em conferência"}</p>
+          <h1 className="mt-3 text-3xl font-bold text-navy sm:text-4xl">{pago ? `Parabéns pela sua compra, ${done}!` : `Obrigado por escolher a gente, ${done}.`}</h1>
           <div className="mx-auto my-6 h-px w-24 bg-gold" />
           <p className="text-lg leading-relaxed text-foreground">
-            Um de nossos vendedores vai entrar em contato com você pelo WhatsApp para finalizar sua compra.
+            {pago ? "Seu pagamento foi confirmado. Agora nossa equipe vai cuidar de cada detalhe e combinar a entrega pelo WhatsApp." : "Seu pedido já está com nossa equipe. Vamos conferir o pagamento e entrar em contato pelo WhatsApp para combinar os próximos passos."}
           </p>
-          <p className="mt-3 text-sm text-muted-foreground">Fique de olho no seu celular. Obrigado por escolher a Rainha do Lar.</p>
+          <p className="mt-3 text-sm text-muted-foreground">{pago ? "Que essa compra faça parte de bons momentos no seu lar." : "A confirmação aparece aqui assim que nossa equipe conferir o recebimento. Não é necessário pagar novamente."}</p>
           <div className="mt-8 flex items-center justify-center gap-2 text-sm font-semibold text-navy">
-            <CheckCircle2 className="size-5 text-gold" /> Seus dados foram enviados com segurança
+            <CheckCircle2 className="size-5 text-navy" /> {pago ? "Tudo certo com seu pagamento" : "Pedido registrado na Rainha do Lar"}
           </div>
           {premio && !pago && (
-            <div className="mt-8 rounded-xl border-2 border-gold bg-secondary p-5">
-              <div className="mx-auto size-10 animate-spin rounded-full border-4 border-gold border-t-navy" />
-              <p className="mt-4 text-lg font-bold text-navy">Aguardando confirmação do pagamento</p>
-              <p className="mt-1 text-sm text-muted-foreground">Assim que confirmarmos o seu pagamento, a Roleta da Sorte é liberada aqui nesta tela. Não feche esta página.</p>
+            <div className="mt-8 border-y py-5">
+              <p className="text-lg font-bold text-navy">Seu presente está reservado</p>
+              <p className="mt-1 text-sm text-muted-foreground">A Roleta da Sorte será liberada nesta tela após a confirmação do pagamento.</p>
             </div>
           )}
           {premio && pago && <Roleta premio={premio} premios={premios} />}
@@ -324,10 +324,10 @@ function CartPage() {
         {step === 3 && <section className="overflow-hidden rounded-xl border bg-background shadow-sm">
           <div className="border-b bg-navy px-5 py-4">
             <h2 className="text-lg font-bold uppercase tracking-widest text-gold">Pagamento</h2>
-            <p className="text-sm text-primary-foreground/80">Escolha como deseja pagar. Ambiente seguro.</p>
+            <p className="text-sm text-primary-foreground/80">Confira o valor e os dados do recebedor antes de pagar.</p>
           </div>
           <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {([["PIX", QrCode, "Aprovação imediata"], ["Cartão de crédito", CreditCard, "Parcele em até 12x"]] as const).map(([k, I, d]) => (
+            {([["PIX", QrCode, "Conferido pela nossa equipe"], ["Cartão de crédito", CreditCard, "Parcele em até 12x"]] as const).map(([k, I, d]) => (
               <button key={k} type="button" onClick={() => setPag(k)} className={`relative flex items-center gap-4 rounded-xl border-2 p-5 text-left transition ${pag === k ? "border-gold bg-secondary shadow-md" : "border-border hover:-translate-y-0.5 hover:border-gold hover:shadow"}`}>
                 <span className={`grid size-12 shrink-0 place-items-center rounded-full ${pag === k ? "bg-navy" : "bg-secondary"}`}><I className="size-6 text-gold" /></span>
                 <span><b className="block text-base text-navy">{k}</b><span className="text-sm text-muted-foreground">{d}</span></span>
@@ -336,21 +336,22 @@ function CartPage() {
             ))}
           </div>
           {pag === "PIX" && (
-            <div className="mx-5 mb-5 overflow-hidden rounded-xl border-2 border-gold">
-              <div className="flex items-center justify-between bg-navy px-5 py-3">
-                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Valor a pagar</span>
-                <span className="text-2xl font-extrabold text-primary-foreground">{brl(subtotal - desconto + frete)}</span>
+            <div className="mx-5 mb-5 border-t">
+              <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-5">
+                <span className="text-sm font-semibold text-muted-foreground">Total no PIX</span>
+                <span className="text-3xl font-bold text-navy">{brl(subtotal - desconto + frete)}</span>
               </div>
-              <div className="bg-secondary p-5 text-center">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Chave PIX · CNPJ</p>
-                <p className="mt-2 break-all text-2xl font-extrabold tracking-wider text-navy sm:text-3xl">{PIX_CHAVE}</p>
+              <div className="border-y bg-muted/40 px-3 py-6 text-center sm:px-5">
+                <p className="text-xs font-bold uppercase text-muted-foreground">Chave PIX · CNPJ</p>
+                <p className="mt-3 break-all text-xl font-bold text-navy sm:text-2xl">{PIX_CHAVE}</p>
                 <p className="mt-2 text-sm text-navy">Favorecido: <b>Kayo Crisostomo Lima</b></p>
-                <button type="button" onClick={copiarPix} className="btn-comprar mt-4 inline-flex items-center gap-2 rounded-md px-6 py-3 text-sm">{copiado ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}{copiado ? "Chave copiada" : "Copiar chave PIX"}</button>
-                <ol className="mx-auto mt-5 grid max-w-md gap-2 text-left text-sm text-navy">
-                  {["Abra o app do seu banco e escolha pagar com PIX.", "Cole a chave copiada e confira o favorecido.", "Após pagar, clique em \"Já fiz o PIX — Finalizar\"."].map((t, i) => (
+                <Button type="button" onClick={copiarPix} className="mt-5 gap-2">{copiado ? <CheckCircle2 className="size-4" /> : <Copy className="size-4" />}{copiado ? "Chave copiada" : "Copiar chave PIX"}</Button>
+                <ol className="mx-auto mt-6 grid max-w-md gap-4 text-left text-sm text-navy">
+                  {["No aplicativo do seu banco, escolha PIX e cole a chave.", "Confira Kayo Crisostomo Lima como recebedor e o valor acima.", "Depois de pagar, registre seu pedido no botão abaixo. Nossa equipe conferirá o recebimento."].map((t, i) => (
                     <li key={t} className="flex gap-3"><span className="grid size-6 shrink-0 place-items-center rounded-full bg-navy text-xs font-bold text-gold">{i + 1}</span>{t}</li>
                   ))}
                 </ol>
+                <p className="mt-6 border-t pt-4 text-xs leading-relaxed text-muted-foreground">A confirmação é feita pela equipe da loja. Clicar em “Registrar pedido” não confirma nem realiza o pagamento.</p>
               </div>
             </div>
           )}
@@ -382,7 +383,7 @@ function CartPage() {
         {msg && <p className="mt-2 text-sm text-destructive">{msg}</p>}
         {step < 3
           ? <button onClick={next} className="btn-comprar mt-4 w-full rounded-md py-3 font-bold">Continuar para {["Identificação", "Entrega", "Pagamento"][step]} →</button>
-          : <button onClick={finish} className="btn-comprar mt-4 w-full rounded-md py-3 font-bold">{pag === "PIX" ? "Já fiz o PIX — Finalizar" : "Finalizar compra"}</button>}
+          : <Button onClick={finish} className="mt-4 h-auto w-full whitespace-normal py-3 font-bold">{pag === "PIX" ? "Registrar pedido após o PIX" : "Finalizar compra"}</Button>}
         {step > 0 && <button onClick={() => go(step - 1)} className="mt-2 w-full text-center text-sm font-semibold text-navy underline">← Voltar</button>}
       </aside>
     </main>
