@@ -17,6 +17,7 @@
 - Checkout looks up street and neighborhood through ViaCEP after eight postal-code digits, with cancellation and manual fallback, because address convenience must not alter city shipping rates.
 - Product cards and detail pages share SoldBadge with a themed overlay and plain inline text; the overlay shares purchase-button surface tokens to keep the requested appearance consistent.
 - The shared shipping threshold and order insert trigger must use the same strict comparison, because displayed quotes must match saved orders at the promotion boundary.
-- The product editor merges preset category choices with existing product categories case-insensitively and allows custom entries, because selecting a category must not discard existing catalog labels.
-- Header category menus use normalized product/category matching and refresh the shared product query on pointer or keyboard entry, because saved catalog changes must appear without reloading and appliance categories must not be limited to refrigerators.
+- Category names and matching use a shared canonical catalog across the editor, header, home and search, because singular/plural and formatting aliases must not duplicate or hide existing products; unknown custom categories remain available.
+- Header category menus include the shared presets and active custom categories and refresh on pointer or keyboard entry, because saved catalog changes must appear without reloading.
+- Product mutations show pending/error/success feedback, verify the affected row and update the shared query cache after confirmation without a full catalog refetch, because photo-heavy catalogs must not delay visible save/delete results.
 - Admin authorization requires both an admin role and the designated account's verified database email in has_role, because a role alone must not grant other accounts administrator access.

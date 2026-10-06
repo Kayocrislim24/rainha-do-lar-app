@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import { useProducts } from "@/lib/products";
 import { ProductCard } from "@/components/ProductCard";
+import { canonicalCategory, categoryMatches, categoryOptions } from "@/lib/categories";
 
 const search = z.object({ q: z.string().optional(), cat: z.string().optional() });
 
@@ -36,12 +37,12 @@ function Busca() {
   const [ofertas, setOfertas] = useState(false);
   const [ordem, setOrdem] = useState("relevancia");
 
-  const categorias = useMemo(() => [...new Set(products.map((p) => p.category))], [products]);
+  const categorias = useMemo(() => categoryOptions(products.filter((p) => p.active).map((p) => p.category), false), [products]);
   const lista = useMemo(() => {
     let l = products.filter((p) => p.active !== false);
-    if (cat) l = l.filter((p) => norm(p.category).includes(norm(cat)) || norm(cat).includes(norm(p.category)));
+    if (cat) l = l.filter((p) => categoryMatches(p.category, cat));
     if (q) l = l.filter((p) => norm(`${p.title} ${p.category} ${p.description}`).includes(norm(q)));
-    if (faixa !== null) { const f = faixas[faixa]!; l = l.filter((p) => p.price >= f.min && p.price < f.max); }
+    if (faixa !== null) { const f = faixas[faixa]; if (f) l = l.filter((p) => p.price >= f.min && p.price < f.max); }
     if (ofertas) l = l.filter((p) => p.oldPrice > p.price);
     if (ordem === "menor") l = [...l].sort((a, b) => a.price - b.price);
     if (ordem === "maior") l = [...l].sort((a, b) => b.price - a.price);
@@ -49,7 +50,7 @@ function Busca() {
     return l;
   }, [products, q, cat, faixa, ofertas, ordem]);
 
-  const titulo = q ? `Resultados para "${q}"` : cat || "Todos os produtos";
+  const titulo = q ? `Resultados para "${q}"` : canonicalCategory(cat) || "Todos os produtos";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
@@ -62,7 +63,7 @@ function Busca() {
             <ul className="mt-2 space-y-1.5">
               <li><Link to="/busca" search={{}} className={!cat ? "font-bold text-navy" : "hover:text-navy"}>Todos</Link></li>
               {categorias.map((c) => (
-                <li key={c}><Link to="/busca" search={{ cat: c }} className={cat === c ? "font-bold text-navy" : "hover:text-navy"}>{c}</Link></li>
+                <li key={c}><Link to="/busca" search={{ cat: c }} className={categoryMatches(cat, c) ? "font-bold text-navy" : "hover:text-navy"}>{c}</Link></li>
               ))}
             </ul>
           </div>

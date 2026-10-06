@@ -8,6 +8,7 @@ import guarda from "@/assets/guarda-roupa.jpg";
 import cama from "@/assets/cama.jpg";
 import mesa from "@/assets/mesa.jpg";
 import { useBanners } from "@/lib/home";
+import { categoryMatches, categoryOptions } from "@/lib/categories";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -141,13 +142,13 @@ function Index() {
 
 
 
-        {Array.from(new Map(products.map((p) => [p.category.trim().toLowerCase(), p.category.trim()])).entries()).map(([key, cat]) => {
-          const list = products.filter((p) => p.category.trim().toLowerCase() === key).slice(0, 4);
+        {categoryOptions(products.map((p) => p.category), false).map((cat) => {
+          const list = products.filter((p) => categoryMatches(p.category, cat)).slice(0, 4);
           return (
             <section key={cat} className="mt-10">
               <div className="flex items-end justify-between border-b-2 border-gold pb-2">
                 <h2 className="text-xl font-bold uppercase text-navy">{cat}</h2>
-                <Link to="/busca" search={{ q: cat }} className="text-sm font-bold text-navy underline hover:text-gold">Ver tudo</Link>
+                <Link to="/busca" search={{ cat }} className="text-sm font-bold text-navy underline hover:text-gold">Ver tudo</Link>
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">{list.map((p) => <Card key={p.id} p={p} />)}</div>
             </section>

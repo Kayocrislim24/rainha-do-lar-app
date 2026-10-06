@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AvaliacoesAdmin } from "@/components/AvaliacoesAdmin";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { LoaderCircle, Pencil, Save, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { brl } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -10,6 +11,7 @@ import { ShippingAdmin } from "@/components/ShippingAdmin";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { productsKey, resolveImage, useProducts, type Product, type ProductColor, type ProductSpec } from "@/lib/products";
+import { canonicalCategory, categoryOptions } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -31,7 +33,6 @@ type Item = { title: string; qty: number; price: number };
 
 const empty = { id: "", title: "", category: "", description: "", image: "", image2: "", image3: "", image4: "", image5: "", old_price: "", price: "", badge: "", stock: "0", dim_w: "0", dim_h: "0", dim_d: "0", active: true, best_seller: false, sold: "0", colors: [] as ProductColor[], specs: [] as ProductSpec[] };
 type Form = typeof empty;
-const PRODUCT_CATEGORIES = ["Sofás", "Guarda-roupas", "Camas", "Colchões", "Mesas", "Cadeiras", "Poltronas", "Racks e painéis", "Cômodas", "Armários de cozinha", "Sala de estar", "Sala de jantar", "Quarto", "Cozinha", "Eletrodomésticos", "Eletrônicos", "Decoração", "Geral"];
 
 function Admin() {
   const { isAdmin, loading } = useAuth();
@@ -58,29 +59,65 @@ function Produtos() {
   const [editing, setEditing] = useState(false);
   const [msg, setMsg] = useState("");
   const [customCategory, setCustomCategory] = useState(false);
-  const categories = Array.from(new Map([...PRODUCT_CATEGORIES, ...products.map((p) => p.category), f?.category ?? ""].filter((c) => c.trim()).map((c) => [c.trim().toLocaleLowerCase("pt-BR"), c.trim()])).values()).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const busy = useRef(false);
+  const editor = useRef<HTMLDivElement>(null);
+  const categories = categoryOptions([...products.map((p) => p.category), f?.category ?? ""]).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const openEditor = () => requestAnimationFrame(() => {
+    const el = editor.current;
+    if (!el) return;
+    const headerHeight = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+    window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - headerHeight - 16, behavior: "instant" });
+    el.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+  });
 
   const edit = (p: Product) => {
+    if (busy.current) return;
+    setMsg("");
     setEditing(true);
     setCustomCategory(false);
     setF({ id: p.id, title: p.title, category: p.category, description: p.description, image: p.imageRaw, image2: p.image2Raw, image3: p.extrasRaw[0] ?? "", image4: p.extrasRaw[1] ?? "", image5: p.extrasRaw[2] ?? "", old_price: String(p.oldPrice), price: String(p.price), badge: p.badge ?? "", stock: String(p.stock), dim_w: String(p.dims.w), dim_h: String(p.dims.h), dim_d: String(p.dims.d), active: p.active, best_seller: p.bestSeller, sold: String(p.sold), colors: p.colors.map((c, i) => ({ ...c, image: (p as any).colorsRaw?.[i] ?? c.image })), specs: p.specs.map((x) => ({ ...x })) });
+    openEditor();
   };
 
   const save = async () => {
-    if (!f) return;
+    if (!f || busy.current) return;
     if (!f.title || !f.price) return setMsg("Preencha nome e preço.");
     const n = (s: string) => Number(s.replace(",", ".")) || 0;
     const id = f.id || f.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") + "-" + Date.now().toString(36);
-    const row = { id, title: f.title, category: f.category || "Geral", description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, sold: n(f.sold), colors: f.colors.filter((c) => c.name || c.image), specs: f.specs.filter((x) => x.k.trim() || x.v.trim()) };
-    const { error } = editing ? await supabase.from("products").update(row).eq("id", f.id) : await supabase.from("products").insert(row);
-    if (error) return setMsg(error.message);
-    setMsg("Salvo!"); setF(null); qc.invalidateQueries({ queryKey: productsKey });
+    const row = { id, title: f.title.trim(), category: canonicalCategory(f.category || "Geral"), description: f.description, image: f.image, image2: f.image2, image3: f.image3, image4: f.image4, image5: f.image5, old_price: n(f.old_price), price: n(f.price), badge: f.badge || null, stock: n(f.stock), dim_w: n(f.dim_w), dim_h: n(f.dim_h), dim_d: n(f.dim_d), active: f.active, best_seller: f.best_seller, sold: n(f.sold), colors: f.colors.filter((c) => c.name || c.image), specs: f.specs.filter((x) => x.k.trim() || x.v.trim()) };
+    busy.current = true;
+    setSaving(true);
+    setMsg("");
+    try {
+      const { data, error } = editing ? await supabase.from("products").update(row).eq("id", f.id).select("id").single() : await supabase.from("products").insert(row).select("id").single();
+      if (error) throw error;
+      if (!data) throw new Error("Não foi possível salvar o produto. Tente novamente.");
+      const product: Product = { id, title: row.title, category: row.category, description: row.description, image: resolveImage(row.image), imageRaw: row.image, image2: resolveImage(row.image2), image2Raw: row.image2, extrasRaw: [row.image3, row.image4, row.image5], gallery: [row.image, row.image2, row.image3, row.image4, row.image5].filter(Boolean).map(resolveImage), oldPrice: row.old_price, price: row.price, badge: row.badge ?? undefined, stock: row.stock, active: row.active, bestSeller: row.best_seller, sold: row.sold, dims: { w: row.dim_w, h: row.dim_h, d: row.dim_d }, colors: row.colors.map((c) => ({ ...c, image: resolveImage(c.image) })), specs: row.specs };
+      qc.setQueryData<Product[]>(productsKey, (old = []) => editing ? old.map((p) => p.id === id ? product : p) : [...old, product]);
+      void qc.invalidateQueries({ queryKey: productsKey, refetchType: "none" });
+      setMsg(editing ? "Produto atualizado com sucesso." : "Produto cadastrado com sucesso.");
+      setF(null);
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Não foi possível salvar. Confira sua conexão e tente novamente.");
+    } finally { busy.current = false; setSaving(false); }
   };
 
   const remove = async (id: string) => {
+    if (busy.current) return;
     if (!confirm("Apagar este produto?")) return;
-    await supabase.from("products").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: productsKey });
+    busy.current = true; setDeleting(id); setMsg("");
+    try {
+      const { data, error } = await supabase.from("products").delete().eq("id", id).select("id").single();
+      if (error) throw error;
+      if (!data) throw new Error("Não foi possível apagar este produto.");
+      qc.setQueryData<Product[]>(productsKey, (old = []) => old.filter((p) => p.id !== id));
+      void qc.invalidateQueries({ queryKey: productsKey, refetchType: "none" });
+      if (f?.id === id) setF(null);
+      setMsg("Produto apagado com sucesso.");
+    } catch (error) { setMsg(error instanceof Error ? error.message : "Não foi possível apagar. Tente novamente."); }
+    finally { busy.current = false; setDeleting(null); }
   };
 
   const input = "w-full rounded-md border px-3 py-2";
@@ -92,16 +129,17 @@ function Produtos() {
     <section className="mt-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-navy">Produtos ({products.length})</h2>
-        <Button onClick={() => { setEditing(false); setCustomCategory(false); setF({ ...empty }); setMsg(""); }}>+ Novo produto</Button>
+        <Button disabled={saving || !!deleting} onClick={() => { setEditing(false); setCustomCategory(false); setF({ ...empty }); setMsg(""); openEditor(); }}>+ Novo produto</Button>
       </div>
-      {msg && <p className="mt-2 text-sm text-navy">{msg}</p>}
+      {msg && <p role="status" className="mt-2 text-sm font-semibold text-navy">{msg}</p>}
 
       {f && (
-        <div className="mt-4 grid gap-3 rounded-lg border bg-secondary p-4 sm:grid-cols-2">
+        <div ref={editor} aria-busy={saving} className="mt-4 grid gap-3 rounded-lg border bg-secondary p-4 sm:grid-cols-2">
+          <h3 className="text-lg font-bold text-navy sm:col-span-2">{editing ? `Editar produto: ${f.title}` : "Cadastrar novo produto"}</h3>
           <label className="text-sm">Nome do produto<input className={input} value={f.title} onChange={(e) => { const title = e.target.value; const vazio = f.specs.every((x) => !x.v.trim()); setF({ ...f, title, specs: vazio ? fichaPara(title + " " + f.category).map((k) => ({ k, v: "" })) : f.specs }); }} /></label>
           <div className="min-w-0 text-sm">
             <label htmlFor="product-category">Categoria</label>
-            <Select value={customCategory ? "__custom__" : f.category} onValueChange={(category) => {
+            <Select value={customCategory ? "__custom__" : canonicalCategory(f.category)} onValueChange={(category) => {
               if (category === "__custom__") { setCustomCategory(true); return; }
               setCustomCategory(false);
               const vazio = f.specs.every((x) => !x.v.trim());
@@ -132,22 +170,23 @@ function Produtos() {
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.best_seller} onChange={(e) => setF({ ...f, best_seller: e.target.checked })} />Mostrar em MAIS VENDIDOS (até 20)</label>
           <label className="grid gap-1 text-sm">Quantidade já vendida<input type="number" min="0" value={f.sold} onChange={(e) => setF({ ...f, sold: e.target.value })} className="rounded-md border px-3 py-2" /></label>
           <div className="flex gap-2 sm:col-span-2">
-            <button onClick={save} className="rounded-md bg-buy px-5 py-2 font-bold text-buy-foreground">Salvar</button>
-            <button onClick={() => setF(null)} className="rounded-md border px-5 py-2">Cancelar</button>
+            <Button onClick={save} disabled={saving || !!deleting} className="min-w-32 font-bold">{saving ? <LoaderCircle className="animate-spin" /> : <Save />}{saving ? "Salvando..." : "Salvar"}</Button>
+            <Button variant="outline" disabled={saving} onClick={() => setF(null)}>Cancelar</Button>
+            {saving && <p role="status" className="self-center text-sm text-muted-foreground">Enviando produto. Aguarde a confirmação.</p>}
           </div>
         </div>
       )}
 
       <div className="mt-4 divide-y rounded-lg border">
         {products.map((p) => (
-          <div key={p.id} className="flex items-center gap-3 p-3">
+          <div key={p.id} className="flex flex-wrap items-center gap-3 p-3">
             <img src={p.image} alt="" className="size-14 object-contain" />
-            <div className="flex-1">
+            <div className="min-w-0 flex-1 basis-40">
               <p className="text-sm font-semibold">{p.title} {!p.active && <span className="text-xs text-muted-foreground">(oculto)</span>}</p>
               <p className="text-sm"><span className="text-price-old line-through">{brl(p.oldPrice)}</span> <span className="font-bold text-price-new">{brl(p.price)}</span> · estoque {p.stock}</p>
             </div>
-            <button onClick={() => edit(p)} className="rounded-md border px-3 py-1.5 text-sm">Editar</button>
-            <button onClick={() => remove(p.id)} className="rounded-md border px-3 py-1.5 text-sm text-destructive">Apagar</button>
+            <Button variant="outline" disabled={saving || !!deleting} onClick={() => edit(p)}><Pencil />Editar</Button>
+            <Button variant="outline" disabled={saving || !!deleting} onClick={() => remove(p.id)} className="text-destructive">{deleting === p.id ? <LoaderCircle className="animate-spin" /> : <Trash2 />}{deleting === p.id ? "Apagando..." : "Apagar"}</Button>
           </div>
         ))}
       </div>
