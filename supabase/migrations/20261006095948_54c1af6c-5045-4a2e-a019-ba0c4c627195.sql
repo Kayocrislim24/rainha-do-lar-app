@@ -1,0 +1,1 @@
+ALTER POLICY "settings read" ON public.settings USING ((key = ANY (ARRAY['home_banners'::text, 'home_destaques'::text])) OR public.has_role(auth.uid(), 'admin'::public.app_role));
